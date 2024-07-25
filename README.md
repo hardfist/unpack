@@ -1,4 +1,4 @@
-# rollpack
+# unpack
 Unplugin API built on top of Webpack architecture
 
 A miniature model of the bundler, intended to teach the structure of the real bundler.
