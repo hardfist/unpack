@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/*"
+]
+[workspace.package]
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/hardfist/unpack"
+
+[workspace.dependencies]
+unpack = { path = "./crates/unpack"}
