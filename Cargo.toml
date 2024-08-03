@@ -10,3 +10,4 @@ repository = "https://github.com/hardfist/unpack"
 
 [workspace.dependencies]
 unpack = { path = "./crates/unpack"}
+derive-new = { version = "0.6.0"}
