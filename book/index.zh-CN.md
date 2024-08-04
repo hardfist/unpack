@@ -1,4 +1,4 @@
-# Build Your Own Bundler
+# Crafting Bundler
 [TOC]
 ## Core Concepts
 ### Compiler & Compilation
@@ -6,15 +6,19 @@
 
 
 ### Module & Dependency
-Module 和 Dependency 是 Bundler 中最为核心的概念，其贯穿了 Bundler 构建流程的始终,其 也是 Webpack 核心架构最为关键和最为复杂的部分。
+Module 和 Dependency 是 Bundler 中最为核心的概念，其贯穿了 Bundler 构建流程的始终,其 也是 Webpack 核心架构最为关键和最为复杂的概念。
 #### Module
-我们先首先来理解 Module 
 ##### First Class Module
+Webpack5 中一个最被忽视的架构设计变动就是支持了更多的一等公民，CSS、Asset等常用的类型不再需要转换成 JavaScript 才能被Bundler识别，这提供了更多的优化的可能性。
+
+##### TypeScript ? The Good The Bad The Ugly Parts
+##### Normal Module & Context Module
 ##### Module Factory
 ##### Module Resolution (Resolver)
 ##### Virtual Module
 ###### Monorepo Support
 ##### Parser
+##### Loader
 
 
 #### Dependency 
