@@ -1,6 +1,7 @@
 # Bundler的设计与实现(Crafting Bundler)
 - [Bundler的设计与实现(Crafting Bundler)](#bundler的设计与实现crafting-bundler)
   - [核心概念和设计(Core Concepts and Design)](#核心概念和设计core-concepts-and-design)
+    - [Bundler](#bundler)
     - [编译模式(Compiler \& Compilation)](#编译模式compiler--compilation)
     - [模块与依赖 (Module \& Dependency)](#模块与依赖-module--dependency)
       - [模块(Module)](#模块module)
@@ -38,6 +39,23 @@
     - [模块联邦（Module Federation）](#模块联邦module-federation)
 
 ## 核心概念和设计(Core Concepts and Design)
+### Bundler
+深入讲解 Bundler 之前，先要理解下 Bundler 这个概念，很多人会把 Bundler 和 Build Tools 之类的概念搞混，Bundler 最为核心的功能为将一个项目转换为 一个 Module Graph 并进一步转换为 一个优化的 Chunk Graph并基于 Chunk 和 Module 生成产物的过程. 常见的 Bundler 包括 Webpack、Rspack、Rollup、Parcel、Esbuild等
+
+> [!NOTE]  
+>Webpack is just a module bundler which turns a dependency graph into an optimized chunk graph.
+
+而在 Bundler 上封装了很多提供的开箱即用的功能的工具则称为 Build Tools更为合适，包括 Rsbuild、Vite、Create-react-app等。
+根据上面的描述 Bundler的核心流程其实只有三步，
+1. 生成  Module Graph（scan），
+2. 基于 Module Graph 生成优化的 Chunk Graph(Link)
+3. 以及最后的基于Chunk的代码生成(CodeGen),
+这个过程和传统的编译器的三步过程十分相近
+1. 生成 AST 
+2. AST 优化
+3. 代码生成
+![Bundler Process](./assets/bundler.png)
+
 ### 编译模式(Compiler & Compilation)
 一般的 Bundler 都提供了两种编译模式，Build 和 Watch 模式，其中 Build 模式主要用于生产环境构建，一般编译完进程或者任务就终止，而 Watch 模式则会继续监听用户项目的变动，项目变动后会触发新的编译，Watch 还有一种更高级的模式既 Reload 模式，其不仅仅会重新编译产物，还会触发新的产物重新执行（这里的执行包括在 浏览器和 Node等环境下的重新执行），大部分 Bundler 都会提供两个子命令或者参数区分这两种模式。
 
@@ -47,7 +65,7 @@ Bundler 通常需要创建一个编译上下文来执行编译，这个上下文
 ### 模块与依赖 (Module & Dependency)
 Module 和 Dependency 是 Bundler 中最为核心的概念，其贯穿了 Bundler 构建流程的始终,其也是 Webpack 核心架构最为关键和最为复杂的概念。
 #### 模块(Module)
-我们首先了解下 Module 的概念
+我们首先了解下 Webpack 内 Module 的概念, Module 最为核心的作用即为 
 #### 一等公民模块 (First Class Module)
 Webpack5 中一个最被忽视的架构设计变动就是支持了更多的一等公民，CSS、Asset等常用的类型不再需要转换成 JavaScript 才能被Bundler识别，这提供了更多的优化的可能性和更简化的配置。
 Rollup 和 Webpack 最大的一个区别在于，Rollup 是 JavaScript Bundler， 而 Webpack 是 Web Bundler, 在 Rollup 中如果需要支持 CSS、Asset、Json 等非JavaScript的 Module的打包，需要将其转换为 JavaScript Module，而 Webpack 中天然的支持 Css Module、Asset Module、Json Module 等 Module类型。
