@@ -4,7 +4,8 @@ use std::sync::Arc;
 pub use options::CompilerOptions;
 pub use options::EntryItem;
 
-use crate::Compilation;
+use crate::compilation::Compilation;
+
 pub struct Compiler {
     #[allow(dead_code)]
     options: CompilerOptions

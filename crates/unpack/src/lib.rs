@@ -1,6 +1,6 @@
-mod compilation;
-mod compiler;
-mod bundler;
-pub use bundler::{*};
-pub use compilation::{*};
-pub use compiler::{*};
+pub mod compilation;
+pub mod compiler;
+pub mod bundler;
+pub mod module_graph;
+pub mod dependency;
+pub mod module;

@@ -1,10 +1,8 @@
 
 use std::path::{Path};
 
-pub use unpack::unpack;
-use unpack::Compiler;
-use unpack::CompilerOptions;
-use unpack::EntryItem;
+use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
+
 fn main(){
     let context = std::env!("CARGO_MANIFEST_DIR");
     let compiler_options: CompilerOptions = CompilerOptions {

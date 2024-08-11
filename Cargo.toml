@@ -11,3 +11,4 @@ repository = "https://github.com/hardfist/unpack"
 [workspace.dependencies]
 unpack = { path = "./crates/unpack"}
 derive-new = { version = "0.6.0"}
+index_vec = { version = "0.1.3"}
