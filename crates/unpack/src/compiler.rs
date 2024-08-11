@@ -8,16 +8,14 @@ use crate::compilation::Compilation;
 
 pub struct Compiler {
     #[allow(dead_code)]
-    options: CompilerOptions
+    options: CompilerOptions,
 }
 
 impl Compiler {
-    pub fn new(options: CompilerOptions) -> Self{
-        Self {
-            options
-        }
+    pub fn new(options: CompilerOptions) -> Self {
+        Self { options }
     }
-    pub fn build(&mut self){
+    pub fn build(&mut self) {
         println!("start build");
         let mut compilation = Compilation::new(Arc::new(self.options.clone()));
         compilation.scan();

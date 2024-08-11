@@ -1,7 +1,6 @@
 mod module_id;
-pub trait Module{
+pub use module_id::*;
+pub trait Module {}
 
-}
-pub struct NormalModule {
-
-}
+pub type BoxModule = Box<dyn Module>;
+pub struct NormalModule {}

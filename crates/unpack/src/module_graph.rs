@@ -1,5 +1,17 @@
-use crate::dependency::Dependency;
+use index_vec::IndexVec;
+
+use crate::{dependency::{BoxDependency, DependencyId}, module::{BoxModule, ModuleId}};
 
 pub struct ModuleGraph {
-    pub dependencies: Vec<Box<dyn Dependency>>
+    pub dependencies: IndexVec<DependencyId, BoxDependency>,
+    pub modules: IndexVec<ModuleId, BoxModule>
+}
+
+impl ModuleGraph {
+    pub fn add_dependency(&mut self, dep: BoxDependency) -> DependencyId {
+        self.dependencies.push(dep)
+    }
+    pub fn add_module(&mut self, module: BoxModule) -> ModuleId {
+        self.modules.push(module)
+    }
 }
