@@ -15,4 +15,8 @@ impl ModuleGraph {
     pub fn add_module(&mut self, module: BoxModule) -> ModuleId {
         self.modules.push(module)
     }
+    // get dependency by id
+    pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
+        &self.dependencies[id]
+    }
 }

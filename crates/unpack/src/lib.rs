@@ -8,3 +8,5 @@ pub mod module_graph;
 pub mod module_scanner;
 pub mod task_queue;
 pub mod normal_module_factory;
+pub mod resolver;
+pub(crate) mod utils;

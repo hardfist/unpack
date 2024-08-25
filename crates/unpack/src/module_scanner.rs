@@ -26,8 +26,9 @@ impl ModuleScanner {
         self.handle_module_creation(module_graph,&mut task_queue, dependencies);
         while let Some(task) = task_queue.get_next_task() {
             match task {
-                Task::Factorize(FactorizeTask { module_dependency, origin_module_id }) => {
-                    dbg!(module_dependency, origin_module_id);
+                Task::Factorize(FactorizeTask { module_dependency_id, origin_module_id }) => {
+                    let dependency = module_graph.dependency_by_id(module_dependency_id);
+                    dbg!(dependency);
                 },
                 _ => {
 
@@ -52,7 +53,7 @@ impl ModuleScanner {
         }
     }).for_each(|(id, dep)| {
         task_queue.add_task(Task::Factorize(FactorizeTask {
-            module_dependency: *id,
+            module_dependency_id: *id,
             origin_module_id: None
         }));
     });

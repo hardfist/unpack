@@ -15,9 +15,14 @@ pub struct EntryDependency {
 
 impl Dependency for EntryDependency {}
 
-impl ModuleDependency for EntryDependency {}
+impl ModuleDependency for EntryDependency {
+    fn request(&self) -> &str {
+        &self.request
+    }
+}
 impl AsModuleDependency for EntryDependency {
     fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
         Some(self)
     }
+    
 }

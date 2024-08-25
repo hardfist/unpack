@@ -9,13 +9,15 @@ pub(crate) enum Task {
     ProcessDeps(ProcessDepsTask)
 }
 
+
+
 #[derive(Debug)]
 pub(crate) struct BuildTask {
 
 }
 #[derive(Debug)]
 pub(crate) struct FactorizeTask {
-    pub(crate) module_dependency: DependencyId,
+    pub(crate) module_dependency_id: DependencyId,
     pub(crate) origin_module_id: Option<ModuleId>
 }
 #[derive(Debug)]
