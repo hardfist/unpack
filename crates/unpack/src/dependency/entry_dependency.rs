@@ -6,12 +6,14 @@ use super::{
     Dependency,
 };
 
-#[derive(new)]
+// dependency for entry
+#[derive(new,Debug)]
 pub struct EntryDependency {
     request: String,
     context: PathBuf,
 }
 
 impl Dependency for EntryDependency {}
+
 impl ModuleDependency for EntryDependency {}
 impl AsModuleDependency for EntryDependency {}

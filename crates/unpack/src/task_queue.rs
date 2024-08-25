@@ -1,59 +1,52 @@
 use std::collections::VecDeque;
 
+use crate::{dependency::{BoxModuleDependency, DependencyId, ModuleDependency}, module::ModuleId};
 #[derive(Debug)]
-pub struct TaskQueue<TaskParams,TaskResult, Executor,>
-where
-    Executor: Fn(TaskParams) -> TaskResult,
-{
-    queue: VecDeque<TaskParams>,
-    executor: Executor,
+pub(crate) enum Task {
+    Build(BuildTask),
+    Factorize(FactorizeTask),
+    Add(AddTask),
+    ProcessDeps(ProcessDepsTask)
 }
 
-impl<TaskParams,TaskResult,Executor> TaskQueue<TaskParams,TaskResult,Executor>
-where
-    Executor: Fn(TaskParams) -> TaskResult,
-{
-    pub fn new(executor: Executor) -> Self {
+#[derive(Debug)]
+pub(crate) struct BuildTask {
+
+}
+#[derive(Debug)]
+pub(crate) struct FactorizeTask {
+    pub(crate) module_dependency: DependencyId,
+    pub(crate) origin_module_id: Option<ModuleId>
+}
+#[derive(Debug)]
+pub(crate) struct AddTask {
+
+}
+#[derive(Debug)]
+pub(crate) struct ProcessDepsTask {
+
+}
+#[derive(Debug)]
+pub struct TaskQueue {
+    queue: VecDeque<Task>,
+}
+
+impl TaskQueue {
+    pub fn new() -> Self {
         TaskQueue {
             queue: VecDeque::new(),
-            executor,
         }
     }
-
-    pub fn add_task(&mut self, task: TaskParams) {
+    pub fn add_task(&mut self, task: Task) {
         self.queue.push_back(task);
     }
-
-    pub fn get_next_task(&mut self) -> Option<TaskParams> {
+    pub fn get_next_task(&mut self) -> Option<Task> {
         self.queue.pop_front()
     }
-
     pub fn is_empty(&self) -> bool {
         self.queue.is_empty()
     }
-
-    pub fn execute_next(&mut self) -> Option<TaskResult> {
-        if let Some(task) = self.get_next_task() {
-            Some((self.executor)(task))
-        }else {
-            None
-        }
-    }
-}
-#[test]
-fn test_executor() {
-    let executor = |task: &String| -> String{
-        println!("Executing task: {}", task);
-        task.clone()
-    };
-
-    let mut task_queue = TaskQueue::new(executor);
-
-    task_queue.add_task("Task 1".to_string());
-    task_queue.add_task("Task 2".to_string());
-
-    while !task_queue.is_empty() {
-       let res =  task_queue.execute_next();
-       println!("res:{:?}",res);
+    pub fn len(&self) -> usize {
+        self.queue.len()
     }
 }
