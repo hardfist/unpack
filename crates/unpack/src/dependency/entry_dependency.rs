@@ -7,7 +7,7 @@ use super::{
 };
 
 // dependency for entry
-#[derive(new,Debug)]
+#[derive(new,Debug,Clone)]
 pub struct EntryDependency {
     request: String,
     context: Utf8PathBuf,

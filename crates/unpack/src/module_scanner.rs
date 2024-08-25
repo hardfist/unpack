@@ -1,17 +1,24 @@
 use std::{collections::VecDeque, sync::Arc};
-use crate::task_queue::{AddTask,BuildTask,FactorizeTask,ProcessDepsTask, Task};
+use crate::{dependency::{BoxModuleDependency, ModuleDependency}, task::{AddTask,BuildTask,FactorizeTask,ProcessDepsTask, Task}};
 use derive_new::new;
 
-use crate::{compiler::CompilerOptions, dependency::{BoxDependency, DependencyId, EntryDependency}, module::{Module, ModuleId, NormalModule}, module_graph::ModuleGraph, task_queue::TaskQueue};
+use crate::{compiler::CompilerOptions, dependency::{BoxDependency, DependencyId, EntryDependency}, module::{Module, ModuleId, NormalModule}, module_graph::ModuleGraph, task::TaskQueue};
 
-#[derive(new)]
+
 pub struct ModuleScanner {
-    options: Arc<CompilerOptions>
+    options: Arc<CompilerOptions>,
+    errors: Vec<Box<dyn miette::Diagnostic>>
 }
 struct FactorizeParams {
 
 }
 impl ModuleScanner {
+    pub fn new(options: Arc<CompilerOptions>) -> Self{
+        Self {
+            options, 
+            errors: vec![]
+        }
+    }
     // add_entry
     pub fn add_entry(&mut self, module_graph: &mut ModuleGraph) {
         let entry_dep = EntryDependency::new(
@@ -24,40 +31,40 @@ impl ModuleScanner {
    pub fn build_loop(&mut self,module_graph: &mut ModuleGraph, dependencies: Vec<DependencyId>){
         let mut task_queue = TaskQueue::new();
         self.handle_module_creation(module_graph,&mut task_queue, dependencies);
+        
         while let Some(task) = task_queue.get_next_task() {
-            match task {
-                Task::Factorize(FactorizeTask { module_dependency_id, origin_module_id }) => {
-                    let dependency = module_graph.dependency_by_id(module_dependency_id);
-                    dbg!(dependency);
+            match task.run() {
+                Ok(new_task) => {
+                    task_queue.add_tasks(new_task)
                 },
-                _ => {
-
+                Err(err) => {
+                    self.errors.push(err.into());
                 }
-            }
+            }        
         }
    }
-   pub fn handle_module_creation(
+pub fn handle_module_creation(
     &mut self,
     module_graph: &mut ModuleGraph,
     task_queue: &mut TaskQueue,
     dependencies: Vec<DependencyId>
-   ){
+){
     dependencies.iter().filter_map(|id| {
         let dep =  id.get_dependency(&module_graph);
-        dbg!(dep.as_module_dependency());
         // only deal with module_dependency
         if let Some(mod_dependency) = dep.as_module_dependency() {
-            Some((id, mod_dependency))
+            Some((id, dep.clone()))
         }else {
             None
         }
     }).for_each(|(id, dep)| {
-        task_queue.add_task(Task::Factorize(FactorizeTask {
-            module_dependency_id: *id,
+        let dep_new = dep.clone();
+        task_queue.add_task(Box::new(FactorizeTask {
+            module_dependency: dep,
             origin_module_id: None
         }));
     });
-   }
+}
    pub fn resolve_module(){
 
    }

@@ -25,6 +25,8 @@
   - [核心功能实现 （Core Implementation）](#核心功能实现-core-implementation)
     - [模块扫描（Scan）](#模块扫描scan)
     - [模块链接（Link）](#模块链接link)
+    - [错误处理](#错误处理)
+    - [Sourcemap](#sourcemap)
     - [插件系统设计（Plugin Design）](#插件系统设计plugin-design)
       - [转换 过滤 和 处理 （Transform \& Filter \& Module Type）](#转换-过滤-和-处理-transform--filter--module-type)
       - [Loader架构 和 Transform 架构区别 （Loader vs Transform hook）](#loader架构-和-transform-架构区别-loader-vs-transform-hook)
@@ -95,6 +97,8 @@ Webpack 中的 Dependency 是一个复杂的概念，其同时承载了多种功
 ### 模块扫描（Scan）
 
 ### 模块链接（Link）
+### 错误处理
+### Sourcemap
 ### 插件系统设计（Plugin Design）
 
 #### 转换 过滤 和 处理 （Transform & Filter & Module Type）
