@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 
+use camino::Utf8PathBuf;
 #[derive(Clone)]
 pub struct EntryItem {
     pub name: String,
@@ -8,6 +8,6 @@ pub struct EntryItem {
 
 #[derive(Clone)]
 pub struct CompilerOptions {
-    pub context: PathBuf,
+    pub context: Utf8PathBuf,
     pub entry: EntryItem,
 }

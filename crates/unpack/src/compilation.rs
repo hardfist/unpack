@@ -2,7 +2,7 @@ use crate::{
     compiler::CompilerOptions, dependency::{BoxDependency, Dependency, EntryDependency}, module::NormalModule, module_graph::ModuleGraph, module_scanner::ModuleScanner
 };
 use derive_new::new;
-use std::{path::PathBuf, sync::Arc};
+use std::{sync::Arc};
 
 pub struct Compilation {
     #[allow(dead_code)]
