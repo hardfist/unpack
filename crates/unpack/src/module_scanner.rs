@@ -21,6 +21,7 @@ impl ModuleScanner {
         let entry_dep_id = module_graph.add_dependency(Box::new(entry_dep));
         let mut task_queue = TaskQueue::new();
         self.handle_module_creation(module_graph,&mut task_queue, vec![entry_dep_id]);
+        dbg!(&task_queue);
         while let Some(task) = task_queue.get_next_task() {
             dbg!(task);
         }
