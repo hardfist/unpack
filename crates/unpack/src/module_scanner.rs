@@ -1,5 +1,6 @@
-use std::{collections::VecDeque, sync::Arc};
-use crate::{dependency::{BoxModuleDependency, ModuleDependency}, task::{AddTask,BuildTask,FactorizeTask,ProcessDepsTask, Task}};
+use std::{collections::VecDeque, option, sync::Arc};
+use crate::{dependency::{BoxModuleDependency, ModuleDependency}, normal_module_factory::NormalModuleFactory, resolver_factory::ResolverFactory, task::{AddTask,BuildTask,FactorizeTask,ProcessDepsTask, Task}};
+use camino::Utf8PathBuf;
 use derive_new::new;
 
 use crate::{compiler::CompilerOptions, dependency::{BoxDependency, DependencyId, EntryDependency}, module::{Module, ModuleId, NormalModule}, module_graph::ModuleGraph, task::TaskQueue};
@@ -7,15 +8,19 @@ use crate::{compiler::CompilerOptions, dependency::{BoxDependency, DependencyId,
 
 pub struct ModuleScanner {
     options: Arc<CompilerOptions>,
+    context: Utf8PathBuf,
+    resolver_factory: Arc<ResolverFactory>,
     errors: Vec<Box<dyn miette::Diagnostic>>
 }
 struct FactorizeParams {
 
 }
 impl ModuleScanner {
-    pub fn new(options: Arc<CompilerOptions>) -> Self{
+    pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf) -> Self{
         Self {
-            options, 
+            options: options.clone(), 
+            context,
+            resolver_factory: Arc::new(ResolverFactory::new_with_base_option(options.resolve.clone())),
             errors: vec![]
         }
     }
@@ -61,7 +66,13 @@ pub fn handle_module_creation(
         let dep_new = dep.clone();
         task_queue.add_task(Box::new(FactorizeTask {
             module_dependency: dep,
-            origin_module_id: None
+            origin_module_id: None,
+            options: self.options.clone(),
+            module_factory: Arc::new(NormalModuleFactory{
+                options: self.options.clone(),
+                context: self.options.context.clone(),
+                resolver_factory: self.resolver_factory.clone()
+            })
         }));
     });
 }

@@ -13,7 +13,11 @@ pub struct EntryDependency {
     context: Utf8PathBuf,
 }
 
-impl Dependency for EntryDependency {}
+impl Dependency for EntryDependency {
+    fn get_context(&self) -> Option<&camino::Utf8Path> {
+        Some(&self.context)
+    }
+}
 
 impl ModuleDependency for EntryDependency {
     fn request(&self) -> &str {

@@ -1,20 +1,27 @@
 use camino::Utf8PathBuf;
 use std::sync::Arc;
-use crate::{compiler::CompilerOptions, dependency::{BoxModuleDependency, DependencyId, ModuleDependency}, resolver::NormalResolver};
+use crate::{compiler::CompilerOptions, dependency::{BoxDependency, BoxModuleDependency, DependencyId, ModuleDependency}, resolver::UnpackResolver, resolver_factory::ResolverFactory};
 
+#[derive(Debug)]
 pub struct NormalModuleFactory {
     pub context: Utf8PathBuf,
     pub options: Arc<CompilerOptions>,
+    pub resolver_factory: Arc<ResolverFactory>
 }
 pub struct ModuleFactoryCreateData {
-    module_dependency: BoxModuleDependency,
-    context: Option<Utf8PathBuf>, 
+    pub module_dependency: BoxDependency,
+    pub context: Utf8PathBuf,
+    pub options: Arc<CompilerOptions>
     
+}
+pub struct ModuleFactoryResult {
+
 }
 impl NormalModuleFactory {
     pub fn create(&self,data: ModuleFactoryCreateData){
-        let context = data.context.unwrap_or(self.context.clone());
-        let request = data.module_dependency.request();
-        let resolve_result = NormalResolver::new(self.options.resolve.clone()).resolve(&context, request);
+        let context = data.context;
+        let request = data.module_dependency.as_module_dependency().expect("normal module should have module dependency").request();
+        let resolve_result = self.resolver_factory.base_resolver.resolve(&context,request);
+        dbg!(&resolve_result);
     }
 }

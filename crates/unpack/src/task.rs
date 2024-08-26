@@ -11,7 +11,7 @@ pub(crate) use process_dependencies::*;
 use miette::Result;
 use std::{collections::VecDeque, fmt::Debug};
 pub trait Task: Debug {
-    fn run(&self) -> TaskResult;
+    fn run(self: Box<Self>) -> TaskResult;
 }
 pub type BoxTask = Box<dyn Task>;
 pub type TaskResult = Result<Vec<BoxTask>>;

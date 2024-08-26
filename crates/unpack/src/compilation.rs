@@ -20,7 +20,7 @@ impl Compilation {
     /// similar with webpack's make phase, which will make module graph
     pub fn scan(&mut self) {
         println!("start scan");
-        let mut module_scanner = ModuleScanner::new(self.options.clone());
+        let mut module_scanner = ModuleScanner::new(self.options.clone(), self.options.context.clone());
         module_scanner.add_entry(&mut self.module_graph);
 
     }

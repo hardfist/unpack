@@ -11,3 +11,4 @@ rspack_resolver = { workspace = true }
 miette = { workspace = true }
 dyn-clone = { workspace = true }
 downcast-rs = { workspace = true }
+dashmap = { workspace = true }
