@@ -21,5 +21,10 @@ impl Compiler {
         compilation.scan();
         compilation.link();
         println!("finish build");
+        if !compilation.diagnostics.is_empty() {
+            for diag in compilation.diagnostics {
+                println!("{:?}",diag);
+            }
+        }
     }
 }

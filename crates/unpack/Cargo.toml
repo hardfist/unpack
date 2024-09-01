@@ -8,7 +8,7 @@ derive-new = { workspace = true }
 index_vec = { workspace = true }
 camino = { workspace = true }
 rspack_resolver = { workspace = true }
-miette = { workspace = true }
+miette = { workspace = true, features = ["fancy"]}
 dyn-clone = { workspace = true }
 downcast-rs = { workspace = true }
 dashmap = { workspace = true }

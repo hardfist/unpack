@@ -9,7 +9,7 @@ pub struct Compilation {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
     module_graph: ModuleGraph,
-    diagnostics: Vec<UnpackDiagnostic>
+    pub(crate) diagnostics: Vec<UnpackDiagnostic>
 }
 
 impl Compilation {
@@ -26,8 +26,6 @@ impl Compilation {
         let mut module_scanner = ModuleScanner::new(self.options.clone(), self.options.context.clone());
         module_scanner.add_entry(&mut self.module_graph);
         self.diagnostics.extend(module_scanner.make_artifact.diagnostics);
-        dbg!(&self.diagnostics);
-
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
