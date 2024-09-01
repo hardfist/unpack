@@ -10,7 +10,7 @@ pub struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
-    errors: Vec<Box<dyn miette::Diagnostic>>
+    errors: Vec<Box<dyn miette::Diagnostic + Send + Sync>>
 }
 struct FactorizeParams {
 
@@ -40,7 +40,7 @@ impl ModuleScanner {
         while let Some(task) = task_queue.get_next_task() {
             match task.run() {
                 Ok(new_task) => {
-                    task_queue.add_tasks(new_task)
+                    task_queue.add_tasks(new_task);
                 },
                 Err(err) => {
                     self.errors.push(err.into());

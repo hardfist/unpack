@@ -10,4 +10,5 @@ pub mod task;
 pub mod normal_module_factory;
 pub mod resolver;
 pub mod resolver_factory;
+pub mod errors;
 pub(crate) mod utils;

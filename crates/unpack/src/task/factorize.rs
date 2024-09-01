@@ -1,3 +1,4 @@
+use std::mem;
 use std::sync::Arc;
 
 use crate::compiler::CompilerOptions;
@@ -22,12 +23,22 @@ impl Task for FactorizeTask {
         } else {
             self.options.context.clone()
         };
-        let create_data = ModuleFactoryCreateData {
+        let mut create_data = ModuleFactoryCreateData {
             options: self.options.clone(),
             context,
-            module_dependency: dependency
+            module_dependency: dependency,
+            diagnostics: Default::default()
         };
-        let factory_result = self.module_factory.create(create_data);
+        match self.module_factory.create(&mut create_data) {
+            Ok(result) => {
+
+            },
+            Err(err) => {
+                let mut diagnotics = mem::take(&mut create_data.diagnostics);
+                diagnotics.push(err.into());
+                dbg!(diagnotics);
+            }
+        }
         Ok(vec![])
     }
 }
