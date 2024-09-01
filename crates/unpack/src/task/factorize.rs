@@ -1,11 +1,16 @@
 use std::mem;
 use std::sync::Arc;
 
+use derive_new::new;
+
 use crate::compiler::CompilerOptions;
-use crate::dependency::{BoxDependency};
+use crate::dependency::BoxDependency;
+use crate::errors::UnpackDiagnostic;
 use crate::module::ModuleId;
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::task::Task;
+
+use super::{AddTask, MakeTaskContext};
 #[derive(Debug)]
 pub(crate) struct FactorizeTask {
     pub(crate) module_dependency: BoxDependency,
@@ -13,10 +18,15 @@ pub(crate) struct FactorizeTask {
     pub(crate) origin_module_id: Option<ModuleId>,
     pub(crate) options: Arc<CompilerOptions>,
 }
+#[derive(Debug, new)]
+pub(crate) struct FactorizeTaskResult {
+    pub(crate) diagnostics: Vec<UnpackDiagnostic>
+}
 
-impl Task for FactorizeTask {
-    fn run(self: Box<Self>) -> super::TaskResult {
+impl Task<MakeTaskContext> for FactorizeTask {
+    fn run(self: Box<Self>, task_context: &mut MakeTaskContext) -> super::TaskResult<MakeTaskContext> {
         let dependency = self.module_dependency;
+        let factorize_result = FactorizeTaskResult::new(vec![]);
         let context = if let Some(context) = dependency.get_context() 
         {
             context.to_path_buf()
@@ -31,14 +41,20 @@ impl Task for FactorizeTask {
         };
         match self.module_factory.create(&mut create_data) {
             Ok(result) => {
+                Ok(vec![
 
+                ])
             },
             Err(err) => {
-                let mut diagnotics = mem::take(&mut create_data.diagnostics);
-                diagnotics.push(err.into());
-                dbg!(diagnotics);
+                let mut diagnostics = mem::take(&mut create_data.diagnostics);
+                diagnostics.push(err.into());
+                task_context.artifact.diagnostics.extend(diagnostics);
+                Ok(vec![
+                    Box::new(
+                        AddTask{}
+                    )
+                ])
             }
         }
-        Ok(vec![])
     }
 }

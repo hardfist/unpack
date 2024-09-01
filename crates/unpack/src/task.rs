@@ -10,8 +10,8 @@ pub(crate) use task_queue::*;
 pub(crate) use process_dependencies::*;
 use miette::Result;
 use std::{collections::VecDeque, fmt::Debug};
-pub trait Task: Debug {
-    fn run(self: Box<Self>) -> TaskResult;
+pub trait Task<T>: Debug {
+    fn run(self: Box<Self>, context: &mut T) -> TaskResult<T>;
 }
-pub type BoxTask = Box<dyn Task>;
-pub type TaskResult = Result<Vec<BoxTask>>;
+pub type BoxTask<Context> = Box<dyn Task<Context>>;
+pub type TaskResult<Context> = Result<Vec<BoxTask<Context>>>;

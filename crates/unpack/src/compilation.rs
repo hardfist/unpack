@@ -1,20 +1,23 @@
 use crate::{
-    compiler::CompilerOptions, dependency::{BoxDependency, Dependency, EntryDependency}, module::NormalModule, module_graph::ModuleGraph, module_scanner::ModuleScanner
+    compiler::CompilerOptions, dependency::{BoxDependency, Dependency, EntryDependency}, errors::UnpackDiagnostic, module::NormalModule, module_graph::ModuleGraph, module_scanner::ModuleScanner
 };
 use derive_new::new;
+use miette::Diagnostic;
 use std::{sync::Arc};
 
 pub struct Compilation {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
-    module_graph: ModuleGraph
+    module_graph: ModuleGraph,
+    diagnostics: Vec<UnpackDiagnostic>
 }
 
 impl Compilation {
     pub fn new(options: Arc<CompilerOptions>)-> Self{
         Self {
             options,
-            module_graph: Default::default()
+            module_graph: Default::default(),
+            diagnostics: Default::default()
         }
     }
     /// similar with webpack's make phase, which will make module graph
@@ -22,6 +25,8 @@ impl Compilation {
         println!("start scan");
         let mut module_scanner = ModuleScanner::new(self.options.clone(), self.options.context.clone());
         module_scanner.add_entry(&mut self.module_graph);
+        self.diagnostics.extend(module_scanner.make_artifact.diagnostics);
+        dbg!(&self.diagnostics);
 
     }
     /// similar with webpack's seal phase
