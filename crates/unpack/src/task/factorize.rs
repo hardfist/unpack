@@ -51,7 +51,9 @@ impl Task<MakeTaskContext> for FactorizeTask {
                 task_context.artifact.diagnostics.extend(diagnostics);
                 Ok(vec![
                     Box::new(
-                        AddTask{}
+                        AddTask{
+                            original_module_identifier: None
+                        }
                     )
                 ])
             }

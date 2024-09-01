@@ -13,3 +13,4 @@ dyn-clone = { workspace = true }
 downcast-rs = { workspace = true }
 dashmap = { workspace = true }
 thiserror = { workspace = true }
+rspack_sources = { workspace = true }

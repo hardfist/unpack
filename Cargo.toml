@@ -19,3 +19,4 @@ dyn-clone = { version = "1.0.17"}
 downcast-rs = { version = "1.2.1"}
 dashmap = { version = "6.0.1"}
 thiserror = { version = "1.0.63"}
+rspack_sources = { version = "0.3.0"}

@@ -1,8 +1,10 @@
+use crate::module::{ModuleId, ModuleIdentifier};
+
 use super::{MakeArtifact, MakeTaskContext, Task};
 
 #[derive(Debug)]
 pub(crate) struct AddTask {
-
+    pub(crate) original_module_identifier: Option<ModuleIdentifier>
 }
 
 impl Task<MakeTaskContext> for AddTask {
