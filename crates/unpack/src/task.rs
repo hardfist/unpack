@@ -7,10 +7,10 @@ pub(crate) use build::*;
 pub(crate) use factorize::*;
 pub(crate) use process_dependencies::*;
 pub(crate) enum Task {
-    AddTask(AddTask),
-    FactorizeTask(FactorizeTask),
-    ProcessDepsTask(ProcessDepsTask),
-    BuildTask(BuildTask)
+    Add(AddTask),
+    Factorize(FactorizeTask),
+    ProcessDeps(ProcessDepsTask),
+    Build(BuildTask)
 }
 impl Task  {
     pub(crate) fn run(&mut self){

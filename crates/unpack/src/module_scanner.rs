@@ -53,7 +53,7 @@ impl ModuleScanner {
             })
             .for_each(|(id, dep)| {
                 let dep_new = dep.clone();
-                task_queue.send(Task::FactorizeTask(FactorizeTask{
+                task_queue.send(Task::Factorize(FactorizeTask{
                     module_dependency: dep,
                     origin_module_id: None,
                     options: self.options.clone(),
