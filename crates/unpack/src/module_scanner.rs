@@ -42,6 +42,7 @@ impl ModuleScanner {
         &mut self,
         module_graph: &mut ModuleGraph,
         task_queue: &mut Sender<Task>,
+        task_count: &mut u32,
         dependencies: Vec<DependencyId>,
     ) {
         dependencies
@@ -63,6 +64,7 @@ impl ModuleScanner {
                         resolver_factory: self.resolver_factory.clone(),
                     }),
                 })).expect("send failed");
+                *task_count = *task_count + 1;
             });
     }
     pub fn resolve_module() {}
@@ -72,10 +74,13 @@ impl ModuleScanner {
 impl ModuleScanner {
     pub fn build_loop(&mut self, module_graph: &mut ModuleGraph, dependencies: Vec<DependencyId>) {
         let (mut send,recv)= mpsc::channel::<Task>();
+        let mut task_count = 0;
         // kick off entry dependencies to task_queue
-        self.handle_module_creation(module_graph, &mut send, dependencies);
-        while let Ok(task) = recv.recv() {
+        self.handle_module_creation(module_graph, &mut send,&mut task_count, dependencies);
+        while task_count>0 {
+            let task = recv.recv().unwrap();
             self.handle_task(task);
+            task_count = task_count -1;
         }
     }
     fn handle_task(&mut self, task: Task){
