@@ -39,6 +39,7 @@ impl ModuleScanner {
         let mut task_queue = TaskQueue::new();
         self.handle_module_creation(module_graph,&mut task_queue, dependencies);
         
+        
         while let Some(task) = task_queue.get_next_task() {
             match task.run(&mut ctx) {
                 Ok(new_task) => {

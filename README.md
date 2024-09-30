@@ -11,7 +11,6 @@ I realized a small bundler implementation would be useful to others who want to 
 
 
 ## Repository Layout
-* [`book/`](./book/)- Markdown files for the text of book.
 * `.`- Rust implementation of unpack
 
 > [!NOTE]  
