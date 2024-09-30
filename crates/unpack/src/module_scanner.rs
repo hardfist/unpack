@@ -79,7 +79,7 @@ impl ModuleScanner {
         }
     }
     fn handle_task(&mut self, task: Task){
-
+        println!("handle task: {:?}",task);
     }
     fn factorize() {}
     fn process_dependencies() {}
