@@ -1,11 +1,14 @@
 use index_vec::IndexVec;
 
-use crate::{dependency::{BoxDependency, DependencyId}, module::{BoxModule, ModuleId}};
+use crate::{
+    dependency::{BoxDependency, DependencyId},
+    module::{BoxModule, ModuleId},
+};
 
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 pub struct ModuleGraph {
     pub dependencies: IndexVec<DependencyId, BoxDependency>,
-    pub modules: IndexVec<ModuleId, BoxModule>
+    pub modules: IndexVec<ModuleId, BoxModule>,
 }
 
 impl ModuleGraph {

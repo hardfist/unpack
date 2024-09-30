@@ -1,5 +1,5 @@
-use derive_new::new;
 use camino::Utf8PathBuf;
+use derive_new::new;
 
 use super::{
     module_dependency::{AsModuleDependency, ModuleDependency},
@@ -7,7 +7,7 @@ use super::{
 };
 
 // dependency for entry
-#[derive(new,Debug,Clone)]
+#[derive(new, Debug, Clone)]
 pub struct EntryDependency {
     request: String,
     context: Utf8PathBuf,
@@ -28,5 +28,4 @@ impl AsModuleDependency for EntryDependency {
     fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
         Some(self)
     }
-    
 }

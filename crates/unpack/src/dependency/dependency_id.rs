@@ -10,6 +10,6 @@ define_index_type! {
 
 impl DependencyId {
     pub fn get_dependency<'a>(&self, mg: &'a ModuleGraph) -> &'a BoxDependency {
-    &mg.dependencies[*self]
+        &mg.dependencies[*self]
     }
 }

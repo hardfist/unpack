@@ -23,7 +23,7 @@ impl Compiler {
         println!("finish build");
         if !compilation.diagnostics.is_empty() {
             for diag in compilation.diagnostics {
-                println!("{:?}",diag);
+                println!("{:?}", diag);
             }
         }
     }

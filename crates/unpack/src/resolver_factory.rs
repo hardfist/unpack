@@ -1,6 +1,5 @@
-use std::{hash::{DefaultHasher, Hash}, sync::Arc};
+use std::sync::Arc;
 
-use dashmap::DashMap;
 use rspack_resolver::ResolveOptions;
 
 use crate::resolver::UnpackResolver;
@@ -11,21 +10,27 @@ pub struct ResolverFactory {
     // resolver_cache: DashMap<ResolveOptions, Arc<UnpackResolver>>
 }
 
+impl Default for ResolverFactory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ResolverFactory {
-    pub fn new()-> Self{
+    pub fn new() -> Self {
         Self {
             base_options: ResolveOptions::default(),
             base_resolver: UnpackResolver::new(ResolveOptions::default()),
         }
     }
-    pub fn new_with_base_option(options: ResolveOptions)-> Self{
+    pub fn new_with_base_option(options: ResolveOptions) -> Self {
         Self {
             base_options: options.clone(),
             base_resolver: UnpackResolver::new(options.clone()),
         }
     }
-    pub fn get(&self,options: ResolveOptions) -> Arc<UnpackResolver>{
-         // FIXME: support resolver cache
-         Arc::new(self.base_resolver.clone_with_options(options))
+    pub fn get(&self, options: ResolveOptions) -> Arc<UnpackResolver> {
+        // FIXME: support resolver cache
+        Arc::new(self.base_resolver.clone_with_options(options))
     }
 }

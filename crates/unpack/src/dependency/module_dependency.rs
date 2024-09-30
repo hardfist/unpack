@@ -1,15 +1,11 @@
 use std::fmt::Debug;
 
-use camino::Utf8PathBuf;
-use downcast_rs::impl_downcast;
 use dyn_clone::clone_trait_object;
 
 use super::Dependency;
 
-
 pub trait ModuleDependency: Dependency + Debug {
     fn request(&self) -> &str;
-    
 }
 clone_trait_object!(ModuleDependency);
 
@@ -21,5 +17,5 @@ pub trait AsModuleDependency {
     }
 }
 
-//impl_downcast!(AsModuleDependency); 
+//impl_downcast!(AsModuleDependency);
 pub type BoxModuleDependency = Box<dyn ModuleDependency>;

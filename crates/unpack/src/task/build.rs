@@ -1,4 +1,2 @@
 #[derive(Debug)]
-pub(crate) struct BuildTask {
-
-}
+pub(crate) struct BuildTask {}
