@@ -37,6 +37,7 @@ impl ModuleScanner {
         let make_artifact = mem::take(&mut self.make_artifact);
         let mut ctx = MakeTaskContext::new(make_artifact);
         let mut task_queue = TaskQueue::new();
+        // kick off entry dependencies to task_queue
         self.handle_module_creation(module_graph,&mut task_queue, dependencies);
         
         
