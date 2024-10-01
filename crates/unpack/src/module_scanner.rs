@@ -3,7 +3,7 @@ use crate::{
     resolver_factory::ResolverFactory,
     task::Task
 };
-use crate::task::{FactorizeTask, TaskQueue};
+use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask, TaskQueue};
 use camino::Utf8PathBuf;
 use std::collections::VecDeque;
 use std::sync::Arc;
@@ -48,9 +48,10 @@ impl ModuleScanner {
         dependencies
             .iter()
             .filter_map(|id| {
-                let dep = id.get_dependency(module_graph);
-                // only deal with module_dependency
-                dep.as_module_dependency().map(|_mod_dependency| (id, dep.clone()))
+                let dep = id.get_dependency(module_graph).clone();
+                dep.into_module_dependency().map(|mod_dependency| {
+                    (id, mod_dependency)
+                })
             })
             .for_each(|(_id, dep)| {
                 task_queue.push_back(Task::Factorize(FactorizeTask{
@@ -79,8 +80,27 @@ impl ModuleScanner {
         }
     }
     fn handle_task(&mut self, task: Task){
-        println!("handle task: {:?}",task);
+        match task {
+            Task::Factorize(factorize_task) => {
+                self.handle_factorize(factorize_task);
+            },
+            Task::Add(add_task) => {
+                self.handle_add(add_task);
+            },
+            Task::Build(task) => {
+                self.handle_build(task);
+            },
+            Task::ProcessDeps(task) => {
+                self.handle_process_deps(task);
+            }
+        }
     }
-    fn factorize() {}
-    fn process_dependencies() {}
+    fn handle_factorize(&self,_task: FactorizeTask) {}
+    fn handle_process_deps(&self,_task: ProcessDepsTask) {}
+    fn handle_add(&self, _task: AddTask) {
+
+    }
+    fn handle_build(&self, _task: BuildTask) {
+
+    }
 }

@@ -1,10 +1,10 @@
 use std::fmt::Debug;
 
-use dyn_clone::clone_trait_object;
+use dyn_clone::{clone_trait_object, DynClone};
 
 use super::Dependency;
 
-pub trait ModuleDependency: Dependency + Debug {
+pub trait ModuleDependency: Dependency + Debug + DynClone {
     fn request(&self) -> &str;
 }
 clone_trait_object!(ModuleDependency);
@@ -13,6 +13,9 @@ clone_trait_object!(ModuleDependency);
 
 pub trait AsModuleDependency {
     fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
+        None
+    }
+    fn into_module_dependency(self: Box<Self>) -> Option<Box<dyn ModuleDependency>> {
         None
     }
 }

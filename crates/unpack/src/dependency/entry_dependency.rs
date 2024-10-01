@@ -28,4 +28,7 @@ impl AsModuleDependency for EntryDependency {
     fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
         Some(self)
     }
+    fn into_module_dependency(self: Box<Self>) -> Option<Box<dyn ModuleDependency>> {
+        Some(self)
+    }
 }
