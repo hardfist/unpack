@@ -3,9 +3,10 @@ use crate::{
     resolver_factory::ResolverFactory,
     task::Task
 };
-use crate::task::FactorizeTask;
+use crate::task::{FactorizeTask, TaskQueue};
 use camino::Utf8PathBuf;
-use std::sync::{mpsc::{self, Sender}, Arc};
+use std::collections::VecDeque;
+use std::sync::Arc;
 
 use crate::{
     compiler::CompilerOptions,
@@ -41,8 +42,7 @@ impl ModuleScanner {
     pub fn handle_module_creation(
         &mut self,
         module_graph: &mut ModuleGraph,
-        task_queue: &mut Sender<Task>,
-        task_count: &mut u32,
+        task_queue: &mut VecDeque<Task>,
         dependencies: Vec<DependencyId>,
     ) {
         dependencies
@@ -54,7 +54,7 @@ impl ModuleScanner {
             })
             .for_each(|(id, dep)| {
                 let dep_new = dep.clone();
-                task_queue.send(Task::Factorize(FactorizeTask{
+                task_queue.push_back(Task::Factorize(FactorizeTask{
                     module_dependency: dep,
                     origin_module_id: None,
                     options: self.options.clone(),
@@ -63,8 +63,7 @@ impl ModuleScanner {
                         context: self.options.context.clone(),
                         resolver_factory: self.resolver_factory.clone(),
                     }),
-                })).expect("send failed");
-                *task_count = *task_count + 1;
+                }));
             });
     }
     pub fn resolve_module() {}
@@ -73,12 +72,11 @@ impl ModuleScanner {
 /// main loop task
 impl ModuleScanner {
     pub fn build_loop(&mut self, module_graph: &mut ModuleGraph, dependencies: Vec<DependencyId>) {
-        let (mut send,recv)= mpsc::channel::<Task>();
         let mut task_count = 0;
+        let mut task_queue = TaskQueue::new();
         // kick off entry dependencies to task_queue
-        self.handle_module_creation(module_graph, &mut send,&mut task_count, dependencies);
-        while task_count>0 {
-            let task = recv.recv().unwrap();
+        self.handle_module_creation(module_graph, &mut task_queue, dependencies);
+        while let Some(task) = task_queue.pop_front() {
             self.handle_task(task);
             task_count = task_count -1;
         }
