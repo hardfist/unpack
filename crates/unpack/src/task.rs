@@ -17,4 +17,4 @@ pub(crate) enum Task {
     Build(BuildTask)
 }
 
-pub type TaskQueue = VecDeque<Task>;
+pub(crate) type TaskQueue = VecDeque<Task>;

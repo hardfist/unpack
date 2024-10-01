@@ -13,7 +13,7 @@ use crate::{
     dependency::{DependencyId, EntryDependency},
     module_graph::ModuleGraph,
 };
-pub struct ModuleScanner {
+pub(crate) struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
@@ -50,10 +50,9 @@ impl ModuleScanner {
             .filter_map(|id| {
                 let dep = id.get_dependency(module_graph);
                 // only deal with module_dependency
-                dep.as_module_dependency().map(|mod_dependency| (id, dep.clone()))
+                dep.as_module_dependency().map(|_mod_dependency| (id, dep.clone()))
             })
-            .for_each(|(id, dep)| {
-                let dep_new = dep.clone();
+            .for_each(|(_id, dep)| {
                 task_queue.push_back(Task::Factorize(FactorizeTask{
                     module_dependency: dep,
                     origin_module_id: None,
@@ -72,13 +71,11 @@ impl ModuleScanner {
 /// main loop task
 impl ModuleScanner {
     pub fn build_loop(&mut self, module_graph: &mut ModuleGraph, dependencies: Vec<DependencyId>) {
-        let mut task_count = 0;
         let mut task_queue = TaskQueue::new();
         // kick off entry dependencies to task_queue
         self.handle_module_creation(module_graph, &mut task_queue, dependencies);
         while let Some(task) = task_queue.pop_front() {
             self.handle_task(task);
-            task_count = task_count -1;
         }
     }
     fn handle_task(&mut self, task: Task){

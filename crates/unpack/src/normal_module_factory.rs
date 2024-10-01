@@ -1,6 +1,6 @@
 use crate::{
     compiler::CompilerOptions,
-    dependency::{BoxDependency, ModuleDependency},
+    dependency::BoxDependency,
     errors::UnpackDiagnostic,
     module::NormalModule,
     resolver_factory::ResolverFactory,
