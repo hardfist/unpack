@@ -1,5 +1,4 @@
 use crate::{
-    normal_module_factory::NormalModuleFactory,
     resolver_factory::ResolverFactory,
     task::Task
 };
@@ -55,14 +54,8 @@ impl ModuleScanner {
             })
             .for_each(|(_id, dep)| {
                 task_queue.push_back(Task::Factorize(FactorizeTask{
-                    module_dependency: dep,
+                    module_dependencies: vec![dep],
                     origin_module_id: None,
-                    options: self.options.clone(),
-                    module_factory: Arc::new(NormalModuleFactory {
-                        options: self.options.clone(),
-                        context: self.options.context.clone(),
-                        resolver_factory: self.resolver_factory.clone(),
-                    }),
                 }));
             });
     }
@@ -95,7 +88,9 @@ impl ModuleScanner {
             }
         }
     }
-    fn handle_factorize(&self,_task: FactorizeTask) {}
+    fn handle_factorize(&self,_task: FactorizeTask) {
+
+    }
     fn handle_process_deps(&self,_task: ProcessDepsTask) {}
     fn handle_add(&self, _task: AddTask) {
 
