@@ -22,8 +22,7 @@ pub struct ModuleFactoryCreateData {
 }
 #[derive(Debug)]
 pub struct ModuleFactoryResult {
-    full_path: Utf8PathBuf,
-    module: NormalModule,
+   pub(crate) module: NormalModule,
 }
 impl NormalModuleFactory {
     pub fn create(&self, data: ModuleFactoryCreateData) -> Result<ModuleFactoryResult> {
@@ -38,7 +37,6 @@ impl NormalModuleFactory {
             .into_diagnostic()?;
         let module = NormalModule::new(resolve_result.path.to_string());
         Ok(ModuleFactoryResult {
-            full_path: resolve_result.path,
             module,
         })
     }

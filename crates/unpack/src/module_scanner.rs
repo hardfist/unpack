@@ -19,7 +19,8 @@ pub(crate) struct ModuleScanner {
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
-    diagnostics: Diagnostics
+    diagnostics: Diagnostics,
+    scanner_state: ScannerState
 }
 struct FactorizeParams {}
 impl ModuleScanner {
@@ -37,35 +38,35 @@ impl ModuleScanner {
             context,
             resolver_factory: resolver_factory.clone(),
             module_factory,
-            diagnostics: vec![]
+            diagnostics: vec![],
+            scanner_state: ScannerState::default()
             // make_artifact: Default::default(),
         }
     }
     // add_entry
-    pub fn add_entry(&mut self, module_graph: &mut ModuleGraph) {
+    pub fn add_entry(&mut self, state: &mut ScannerState) {
         let entry_dep = EntryDependency::new(
             self.options.entry.import.clone(),
             self.options.context.clone(),
         );
-        let entry_dep_id = module_graph.add_dependency(Box::new(entry_dep));
-        self.build_loop(module_graph, vec![entry_dep_id]);
+        let entry_dep_id = state.module_graph.add_dependency(Box::new(entry_dep));
+        self.build_loop( state,vec![entry_dep_id]);
     }
     pub fn handle_module_creation(
-        &mut self,
-        module_graph: &mut ModuleGraph,
-        task_queue: &mut VecDeque<Task>,
+        &self,
+        state: &mut ScannerState,
         dependencies: Vec<DependencyId>,
     ) {
         dependencies
             .iter()
             .filter_map(|id| {
-                let dep = id.get_dependency(module_graph).clone();
+                let dep = id.get_dependency(&state.module_graph).clone();
                 dep.into_module_dependency().map(|mod_dependency| {
                     (id, mod_dependency)
                 })
             })
             .for_each(|(_id, dep)| {
-                task_queue.push_back(Task::Factorize(FactorizeTask{
+                state.task_queue.push_back(Task::Factorize(FactorizeTask{
                     module_dependency: dep,
                     origin_module_id: None,
                 }));
@@ -74,20 +75,26 @@ impl ModuleScanner {
     pub fn resolve_module() {}
 }
 
+#[derive(Debug,Default)]
+pub(crate) struct ScannerState {
+    module_graph: ModuleGraph,
+    task_queue: VecDeque<Task>,
+    diagnostics: Diagnostics
+}
 /// main loop task
 impl ModuleScanner {
-    pub fn build_loop(&mut self, module_graph: &mut ModuleGraph, dependencies: Vec<DependencyId>) {
+    pub fn build_loop(&self,state: &mut ScannerState, dependencies: Vec<DependencyId>) {
         let mut task_queue = TaskQueue::new();
         // kick off entry dependencies to task_queue
-        self.handle_module_creation(module_graph, &mut task_queue, dependencies);
+        self.handle_module_creation(state,dependencies);
         while let Some(task) = task_queue.pop_front() {
-            self.handle_task(task);
+            self.handle_task(task, state);
         }
     }
-    fn handle_task(&mut self, task: Task){
+    fn handle_task(&self, task: Task,state:&mut ScannerState){
         match task {
             Task::Factorize(factorize_task) => {
-                self.handle_factorize(factorize_task);
+                self.handle_factorize(state,factorize_task);
             },
             Task::Add(add_task) => {
                 self.handle_add(add_task);
@@ -100,17 +107,20 @@ impl ModuleScanner {
             }
         }
     }
-    fn handle_factorize(&mut self,task: FactorizeTask) {
+    fn handle_factorize(&self,state: &mut ScannerState,task: FactorizeTask) {
         match self.module_factory.create(ModuleFactoryCreateData{
             module_dependency: task.module_dependency,
             context: self.options.context.clone(),
             options: self.options.clone()
         }) {
-            Ok(_factory_result) => {
-                
+            Ok(factory_result) => {
+               let module_id = state.module_graph.add_module(Box::new(factory_result.module));
+               state.task_queue.push_back(Task::Add(AddTask{
+                 module_id
+               }));
             },
             Err(err) => {
-                self.diagnostics.push(err);
+                state.diagnostics.push(err);
             }
         }
         

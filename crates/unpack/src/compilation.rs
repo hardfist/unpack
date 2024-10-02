@@ -1,5 +1,5 @@
 use crate::{
-    compiler::CompilerOptions, errors::Diagnostics, module_graph::ModuleGraph, module_scanner::ModuleScanner
+    compiler::CompilerOptions, errors::Diagnostics, module_graph::ModuleGraph, module_scanner::{ModuleScanner, ScannerState}
 };
 use std::sync::Arc;
 
@@ -23,7 +23,8 @@ impl Compilation {
         println!("start scan");
         let mut module_scanner =
             ModuleScanner::new(self.options.clone(), self.options.context.clone());
-        module_scanner.add_entry(&mut self.module_graph);
+        let mut scanner_state = ScannerState::default();
+        module_scanner.add_entry(&mut scanner_state);
         // self.diagnostics
         //     .extend(module_scanner.make_artifact.diagnostics);
     }

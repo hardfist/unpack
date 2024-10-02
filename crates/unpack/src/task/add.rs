@@ -1,7 +1,7 @@
-use crate::module::ModuleIdentifier;
+use crate::module::ModuleId;
 
 
 #[derive(Debug)]
 pub(crate) struct AddTask {
-    pub(crate) original_module_identifier: Option<ModuleIdentifier>,
+    pub(crate) module_id: ModuleId,
 }
