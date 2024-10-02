@@ -1,3 +1,5 @@
+use crate::errors::Diagnostics;
+use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::{
     resolver_factory::ResolverFactory,
     task::Task
@@ -16,16 +18,26 @@ pub(crate) struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
+    module_factory: Arc<NormalModuleFactory>,
+    diagnostics: Diagnostics
 }
 struct FactorizeParams {}
 impl ModuleScanner {
     pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf) -> Self {
+        let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
+                options.resolve.clone(),
+            ));
+        let module_factory = Arc::new(NormalModuleFactory{
+                options: options.clone(),
+                resolver_factory: resolver_factory.clone(),
+                context: context.clone()
+            });
         Self {
             options: options.clone(),
             context,
-            resolver_factory: Arc::new(ResolverFactory::new_with_base_option(
-                options.resolve.clone(),
-            )),
+            resolver_factory: resolver_factory.clone(),
+            module_factory,
+            diagnostics: vec![]
             // make_artifact: Default::default(),
         }
     }
@@ -54,7 +66,7 @@ impl ModuleScanner {
             })
             .for_each(|(_id, dep)| {
                 task_queue.push_back(Task::Factorize(FactorizeTask{
-                    module_dependencies: vec![dep],
+                    module_dependency: dep,
                     origin_module_id: None,
                 }));
             });
@@ -88,8 +100,20 @@ impl ModuleScanner {
             }
         }
     }
-    fn handle_factorize(&self,_task: FactorizeTask) {
-
+    fn handle_factorize(&mut self,task: FactorizeTask) {
+        match self.module_factory.create(ModuleFactoryCreateData{
+            module_dependency: task.module_dependency,
+            context: self.options.context.clone(),
+            options: self.options.clone()
+        }) {
+            Ok(_factory_result) => {
+                
+            },
+            Err(err) => {
+                self.diagnostics.push(err);
+            }
+        }
+        
     }
     fn handle_process_deps(&self,_task: ProcessDepsTask) {}
     fn handle_add(&self, _task: AddTask) {

@@ -1,8 +1,5 @@
 use crate::{
-    compiler::CompilerOptions,
-    errors::UnpackDiagnostic,
-    module_graph::ModuleGraph,
-    module_scanner::ModuleScanner,
+    compiler::CompilerOptions, errors::Diagnostics, module_graph::ModuleGraph, module_scanner::ModuleScanner
 };
 use std::sync::Arc;
 
@@ -10,7 +7,7 @@ pub struct Compilation {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
     module_graph: ModuleGraph,
-    pub(crate) diagnostics: Vec<UnpackDiagnostic>,
+    pub(crate) diagnostics: Diagnostics,
 }
 
 impl Compilation {

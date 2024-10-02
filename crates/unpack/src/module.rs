@@ -4,7 +4,8 @@ use std::fmt::Debug;
 pub use module_id::*;
 use rspack_sources::BoxSource;
 
-use crate::errors::UnpackDiagnostic;
+use crate::errors::Diagnostics;
+
 pub trait Module: Debug {}
 
 pub type BoxModule = Box<dyn Module>;
@@ -14,7 +15,7 @@ pub struct ModuleIdentifier(String);
 #[derive(Debug)]
 pub struct NormalModule {
     id: ModuleIdentifier,
-    diagnostics: Vec<UnpackDiagnostic>,
+    diagnostics: Diagnostics,
     original_source: Option<BoxSource>,
 }
 

@@ -1,5 +1,6 @@
 use miette::Diagnostic;
 use thiserror::Error;
+use miette::Report;
 
 #[derive(Debug, Error, Diagnostic)]
 #[error("resolve error")]
@@ -9,4 +10,4 @@ pub struct ResolveError {
     source: rspack_resolver::ResolveError,
 }
 
-pub type UnpackDiagnostic = Box<dyn Diagnostic + Send + Sync + 'static>;
+pub type Diagnostics = Vec<Report>;

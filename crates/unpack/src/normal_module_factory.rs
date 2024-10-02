@@ -1,7 +1,6 @@
 use crate::{
     compiler::CompilerOptions,
-    dependency::BoxDependency,
-    errors::UnpackDiagnostic,
+    dependency::BoxModuleDependency,
     module::NormalModule,
     resolver_factory::ResolverFactory,
 };
@@ -17,10 +16,9 @@ pub struct NormalModuleFactory {
 }
 #[derive(Debug)]
 pub struct ModuleFactoryCreateData {
-    pub module_dependency: BoxDependency,
+    pub module_dependency: BoxModuleDependency,
     pub context: Utf8PathBuf,
-    pub options: Arc<CompilerOptions>,
-    pub diagnostics: Vec<UnpackDiagnostic>,
+    pub options: Arc<CompilerOptions>
 }
 #[derive(Debug)]
 pub struct ModuleFactoryResult {
@@ -28,14 +26,11 @@ pub struct ModuleFactoryResult {
     module: NormalModule,
 }
 impl NormalModuleFactory {
-    pub fn create(&self, data: &mut ModuleFactoryCreateData) -> Result<ModuleFactoryResult> {
+    pub fn create(&self, data: ModuleFactoryCreateData) -> Result<ModuleFactoryResult> {
         let context = data.context.clone();
         let request = data
             .module_dependency
-            .as_module_dependency()
-            .expect("normal module should have module dependency")
             .request();
-        dbg!(&context, &request);
         let resolve_result = self
             .resolver_factory
             .base_resolver
