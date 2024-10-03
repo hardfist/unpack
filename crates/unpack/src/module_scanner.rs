@@ -1,4 +1,5 @@
 use crate::errors::Diagnostics;
+use crate::module::BuildContext;
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::{
     resolver_factory::ResolverFactory,
@@ -97,13 +98,13 @@ impl ModuleScanner {
                 self.handle_factorize(state,factorize_task);
             },
             Task::Add(add_task) => {
-                self.handle_add(add_task);
+                self.handle_add(state,add_task);
             },
             Task::Build(task) => {
-                self.handle_build(task);
+                self.handle_build(state,task);
             },
             Task::ProcessDeps(task) => {
-                self.handle_process_deps(task);
+                self.handle_process_deps(state,task);
             }
         }
     }
@@ -125,11 +126,17 @@ impl ModuleScanner {
         }
         
     }
-    fn handle_process_deps(&self,_task: ProcessDepsTask) {}
-    fn handle_add(&self, _task: AddTask) {
-
+    fn handle_process_deps(&self,state: &mut ScannerState,_task: ProcessDepsTask) {}
+    fn handle_add(&self,state: &mut ScannerState, task: AddTask) {
+        // do nothing here, cause we don't need module_graph_module here
+        state.task_queue.push_back(Task::Build(BuildTask {
+            module_id: task.module_id
+        }));
     }
-    fn handle_build(&self, _task: BuildTask) {
-
+    fn handle_build(&self,state: &mut ScannerState, task: BuildTask) {
+        let module = state.module_graph.module_by_id_mut(task.module_id);
+        let build_result = module.build(BuildContext{
+            options: self.options.clone()
+        });
     }
 }

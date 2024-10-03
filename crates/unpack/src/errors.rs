@@ -1,3 +1,4 @@
+pub use miette;
 use miette::Diagnostic;
 use thiserror::Error;
 use miette::Report;
@@ -11,3 +12,4 @@ pub struct ResolveError {
 }
 
 pub type Diagnostics = Vec<Report>;
+

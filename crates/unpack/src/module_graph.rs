@@ -22,4 +22,13 @@ impl ModuleGraph {
     pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
         &self.dependencies[id]
     }
+     pub fn dependency_by_id_mut(&mut self, id: DependencyId) -> &mut BoxDependency {
+        &mut self.dependencies[id]
+    }
+    pub fn module_by_id(&self, id: ModuleId) -> &BoxModule {
+        &self.modules[id]
+    }
+    pub fn module_by_id_mut(&mut self, id: ModuleId) -> &mut BoxModule {
+        &mut self.modules[id]
+    }
 }

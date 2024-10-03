@@ -35,7 +35,8 @@ impl NormalModuleFactory {
             .base_resolver
             .resolve(&context, request)
             .into_diagnostic()?;
-        let module = NormalModule::new(resolve_result.path.to_string());
+        let resource_path = resolve_result.path;
+        let module = NormalModule::new(request.to_string(),resource_path);
         Ok(ModuleFactoryResult {
             module,
         })
