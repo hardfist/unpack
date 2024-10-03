@@ -1,9 +1,10 @@
 use camino::Utf8PathBuf;
+use miette::IntoDiagnostic;
 use rspack_sources::BoxSource;
 use crate::errors::Diagnostics;
 use crate::errors::miette::Result;
 
-use super::{BuildContext, BuildResult, Module, ModuleIdentifier};
+use super::{ast::parse, BuildContext, BuildResult, Module, ModuleIdentifier};
 #[derive(Debug)]
 pub struct NormalModule {
     id: ModuleIdentifier,
@@ -14,7 +15,11 @@ pub struct NormalModule {
 }
 impl Module for NormalModule {
     fn build(&mut self,build_context: BuildContext) -> Result<BuildResult> {
-        Ok(BuildResult{})
+        let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
+        let ast = parse(content)?;
+        Ok(BuildResult{
+            ast
+        })
     }
 }
 impl NormalModule {
@@ -27,6 +32,10 @@ impl NormalModule {
             diagnostics: vec![],
             original_source: None,
         }
+    }
+    pub(crate) fn parse(){
+        
+
     }
     fn gen_id(request: &str) -> ModuleIdentifier {
         ModuleIdentifier(request.to_string())

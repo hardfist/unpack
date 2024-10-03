@@ -67,6 +67,7 @@ impl ModuleScanner {
                 })
             })
             .for_each(|(_id, dep)| {
+                
                 state.task_queue.push_back(Task::Factorize(FactorizeTask{
                     module_dependency: dep,
                     origin_module_id: None,
@@ -85,10 +86,10 @@ pub(crate) struct ScannerState {
 /// main loop task
 impl ModuleScanner {
     pub fn build_loop(&self,state: &mut ScannerState, dependencies: Vec<DependencyId>) {
-        let mut task_queue = TaskQueue::new();
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state,dependencies);
-        while let Some(task) = task_queue.pop_front() {
+        while let Some(task) = state.task_queue.pop_front() {
+            
             self.handle_task(task, state);
         }
     }

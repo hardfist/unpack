@@ -1,8 +1,10 @@
 mod module_id;
 mod normal_module;
+mod ast;
 use std::fmt::Debug;
 use std::sync::Arc;
 
+use ast::AST;
 pub use normal_module::*;
 pub use module_id::*;
 
@@ -12,7 +14,7 @@ use crate::errors::miette::Result;
 
 #[derive(Debug)]
 pub(crate) struct BuildResult {
-
+    ast: AST
 }
 pub(crate) struct BuildContext {
    pub(crate) options: Arc<CompilerOptions>
