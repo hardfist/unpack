@@ -139,5 +139,6 @@ impl ModuleScanner {
         let build_result = module.build(BuildContext{
             options: self.options.clone()
         });
+        dbg!(build_result);
     }
 }

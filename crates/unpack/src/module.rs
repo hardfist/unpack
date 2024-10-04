@@ -10,11 +10,12 @@ pub use module_id::*;
 
 use crate::compiler::CompilerOptions;
 
+use crate::dependency::BoxDependency;
 use crate::errors::miette::Result;
 
 #[derive(Debug)]
 pub(crate) struct BuildResult {
-    ast: AST
+    dependencies: Vec<BoxDependency>
 }
 pub(crate) struct BuildContext {
    pub(crate) options: Arc<CompilerOptions>

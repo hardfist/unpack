@@ -9,7 +9,7 @@ use swc_core::common::{FileName, SourceMap, Spanned, DUMMY_SP};
 
 #[derive(Debug)]
 pub struct AST {
-    program:Program
+    pub(crate) program:Program
 }
 pub fn parse(content: String) -> Result<AST>{
     let cm = SourceMap::default();
