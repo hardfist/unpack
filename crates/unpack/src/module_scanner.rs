@@ -20,7 +20,6 @@ pub(crate) struct ModuleScanner {
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
-    diagnostics: Diagnostics,
     scanner_state: ScannerState
 }
 struct FactorizeParams {}
@@ -39,7 +38,6 @@ impl ModuleScanner {
             context,
             resolver_factory: resolver_factory.clone(),
             module_factory,
-            diagnostics: vec![],
             scanner_state: ScannerState::default()
             // make_artifact: Default::default(),
         }
@@ -136,9 +134,17 @@ impl ModuleScanner {
     }
     fn handle_build(&self,state: &mut ScannerState, task: BuildTask) {
         let module = state.module_graph.module_by_id_mut(task.module_id);
-        let build_result = module.build(BuildContext{
+        match module.build(BuildContext{
             options: self.options.clone()
-        });
-        dbg!(build_result);
+        }) {
+            Ok(result) => {
+                dbg!(result);
+            },
+            Err(err) => {
+                state.diagnostics.push(err);
+            }
+        };
+        dbg!(&state.diagnostics);
+        
     }
 }

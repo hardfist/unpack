@@ -14,4 +14,4 @@ downcast-rs = { workspace = true }
 dashmap = { workspace = true }
 thiserror = { workspace = true }
 rspack_sources = { workspace = true }
-swc_core = { workspace = true, features = ["__parser", "__utils", "base", "ecma_quote"]}
+swc_core = { workspace = true, features = ["__parser", "common","__utils", "base", "ecma_quote"]}

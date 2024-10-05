@@ -42,7 +42,7 @@ impl NormalModule {
         }
     }
     fn parse(&self,content:String) -> Result<ParseResult>{
-         let ast = parse(content)?;
+        let ast = parse(content)?;
         // Analyze the AST for all import dependencies
         let mut requests = Vec::new();
         
