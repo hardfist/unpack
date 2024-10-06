@@ -6,7 +6,7 @@ use super::{chunk_graph::ChunkGraph, chunk_group_id::ChunkGroupId};
 use crate::{
     compiler::CompilerOptions,
     errors::Diagnostics,
-    module::{EntryData, ModuleId},
+    module::{EntryData, ModuleGraph, ModuleId},
 };
 
 pub struct ChunkLinker {
@@ -31,30 +31,36 @@ impl ChunkLinker {
         &self,
         state: &mut LinkerState,
     ) -> IndexMap<ChunkGroupId, Vec<ModuleId>> {
-        let entrypoint_module_map = IndexMap::default();
-        for entry in &self.options.entry {
-            let chunk_id = state.chunk_graph.create_chunk(Some(entry.name.clone()));
+        let mut entrypoint_module_map = IndexMap::default();
+        for (name,entry_data) in &self.entries {
+            let chunk_id = state.chunk_graph.create_chunk(Some(name.clone()));
             let chunk_group_id = state
                 .chunk_graph
-                .create_chunk_group(chunk_id, Some(entry.name.clone()));
+                .create_chunk_group(chunk_id, Some(name.clone()));
             state
                 .entry_points
-                .insert(entry.name.clone(), chunk_group_id);
-            // entrypoint_module_map.insert(chunk_group_id, )
+                .insert(name.clone(), chunk_group_id);
+            let module_ids = entry_data.dependencies.iter().map(|dep_id| {
+                state.module_graph.module_id_by_dependency_id(*dep_id)
+            }).collect::<Vec<_>>();
+            entrypoint_module_map.insert(chunk_group_id, module_ids);
+            
         }
         entrypoint_module_map
     }
 }
 pub struct LinkerState {
     pub chunk_graph: ChunkGraph,
+    pub module_graph: ModuleGraph,
     pub entry_points: IndexMap<String, ChunkGroupId>,
 }
 
 impl LinkerState {
-    pub fn new() -> Self {
+    pub fn new(module_graph: ModuleGraph) -> Self {
         Self {
             chunk_graph: ChunkGraph::default(),
             entry_points: Default::default(),
+            module_graph
         }
     }
 }

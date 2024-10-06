@@ -16,7 +16,7 @@ use crate::{
 use super::module_graph::ModuleGraph;
 #[derive(Debug)]
 pub struct EntryData {
-    dependencies: Vec<DependencyId>,
+    pub dependencies: Vec<DependencyId>,
     name: Option<String>,
 }
 pub struct ModuleScanner {
@@ -95,7 +95,7 @@ impl ModuleScanner {
 
 #[derive(Debug, Default)]
 pub struct ScannerState {
-    module_graph: ModuleGraph,
+    pub module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
     pub diagnostics: Diagnostics,
     pub entries: IndexMap<String, EntryData>,

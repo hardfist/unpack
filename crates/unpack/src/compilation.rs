@@ -32,7 +32,7 @@ impl Compilation {
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
     pub fn link(&mut self, scanner_state: ScannerState) -> LinkerState {
-        let mut linker_state = LinkerState::new();
+        let mut linker_state = LinkerState::new(scanner_state.module_graph);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.prepare_input_entrypoints_and_modules(&mut linker_state);
         linker.build_chunk_graph(&mut linker_state);

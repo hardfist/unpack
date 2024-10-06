@@ -9,7 +9,6 @@ use swc_core::ecma::utils::swc_ecma_ast;
 use super::{ast::parse, BuildContext, BuildResult, Module, ModuleIdentifier};
 #[derive(Debug)]
 pub struct NormalModule {
-    id: ModuleIdentifier,
     context: Option<Utf8PathBuf>,
     resource_path: Utf8PathBuf,
     request: String,
@@ -33,10 +32,8 @@ impl Module for NormalModule {
 }
 impl NormalModule {
     pub fn new(request: String, resource_path: Utf8PathBuf) -> Self {
-        let id = Self::gen_id(&request);
         let context = resource_path.parent().map(|x| x.to_owned());
         Self {
-            id,
             request,
             resource_path,
             diagnostics: vec![],
@@ -62,8 +59,5 @@ impl NormalModule {
             .map(|request| Box::new(HarmonyImportSideEffectDependency { request }) as BoxDependency)
             .collect::<Vec<_>>();
         Ok(ParseResult { dependencies })
-    }
-    fn gen_id(request: &str) -> ModuleIdentifier {
-        ModuleIdentifier(request.to_string())
     }
 }
