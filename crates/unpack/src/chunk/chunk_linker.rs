@@ -4,14 +4,18 @@ use indexmap::IndexMap;
 
 use super::{chunk_graph::ChunkGraph, ChunkGroupId, ChunkId};
 use crate::{
-    compiler::CompilerOptions,
-    errors::Diagnostics,
-    module::{EntryData, ModuleGraph, ModuleId},
+    compiler::CompilerOptions, dependency::BlockId, errors::Diagnostics, module::{EntryData, ModuleGraph, ModuleId}
 };
 enum QueueAction {
    AddAndEnterEntryModule(AddAndEnterEntryModule),
    AddAndEnterModule(AddAndEnterModule),
-   LeaveModule(LeaveModule)
+   LeaveModule(LeaveModule),
+   ProcessBlock(ProcessBlock)
+}
+struct ProcessBlock {
+    module_id: ModuleId,
+    block_id: BlockId,
+    chunk: ChunkId
 }
 struct AddAndEnterEntryModule {
 
@@ -71,6 +75,9 @@ impl ChunkLinker {
 
     }
     pub fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
+
+    }
+    pub fn process_block(&mut self,state: &mut LinkerState, action: ProcessBlock){
 
     }
     pub fn prepare_input_entrypoints_and_modules(
