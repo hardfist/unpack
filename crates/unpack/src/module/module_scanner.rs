@@ -4,7 +4,6 @@ use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory}
 use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
-use dashmap::Entry;
 use indexmap::IndexMap;
 use std::collections::VecDeque;
 use std::sync::Arc;
@@ -17,7 +16,7 @@ use crate::{
 
 use super::module_graph::ModuleGraph;
 #[derive(Debug)]
-struct EntryData {
+pub struct EntryData {
     dependencies: Vec<DependencyId>,
     name: Option<String>
 }
@@ -97,7 +96,7 @@ pub struct ScannerState {
     module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
     pub diagnostics: Diagnostics,
-    entries: IndexMap<String, EntryData>
+    pub entries: IndexMap<String, EntryData>
 }
 /// main loop task
 impl ModuleScanner {

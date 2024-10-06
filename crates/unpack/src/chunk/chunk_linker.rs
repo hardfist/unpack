@@ -2,21 +2,23 @@ use std::sync::Arc;
 
 use indexmap::IndexMap;
 
-use super::{chunk_graph::ChunkGraph, chunk_group::ChunkGroup, chunk_group_id::ChunkGroupId};
-use crate::{compilation::Compilation, compiler::CompilerOptions, errors::Diagnostics, module::ModuleId};
+use super::{chunk_graph::ChunkGraph, chunk_group_id::ChunkGroupId};
+use crate::{ compiler::CompilerOptions, errors::Diagnostics, module::{EntryData, ModuleId}};
 
 pub struct ChunkLinker {
     pub diagnostics: Diagnostics,
-    pub options: Arc<CompilerOptions>
+    pub options: Arc<CompilerOptions>,
+    entries: IndexMap<String, EntryData>
 }
 impl ChunkLinker {
-    pub fn new(options: Arc<CompilerOptions>) -> Self{
+    pub fn new(options: Arc<CompilerOptions>, entries: IndexMap<String,EntryData>) -> Self{
         Self{
             diagnostics: vec![],
-            options
+            options,
+            entries
         }
     }
-    pub fn build_chunk_graph(&self,state: &mut LinkerState) {
+    pub fn build_chunk_graph(&self,_state: &mut LinkerState) {
         //let mut visited = FxHashSet::default();
         fn visit_modules() {}
     }

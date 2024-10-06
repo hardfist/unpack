@@ -18,8 +18,9 @@ impl Compiler {
     pub fn build(&mut self) {
         println!("start build");
         let mut compilation = Compilation::new(Arc::new(self.options.clone()));
-        compilation.scan();
-        compilation.link();
+        let scanner_state = compilation.scan();
+        let linker_state = compilation.link(scanner_state);
+        compilation.emit(linker_state);
         println!("finish build");
         if !compilation.diagnostics.is_empty() {
             for diag in compilation.diagnostics {

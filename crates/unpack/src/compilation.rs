@@ -19,27 +19,25 @@ impl Compilation {
         }
     }
     /// similar with webpack's make phase, which will make module graph
-    pub fn scan(&mut self) {
+    pub fn scan(&mut self) -> ScannerState {
         println!("start scan");
-        let mut module_scanner =
+        let module_scanner =
             ModuleScanner::new(self.options.clone(), self.options.context.clone());
         let mut scanner_state = ScannerState::default();
         module_scanner.add_entries(&mut scanner_state);
-        self.diagnostics.extend(scanner_state.diagnostics);
-        // self.diagnostics
-        //     .extend(module_scanner.make_artifact.diagnostics);
+        scanner_state
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&mut self) {
+    pub fn link(&mut self, scanner_state: ScannerState) -> LinkerState  {
         let mut linker_state = LinkerState::new();
-        let linker = ChunkLinker::new(self.options.clone());
+        let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.prepare_input_entrypoints_and_modules(&mut linker_state);
         linker.build_chunk_graph(&mut linker_state);
-        
-        println!("start link")
+        linker_state
     }
 
-    // build module graph
-    pub fn build_module_graph() {}
+    pub fn emit(&mut self, _linker_state: LinkerState){
+
+    }
 }
