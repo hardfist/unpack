@@ -1,13 +1,15 @@
 mod ast;
-mod module_id;
-mod normal_module;
-mod module_scanner;
+mod connection;
 mod module_graph;
+mod module_id;
+mod module_scanner;
+mod normal_module;
 use camino::Utf8Path;
-pub use module_id::*;
-pub use normal_module::*;
-pub use module_scanner::*;
+pub use connection::*;
 pub use module_graph::*;
+pub use module_id::*;
+pub use module_scanner::*;
+pub use normal_module::*;
 use std::fmt::Debug;
 use std::sync::Arc;
 

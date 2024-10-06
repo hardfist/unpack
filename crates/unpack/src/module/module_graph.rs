@@ -1,34 +1,27 @@
 use index_vec::IndexVec;
-
+use indexmap::IndexMap;
+mod module_graph_connection;
+mod module_graph_dependency;
+mod module_graph_module;
 use crate::{
     dependency::{BoxDependency, DependencyId},
     module::{BoxModule, ModuleId},
 };
 
+use super::{Connection, ConnectionId};
+
 #[derive(Debug, Default)]
 pub struct ModuleGraph {
     pub dependencies: IndexVec<DependencyId, BoxDependency>,
     pub modules: IndexVec<ModuleId, BoxModule>,
+    pub connections: IndexVec<ConnectionId, Connection>,
+    pub dep2connection: IndexMap<DependencyId, ConnectionId>,
 }
 
 impl ModuleGraph {
-    pub fn add_dependency(&mut self, dep: BoxDependency) -> DependencyId {
-        self.dependencies.push(dep)
-    }
-    pub fn add_module(&mut self, module: BoxModule) -> ModuleId {
-        self.modules.push(module)
-    }
-    // get dependency by id
-    pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
-        &self.dependencies[id]
-    }
-    pub fn dependency_by_id_mut(&mut self, id: DependencyId) -> &mut BoxDependency {
-        &mut self.dependencies[id]
-    }
-    pub fn module_by_id(&self, id: ModuleId) -> &BoxModule {
-        &self.modules[id]
-    }
-    pub fn module_by_id_mut(&mut self, id: ModuleId) -> &mut BoxModule {
-        &mut self.modules[id]
+    pub fn module_id_by_dependency_id(&self, dep_id: DependencyId) -> ModuleId {
+        let connection_id = self.dep2connection.get(&dep_id).expect("get connection failed");
+        let connection = self.connection_by_id(*connection_id);
+        connection.resolved_module_id
     }
 }

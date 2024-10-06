@@ -11,14 +11,13 @@ use std::sync::Arc;
 use crate::{
     compiler::CompilerOptions,
     dependency::{DependencyId, EntryDependency},
-    
 };
 
 use super::module_graph::ModuleGraph;
 #[derive(Debug)]
 pub struct EntryData {
     dependencies: Vec<DependencyId>,
-    name: Option<String>
+    name: Option<String>,
 }
 pub struct ModuleScanner {
     options: Arc<CompilerOptions>,
@@ -56,10 +55,13 @@ impl ModuleScanner {
                 let entry_dep =
                     EntryDependency::new(entry.import.clone(), self.options.context.clone());
                 let entry_dep_id = state.module_graph.add_dependency(Box::new(entry_dep));
-                state.entries.insert(entry.name.clone(), EntryData {
-                    name: Some(entry.name.clone()),
-                    dependencies: vec![entry_dep_id]
-                });
+                state.entries.insert(
+                    entry.name.clone(),
+                    EntryData {
+                        name: Some(entry.name.clone()),
+                        dependencies: vec![entry_dep_id],
+                    },
+                );
                 return entry_dep_id;
             })
             .collect::<Vec<_>>();
@@ -96,7 +98,7 @@ pub struct ScannerState {
     module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
     pub diagnostics: Diagnostics,
-    pub entries: IndexMap<String, EntryData>
+    pub entries: IndexMap<String, EntryData>,
 }
 /// main loop task
 impl ModuleScanner {
