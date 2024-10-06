@@ -20,7 +20,7 @@ pub struct ModuleFactoryCreateData {
 }
 #[derive(Debug)]
 pub struct ModuleFactoryResult {
-    pub(crate) module: NormalModule,
+    pub module: NormalModule,
 }
 impl NormalModuleFactory {
     pub fn create(&self, data: ModuleFactoryCreateData) -> Result<ModuleFactoryResult> {

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-pub mod build_chunk_graph;
 pub mod bundler;
+pub mod chunk;
 pub mod compilation;
 pub mod compiler;
 pub mod dependency;
@@ -12,4 +12,4 @@ pub mod normal_module_factory;
 pub mod resolver;
 pub mod resolver_factory;
 pub mod task;
-pub(crate) mod utils;
+pub mod utils;

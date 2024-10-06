@@ -1,16 +1,13 @@
 use crate::{
-    compiler::CompilerOptions,
-    errors::Diagnostics,
-    module_graph::ModuleGraph,
-    module_scanner::{ModuleScanner, ScannerState},
+    chunk::chunk_linker::{ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module_graph::ModuleGraph, module_scanner::{ModuleScanner, ScannerState}
 };
 use std::sync::Arc;
 
 pub struct Compilation {
     #[allow(dead_code)]
-    pub(crate) options: Arc<CompilerOptions>,
+    pub options: Arc<CompilerOptions>,
     module_graph: ModuleGraph,
-    pub(crate) diagnostics: Diagnostics,
+    pub diagnostics: Diagnostics,
 }
 
 impl Compilation {
@@ -35,6 +32,9 @@ impl Compilation {
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
     pub fn link(&mut self) {
+        let linker_state = LinkerState::new();
+        let linker = ChunkLinker::new();
+
         println!("start link")
     }
 

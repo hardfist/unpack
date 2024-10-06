@@ -1,1 +1,1 @@
-pub(crate) mod path;
+pub mod path;

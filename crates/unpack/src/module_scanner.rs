@@ -13,7 +13,7 @@ use crate::{
     module_graph::ModuleGraph,
 };
 
-pub(crate) struct ModuleScanner {
+pub struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
@@ -81,10 +81,10 @@ impl ModuleScanner {
 }
 
 #[derive(Debug, Default)]
-pub(crate) struct ScannerState {
+pub struct ScannerState {
     module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
-    pub(crate) diagnostics: Diagnostics,
+    pub diagnostics: Diagnostics,
 }
 /// main loop task
 impl ModuleScanner {

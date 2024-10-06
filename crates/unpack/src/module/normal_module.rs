@@ -32,7 +32,7 @@ impl Module for NormalModule {
     }
 }
 impl NormalModule {
-    pub(crate) fn new(request: String, resource_path: Utf8PathBuf) -> Self {
+    pub fn new(request: String, resource_path: Utf8PathBuf) -> Self {
         let id = Self::gen_id(&request);
         let context = resource_path.parent().map(|x| x.to_owned());
         Self {

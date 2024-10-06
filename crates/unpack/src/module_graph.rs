@@ -7,28 +7,28 @@ use crate::{
 
 #[derive(Debug, Default)]
 pub struct ModuleGraph {
-    pub(crate) dependencies: IndexVec<DependencyId, BoxDependency>,
-    pub(crate) modules: IndexVec<ModuleId, BoxModule>,
+    pub dependencies: IndexVec<DependencyId, BoxDependency>,
+    pub modules: IndexVec<ModuleId, BoxModule>,
 }
 
 impl ModuleGraph {
-    pub(crate) fn add_dependency(&mut self, dep: BoxDependency) -> DependencyId {
+    pub fn add_dependency(&mut self, dep: BoxDependency) -> DependencyId {
         self.dependencies.push(dep)
     }
-    pub(crate) fn add_module(&mut self, module: BoxModule) -> ModuleId {
+    pub fn add_module(&mut self, module: BoxModule) -> ModuleId {
         self.modules.push(module)
     }
     // get dependency by id
-    pub(crate) fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
+    pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
         &self.dependencies[id]
     }
-    pub(crate) fn dependency_by_id_mut(&mut self, id: DependencyId) -> &mut BoxDependency {
+    pub fn dependency_by_id_mut(&mut self, id: DependencyId) -> &mut BoxDependency {
         &mut self.dependencies[id]
     }
-    pub(crate) fn module_by_id(&self, id: ModuleId) -> &BoxModule {
+    pub fn module_by_id(&self, id: ModuleId) -> &BoxModule {
         &self.modules[id]
     }
-    pub(crate) fn module_by_id_mut(&mut self, id: ModuleId) -> &mut BoxModule {
+    pub fn module_by_id_mut(&mut self, id: ModuleId) -> &mut BoxModule {
         &mut self.modules[id]
     }
 }

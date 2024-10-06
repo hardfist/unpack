@@ -4,17 +4,17 @@ mod factorize;
 mod process_dependencies;
 use std::collections::VecDeque;
 
-pub(crate) use add::*;
-pub(crate) use build::*;
-pub(crate) use factorize::*;
-pub(crate) use process_dependencies::*;
+pub use add::*;
+pub use build::*;
+pub use factorize::*;
+pub use process_dependencies::*;
 
 #[derive(Debug)]
-pub(crate) enum Task {
+pub enum Task {
     Add(AddTask),
     Factorize(FactorizeTask),
     ProcessDeps(ProcessDepsTask),
     Build(BuildTask),
 }
 
-pub(crate) type TaskQueue = VecDeque<Task>;
+pub type TaskQueue = VecDeque<Task>;

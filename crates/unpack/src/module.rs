@@ -13,20 +13,20 @@ use crate::dependency::BoxDependency;
 use crate::errors::miette::Result;
 
 #[derive(Debug)]
-pub(crate) struct BuildResult {
-    pub(crate) dependencies: Vec<BoxDependency>,
+pub struct BuildResult {
+    pub dependencies: Vec<BoxDependency>,
 }
-pub(crate) struct BuildContext {
-    pub(crate) options: Arc<CompilerOptions>,
+pub struct BuildContext {
+    pub options: Arc<CompilerOptions>,
 }
-pub(crate) trait Module: Debug {
+pub trait Module: Debug {
     fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }
 }
 
-pub(crate) type BoxModule = Box<dyn Module>;
+pub type BoxModule = Box<dyn Module>;
 #[derive(Debug)]
 pub struct ModuleIdentifier(String);
 // #[derive(Debug)]

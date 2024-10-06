@@ -1,6 +1,6 @@
 use crate::module::ModuleId;
 
 #[derive(Debug)]
-pub(crate) struct AddTask {
-    pub(crate) module_id: ModuleId,
+pub struct AddTask {
+    pub module_id: ModuleId,
 }

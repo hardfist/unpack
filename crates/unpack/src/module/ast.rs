@@ -9,7 +9,7 @@ use swc_core::ecma::parser::{Parser, StringInput, Syntax};
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct AST {
-    pub(crate) program: Program,
+    pub program: Program,
 }
 pub fn parse(content: String) -> Result<AST> {
     let cm = SourceMap::default();
