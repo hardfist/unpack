@@ -7,6 +7,14 @@ pub struct ModuleGraphModule {
     incoming_connections: Vec<ConnectionId>,
     outgoing_connections: Vec<ConnectionId>
 }
+impl ModuleGraphModule {
+    pub fn add_incoming_connection(&mut self, connection_id: ConnectionId) {
+        self.incoming_connections.push(connection_id);
+    }
+    pub fn add_outgoing_connection(&mut self, connection_id: ConnectionId) {
+        self.outgoing_connections.push(connection_id)
+    }
+}
 define_index_type! {
     pub struct ModuleGraphModuleId = u32;
 }

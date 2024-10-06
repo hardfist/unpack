@@ -1,3 +1,4 @@
+use crate::dependency::Dependency;
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
@@ -6,6 +7,7 @@ use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use std::collections::VecDeque;
+use std::mem::take;
 use std::sync::Arc;
 
 use crate::{
@@ -77,14 +79,13 @@ impl ModuleScanner {
     ) {
         dependencies
             .iter()
-            .filter_map(|id| {
+            .filter(|id| {
                 let dep = id.get_dependency(&state.module_graph).clone();
-                dep.into_module_dependency()
-                    .map(|mod_dependency| (id, mod_dependency))
+                dep.as_module_dependency().is_some()
             })
-            .for_each(|(_id, dep)| {
+            .for_each(|id| {
                 state.task_queue.push_back(Task::Factorize(FactorizeTask {
-                    module_dependency: dep,
+                    module_dependency_id: *id,
                     origin_module_id,
                     origin_module_context: context.clone(),
                 }));
@@ -129,16 +130,19 @@ impl ModuleScanner {
         let original_module = task
             .origin_module_id
             .map(|id| state.module_graph.module_by_id(id));
+        let module_dependency_id = task.module_dependency_id;
+        let module_dependency = <Box<dyn Dependency> as Clone>::clone(&state.module_graph.dependency_by_id(module_dependency_id)).to_module_dependency().expect("expect module dependency");
         let original_module_context = original_module.and_then(|x| x.get_context());
-        let context = if let Some(context) = task.module_dependency.get_context() {
+        let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
         } else if let Some(context) = original_module_context {
             context.to_owned()
         } else {
             self.options.context.clone()
         };
+        let module_dependency = module_dependency.clone();
         match self.module_factory.create(ModuleFactoryCreateData {
-            module_dependency: task.module_dependency,
+            module_dependency: module_dependency,
             context,
             options: self.options.clone(),
         }) {
@@ -146,7 +150,12 @@ impl ModuleScanner {
                 let module_id = state
                     .module_graph
                     .add_module(Box::new(factory_result.module));
-                state.task_queue.push_back(Task::Add(AddTask { module_id }));
+                state.task_queue.push_back(Task::Add(AddTask { 
+                    
+                    module_id,
+                    module_dependency_id: task.module_dependency_id,
+                    origin_module_id: task.origin_module_id,
+                 }));
             }
             Err(err) => {
                 state.diagnostics.push(err);
@@ -167,7 +176,7 @@ impl ModuleScanner {
         );
     }
     fn handle_add(&self, state: &mut ScannerState, task: AddTask) {
-        // do nothing here, cause we don't need module_graph_module here
+       state.module_graph.set_resolved_module(task.origin_module_id, task.module_dependency_id, task.module_id);
         state.task_queue.push_back(Task::Build(BuildTask {
             module_id: task.module_id,
         }));

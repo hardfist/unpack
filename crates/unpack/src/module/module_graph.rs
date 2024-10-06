@@ -18,7 +18,7 @@ pub struct ModuleGraph {
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
     pub connections: IndexVec<ConnectionId, Connection>,
     pub dep_to_connection: IndexMap<DependencyId, ConnectionId>,
-    pub module_id_to_module_graph_module_id: IndexMap<ModuleId, ModuleGraphModule>
+    pub module_id_to_module_graph_module_id: IndexMap<ModuleId, ModuleGraphModuleId>
 }
 
 impl ModuleGraph {
@@ -33,9 +33,18 @@ impl ModuleGraph {
             resolved_module_id
         );
         let connection_id = self.add_connection(connection);
+        let resolved_mgm_id = self.module_graph_module_by_module_id(resolved_module_id);
+        let resolved_module = self.module_graph_module_by_id_mut(resolved_mgm_id);
+        resolved_module.add_incoming_connection(connection_id);
+        
         if let Some(origin_module_id) = origin_module_id {
-            
+            let mgm_id = self.module_graph_module_by_module_id(origin_module_id);
+            let mgm = self.module_graph_module_by_id_mut(mgm_id);
+            mgm.add_outgoing_connection(connection_id);
         }
 
+    }
+    pub fn module_graph_module_by_module_id(&self, module_id: ModuleId) -> ModuleGraphModuleId {
+        self.module_id_to_module_graph_module_id[&module_id]
     }
 }

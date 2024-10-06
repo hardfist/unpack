@@ -15,7 +15,7 @@ pub trait AsModuleDependency {
     fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
         None
     }
-    fn into_module_dependency(self: Box<Self>) -> Option<Box<dyn ModuleDependency>> {
+    fn to_module_dependency(self: Box<Self>) -> Option<Box<dyn ModuleDependency>> {
         None
     }
 }
