@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use indexmap::IndexMap;
 
-use super::{chunk_graph::ChunkGraph, chunk_group_id::ChunkGroupId};
+use super::{chunk_graph::ChunkGraph, ChunkGroupId};
 use crate::{
     compiler::CompilerOptions,
     errors::Diagnostics,
@@ -22,9 +22,15 @@ impl ChunkLinker {
             entries,
         }
     }
-    pub fn build_chunk_graph(&self, _state: &mut LinkerState) {
+    pub fn build_chunk_graph(&self, state: &mut LinkerState) {
+        let entrypoints_and_modules = self.prepare_input_entrypoints_and_modules(state);
+        for (chunk_group_id, module_ids) in entrypoints_and_modules {
+            //let chunk_group = state.chunk_graph.chun
+        }
         //let mut visited = FxHashSet::default();
-        fn visit_modules() {}
+        fn visit_modules() {
+
+        }
     }
 
     pub fn prepare_input_entrypoints_and_modules(
@@ -44,7 +50,6 @@ impl ChunkLinker {
                 state.module_graph.module_id_by_dependency_id(*dep_id)
             }).collect::<Vec<_>>();
             entrypoint_module_map.insert(chunk_group_id, module_ids);
-            
         }
         entrypoint_module_map
     }

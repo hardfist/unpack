@@ -1,7 +1,7 @@
 use index_vec::IndexVec;
 use rustc_hash::FxHashMap;
 
-use super::{chunk_group::ChunkGroup, chunk_group_id::ChunkGroupId, chunk_id::ChunkId, Chunk};
+use super::{chunk_group::ChunkGroup, Chunk, ChunkGroupId, ChunkId};
 
 #[derive(Debug, Default)]
 pub struct ChunkGraph {
@@ -38,5 +38,8 @@ impl ChunkGraph {
     }
     pub fn add_chunk_group(&mut self, chunk_group: ChunkGroup) -> ChunkGroupId {
         self.chunk_groups.push(chunk_group)
+    }
+    pub fn chunk_by_id(&self, chunk_id: ChunkId) -> &Chunk {
+        &self.chunks[chunk_id]
     }
 }

@@ -1,7 +1,4 @@
 use rustc_hash::FxHashMap;
-
-use super::{chunk_group_id::ChunkGroupId, chunk_id::ChunkId};
-
 #[derive(Debug)]
 pub struct ChunkGroup {
     entry_point_chunk_id: Option<ChunkId>,
@@ -22,4 +19,11 @@ impl ChunkGroup {
     pub fn connect_chunk(&mut self, chunk_id: ChunkId) {
         self.chunks.push(chunk_id);
     }
+}
+
+use index_vec::define_index_type;
+
+use super::ChunkId;
+define_index_type! {
+    pub struct ChunkGroupId = u32;
 }

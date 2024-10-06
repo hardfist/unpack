@@ -1,15 +1,9 @@
-pub mod chunk_graph;
-pub mod chunk_group;
-pub mod chunk_group_id;
-pub mod chunk_id;
-pub mod chunk_linker;
-#[derive(Debug)]
-pub struct Chunk {
-    pub name: Option<String>,
-}
+mod chunk_graph;
+mod chunk_group;
+mod chunk_node;
+mod chunk_linker;
+pub use chunk_node::*;
+pub use chunk_graph::*;
+pub use chunk_group::*;
+pub use chunk_linker::*;
 
-impl Chunk {
-    pub fn new(name: Option<String>) -> Self {
-        Self { name }
-    }
-}

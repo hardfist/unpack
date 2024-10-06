@@ -1,5 +1,5 @@
 use crate::{
-    chunk::chunk_linker::{ChunkLinker, LinkerState},
+    chunk::{ChunkLinker, LinkerState},
     compiler::CompilerOptions,
     errors::Diagnostics,
     module::{ModuleGraph, ModuleScanner, ScannerState},
@@ -34,7 +34,6 @@ impl Compilation {
     pub fn link(&mut self, scanner_state: ScannerState) -> LinkerState {
         let mut linker_state = LinkerState::new(scanner_state.module_graph);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
-        linker.prepare_input_entrypoints_and_modules(&mut linker_state);
         linker.build_chunk_graph(&mut linker_state);
         linker_state
     }
