@@ -22,3 +22,12 @@ pub enum BlockId {
     ModuleId(ModuleId),
     AsyncDependenciesBlockId(AsyncDependenciesBlockId)
 }
+
+impl BlockId {
+    pub fn get_root_block(self) -> BlockId {
+        match self {
+            BlockId::ModuleId(_) => self,
+            BlockId::AsyncDependenciesBlockId(_) => todo!("not implemented yet"),
+        }
+    }
+}

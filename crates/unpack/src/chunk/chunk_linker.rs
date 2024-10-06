@@ -58,7 +58,7 @@ impl ChunkLinker {
             self.handle_queue_action(state, action);
         }
     }
-    pub fn handle_queue_action(&self,state:&mut LinkerState,action: QueueAction){
+    fn handle_queue_action(&self,state:&mut LinkerState,action: QueueAction){
         match action {
             QueueAction::AddAndEnterEntryModule(action) => {
                 self.add_and_enter_entry_module(state, action);
@@ -71,13 +71,13 @@ impl ChunkLinker {
             }
         }
     }
-    pub fn add_and_enter_entry_module(&self,state:&mut LinkerState,  action: AddAndEnterEntryModule){
+    fn add_and_enter_entry_module(&self,state:&mut LinkerState,  action: AddAndEnterEntryModule){
 
     }
-    pub fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
+    fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
 
     }
-    pub fn process_block(&mut self,state: &mut LinkerState, action: ProcessBlock){
+    fn process_block(&mut self,state: &mut LinkerState, action: ProcessBlock){
 
     }
     pub fn prepare_input_entrypoints_and_modules(
@@ -108,7 +108,7 @@ pub struct LinkerState {
     pub chunk_graph: ChunkGraph,
     pub module_graph: ModuleGraph,
     pub entry_points: IndexMap<String, ChunkGroupId>,
-    pub queue: VecDeque<QueueAction>
+    queue: VecDeque<QueueAction>
 }
 
 impl LinkerState {
