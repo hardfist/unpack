@@ -25,6 +25,7 @@ impl Compilation {
             ModuleScanner::new(self.options.clone(), self.options.context.clone());
         let mut scanner_state = ScannerState::default();
         module_scanner.add_entry(&mut scanner_state);
+        self.diagnostics.extend(scanner_state.diagnostics);
         // self.diagnostics
         //     .extend(module_scanner.make_artifact.diagnostics);
     }

@@ -12,9 +12,12 @@ fn main() {
         context: context.try_into().expect("expect utf8 path"),
         entry: EntryItem {
             name: "main".to_string(),
-            import: "./index.mjs".to_string(),
+            import: "./src/index.mjs".to_string(),
         },
-        resolve: ResolveOptions::default(),
+        resolve: ResolveOptions {
+            extensions: vec![".js",".ts",".mjs"].into_iter().map(|x| x.to_string()).collect::<Vec<_>>(),
+            ..Default::default()
+        },
     };
     let mut compiler = Compiler::new(compiler_options);
     compiler.build();

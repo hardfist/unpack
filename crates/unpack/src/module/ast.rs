@@ -1,13 +1,14 @@
 use std::sync::Arc;
 
 use miette::LabeledSpan;
-use swc_core::common::errors::Handler;
 use swc_core::ecma::ast::Program;
-use crate::errors::miette::{Result, miette,SourceSpan};
+use crate::errors::miette::{Result, miette};
 use swc_core::ecma::parser::{Parser, StringInput, Syntax};
-use swc_core::common::{FileName, SourceMap, Spanned, DUMMY_SP,};
+use swc_core::common::{FileName, SourceMap, Spanned,};
+
 
 #[derive(Debug)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct AST {
     pub(crate) program:Program
 }
@@ -37,7 +38,7 @@ pub fn parse(content: String) -> Result<AST>{
                 let start = span.lo.0.saturating_sub(1) as usize;
                 let end = span.hi.0.saturating_sub(1) as usize;
                 let len = end - start;
-                LabeledSpan::new(Some(message), start.into(), len.into())
+                LabeledSpan::new(Some(message), start, len)
             }).collect::<Vec<_>>();
             return Err(miette!(labels = labels, "parse error"));
         }

@@ -1,11 +1,12 @@
+
 use crate::errors::Diagnostics;
-use crate::module::BuildContext;
+use crate::module::{BuildContext, ModuleId};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::{
     resolver_factory::ResolverFactory,
     task::Task
 };
-use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask, TaskQueue};
+use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask};
 use camino::Utf8PathBuf;
 use std::collections::VecDeque;
 use std::sync::Arc;
@@ -15,6 +16,7 @@ use crate::{
     dependency::{DependencyId, EntryDependency},
     module_graph::ModuleGraph,
 };
+
 pub(crate) struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
@@ -55,6 +57,8 @@ impl ModuleScanner {
         &self,
         state: &mut ScannerState,
         dependencies: Vec<DependencyId>,
+        origin_module_id: Option<ModuleId>,
+        context: Option<Utf8PathBuf>
     ) {
         dependencies
             .iter()
@@ -65,10 +69,10 @@ impl ModuleScanner {
                 })
             })
             .for_each(|(_id, dep)| {
-                
                 state.task_queue.push_back(Task::Factorize(FactorizeTask{
                     module_dependency: dep,
-                    origin_module_id: None,
+                    origin_module_id,
+                    origin_module_context: context.clone(),
                 }));
             });
     }
@@ -79,13 +83,13 @@ impl ModuleScanner {
 pub(crate) struct ScannerState {
     module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
-    diagnostics: Diagnostics
+    pub(crate)diagnostics: Diagnostics
 }
 /// main loop task
 impl ModuleScanner {
     pub fn build_loop(&self,state: &mut ScannerState, dependencies: Vec<DependencyId>) {
         // kick off entry dependencies to task_queue
-        self.handle_module_creation(state,dependencies);
+        self.handle_module_creation(state,dependencies, None, Some(self.context.clone()));
         while let Some(task) = state.task_queue.pop_front() {
             
             self.handle_task(task, state);
@@ -108,9 +112,18 @@ impl ModuleScanner {
         }
     }
     fn handle_factorize(&self,state: &mut ScannerState,task: FactorizeTask) {
+        let original_module =task.origin_module_id.map(|id| state.module_graph.module_by_id(id));
+        let original_module_context = original_module.and_then(|x| x.get_context());
+        let context = if let Some(context) = task.module_dependency.get_context() {
+            context.to_owned()
+        } else if let Some(context) = original_module_context {
+            context.to_owned()
+        }else {
+            self.options.context.clone()
+        };
         match self.module_factory.create(ModuleFactoryCreateData{
             module_dependency: task.module_dependency,
-            context: self.options.context.clone(),
+            context,
             options: self.options.clone()
         }) {
             Ok(factory_result) => {
@@ -125,7 +138,14 @@ impl ModuleScanner {
         }
         
     }
-    fn handle_process_deps(&self,state: &mut ScannerState,_task: ProcessDepsTask) {}
+    fn handle_process_deps(&self,state: &mut ScannerState,task: ProcessDepsTask) {
+        
+        let original_module_id = task.original_module_id;
+        let original_module = original_module_id.map(|id| state.module_graph.module_by_id(id));
+        let original_module_context = original_module.and_then(|x| x.get_context().map(|x| x.to_owned()));
+        
+        self.handle_module_creation(state, task.dependencies,original_module_id, original_module_context);
+    }
     fn handle_add(&self,state: &mut ScannerState, task: AddTask) {
         // do nothing here, cause we don't need module_graph_module here
         state.task_queue.push_back(Task::Build(BuildTask {
@@ -138,13 +158,17 @@ impl ModuleScanner {
             options: self.options.clone()
         }) {
             Ok(result) => {
-                dbg!(result);
+                let dependency_ids = result.dependencies.into_iter().map(|dep| {
+                     state.module_graph.add_dependency(dep)
+                }).collect::<Vec<_>>();
+                state.task_queue.push_back(Task::ProcessDeps(ProcessDepsTask {
+                    dependencies: dependency_ids,
+                    original_module_id: Some(task.module_id)
+                }));
             },
             Err(err) => {
                 state.diagnostics.push(err);
             }
-        };
-        dbg!(&state.diagnostics);
-        
+        };        
     }
 }

@@ -3,7 +3,7 @@ use swc_core::atoms::Atom;
 use super::{AsModuleDependency, Dependency, ModuleDependency};
 
 #[derive(Debug,Clone)]
-pub(crate) struct HarmonyImportSideEffectDependency {
+pub struct HarmonyImportSideEffectDependency {
     pub request: Atom,
 }
 

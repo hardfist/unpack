@@ -1,15 +1,16 @@
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use miette::IntoDiagnostic;
 use rspack_sources::BoxSource;
 use swc_core::ecma::utils::swc_ecma_ast;
 use crate::dependency::{BoxDependency, HarmonyImportSideEffectDependency};
-use crate::{dependency::Dependency, errors::Diagnostics};
+use crate::errors::Diagnostics;
 use crate::errors::miette::Result;
 
-use super::{ast::{parse, AST}, BuildContext, BuildResult, Module, ModuleIdentifier};
+use super::{ast::parse, BuildContext, BuildResult, Module, ModuleIdentifier};
 #[derive(Debug)]
 pub struct NormalModule {
     id: ModuleIdentifier,
+    context: Option<Utf8PathBuf>,
     resource_path: Utf8PathBuf,
     request:String,
     diagnostics: Diagnostics,
@@ -19,7 +20,7 @@ struct ParseResult {
     dependencies: Vec<BoxDependency>
 }
 impl Module for NormalModule {
-    fn build(&mut self,build_context: BuildContext) -> Result<BuildResult> {
+    fn build(&mut self,_build_context: BuildContext) -> Result<BuildResult> {
         let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
         let parse_result = self.parse(content)?;
         Ok(
@@ -28,17 +29,22 @@ impl Module for NormalModule {
             }
         )
     }
+    fn get_context(&self) -> Option<&Utf8Path> {
+        self.context.as_ref().map(|x| x.as_ref())
+    }
 
 }
 impl NormalModule {
     pub(crate) fn new(request: String,resource_path: Utf8PathBuf) -> Self {
         let id = Self::gen_id(&request);
+        let context = resource_path.parent().map(|x| x.to_owned());
         Self {
             id,
             request,
             resource_path,
             diagnostics: vec![],
             original_source: None,
+            context
         }
     }
     fn parse(&self,content:String) -> Result<ParseResult>{

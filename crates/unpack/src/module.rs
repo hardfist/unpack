@@ -3,8 +3,7 @@ mod normal_module;
 mod ast;
 use std::fmt::Debug;
 use std::sync::Arc;
-
-use ast::AST;
+use camino::Utf8Path;
 pub use normal_module::*;
 pub use module_id::*;
 
@@ -15,13 +14,16 @@ use crate::errors::miette::Result;
 
 #[derive(Debug)]
 pub(crate) struct BuildResult {
-    dependencies: Vec<BoxDependency>
+    pub(crate) dependencies: Vec<BoxDependency>
 }
 pub(crate) struct BuildContext {
    pub(crate) options: Arc<CompilerOptions>
 }
 pub(crate) trait Module: Debug {
     fn build(&mut self,build_context: BuildContext) -> Result<BuildResult>;
+    fn get_context(&self) -> Option<&Utf8Path>{
+        None
+    }
 }
 
 pub(crate) type BoxModule = Box<dyn Module>;
