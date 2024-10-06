@@ -9,6 +9,6 @@ pub struct EntryItem {
 #[derive(Clone, Debug)]
 pub struct CompilerOptions {
     pub context: Utf8PathBuf,
-    pub entry: EntryItem,
+    pub entry: Vec<EntryItem>,
     pub resolve: ResolveOptions,
 }

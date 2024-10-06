@@ -1,11 +1,14 @@
 use crate::{
-    compiler::CompilerOptions, errors::Diagnostics, module_graph::ModuleGraph, module_scanner::{ModuleScanner, ScannerState}
+    compiler::CompilerOptions,
+    errors::Diagnostics,
+    module_graph::ModuleGraph,
+    module_scanner::{ModuleScanner, ScannerState},
 };
 use std::sync::Arc;
 
 pub struct Compilation {
     #[allow(dead_code)]
-    options: Arc<CompilerOptions>,
+    pub(crate) options: Arc<CompilerOptions>,
     module_graph: ModuleGraph,
     pub(crate) diagnostics: Diagnostics,
 }

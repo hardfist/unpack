@@ -14,7 +14,7 @@ pub(crate) enum Task {
     Add(AddTask),
     Factorize(FactorizeTask),
     ProcessDeps(ProcessDepsTask),
-    Build(BuildTask)
+    Build(BuildTask),
 }
 
 pub(crate) type TaskQueue = VecDeque<Task>;

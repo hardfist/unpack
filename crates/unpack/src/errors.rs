@@ -1,7 +1,7 @@
 pub use miette;
 use miette::Diagnostic;
-use thiserror::Error;
 use miette::Report;
+use thiserror::Error;
 
 #[derive(Debug, Error, Diagnostic)]
 #[error("resolve error")]
@@ -12,4 +12,3 @@ pub struct ResolveError {
 }
 
 pub type Diagnostics = Vec<Report>;
-

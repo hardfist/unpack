@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+pub mod build_chunk_graph;
 pub mod bundler;
 pub mod compilation;
 pub mod compiler;

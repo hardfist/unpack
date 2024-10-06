@@ -10,12 +10,18 @@ fn main() {
         .unwrap();
     let compiler_options: CompilerOptions = CompilerOptions {
         context: context.try_into().expect("expect utf8 path"),
-        entry: EntryItem {
+        entry: vec![EntryItem {
             name: "main".to_string(),
             import: "./src/index.mjs".to_string(),
-        },
+        }, EntryItem {
+            name: "other".to_string(),
+            import: "./src/other.mjs".to_string()
+        }],
         resolve: ResolveOptions {
-            extensions: vec![".js",".ts",".mjs"].into_iter().map(|x| x.to_string()).collect::<Vec<_>>(),
+            extensions: vec![".js", ".ts", ".mjs"]
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>(),
             ..Default::default()
         },
     };

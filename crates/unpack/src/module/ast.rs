@@ -1,18 +1,17 @@
 use std::sync::Arc;
 
+use crate::errors::miette::{miette, Result};
 use miette::LabeledSpan;
+use swc_core::common::{FileName, SourceMap, Spanned};
 use swc_core::ecma::ast::Program;
-use crate::errors::miette::{Result, miette};
 use swc_core::ecma::parser::{Parser, StringInput, Syntax};
-use swc_core::common::{FileName, SourceMap, Spanned,};
-
 
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct AST {
-    pub(crate) program:Program
+    pub(crate) program: Program,
 }
-pub fn parse(content: String) -> Result<AST>{
+pub fn parse(content: String) -> Result<AST> {
     let cm = SourceMap::default();
     let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content);
 
@@ -24,7 +23,7 @@ pub fn parse(content: String) -> Result<AST>{
     );
 
     let mut parser = Parser::new_from(lexer);
-    
+
     let program = match parser.parse_program() {
         Ok(prog) => prog,
         Err(err) => {
@@ -32,14 +31,17 @@ pub fn parse(content: String) -> Result<AST>{
             if errors.is_empty() {
                 errors.push(err);
             }
-            let labels = errors.into_iter().map(|error| {
-                let message = error.kind().msg().to_string();
-                let span = error.span();
-                let start = span.lo.0.saturating_sub(1) as usize;
-                let end = span.hi.0.saturating_sub(1) as usize;
-                let len = end - start;
-                LabeledSpan::new(Some(message), start, len)
-            }).collect::<Vec<_>>();
+            let labels = errors
+                .into_iter()
+                .map(|error| {
+                    let message = error.kind().msg().to_string();
+                    let span = error.span();
+                    let start = span.lo.0.saturating_sub(1) as usize;
+                    let end = span.hi.0.saturating_sub(1) as usize;
+                    let len = end - start;
+                    LabeledSpan::new(Some(message), start, len)
+                })
+                .collect::<Vec<_>>();
             return Err(miette!(labels = labels, "parse error"));
         }
     };

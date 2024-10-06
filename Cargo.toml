@@ -21,3 +21,4 @@ dashmap = { version = "6.0.1"}
 thiserror = { version = "1.0.63"}
 rspack_sources = { version = "0.3.0"}
 swc_core = { version = "0.106.4", features = ["__parser"]}
+rustc-hash = { version = "2.0.0"}
