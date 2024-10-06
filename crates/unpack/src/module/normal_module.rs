@@ -1,4 +1,4 @@
-use crate::dependency::{BoxDependency, HarmonyImportSideEffectDependency};
+use crate::dependency::{BlockId, BoxDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -14,9 +14,28 @@ pub struct NormalModule {
     request: String,
     diagnostics: Diagnostics,
     original_source: Option<BoxSource>,
+    dependencies: Vec<DependencyId>,
+    blocks: Vec<BlockId>
 }
 struct ParseResult {
     dependencies: Vec<BoxDependency>,
+}
+impl DependenciesBlock for NormalModule {
+    fn add_block_id(&mut self, block_id: BlockId) {
+        self.blocks.push(block_id);
+    }
+
+    fn get_blocks(&self) -> Vec<BlockId> {
+        self.blocks.clone()
+    }
+
+    fn add_dependency_id(&mut self, dependency_id: DependencyId) {
+        self.dependencies.push(dependency_id);
+    }
+
+    fn get_dependencies(&self) -> Vec<DependencyId> {
+        self.dependencies.clone()
+    }
 }
 impl Module for NormalModule {
     fn build(&mut self, _build_context: BuildContext) -> Result<BuildResult> {
@@ -39,6 +58,8 @@ impl NormalModule {
             diagnostics: vec![],
             original_source: None,
             context,
+            blocks:  vec![],
+            dependencies: vec![]
         }
     }
     fn parse(&self, content: String) -> Result<ParseResult> {

@@ -191,6 +191,10 @@ impl ModuleScanner {
                     .into_iter()
                     .map(|dep| state.module_graph.add_dependency(dep))
                     .collect::<Vec<_>>();
+                let module = state.module_graph.module_by_id_mut(task.module_id);
+                for dep_id in &dependency_ids {
+                    module.add_dependency_id(*dep_id);
+                }
                 state
                     .task_queue
                     .push_back(Task::ProcessDeps(ProcessDepsTask {

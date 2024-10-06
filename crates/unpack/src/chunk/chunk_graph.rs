@@ -1,6 +1,8 @@
 use index_vec::IndexVec;
 use rustc_hash::FxHashMap;
 
+use crate::module::ModuleId;
+
 use super::{chunk_group::ChunkGroup, Chunk, ChunkGroupId, ChunkId};
 
 #[derive(Debug, Default)]
@@ -41,5 +43,14 @@ impl ChunkGraph {
     }
     pub fn chunk_by_id(&self, chunk_id: ChunkId) -> &Chunk {
         &self.chunks[chunk_id]
+    }
+    pub fn chunk_group_by_id(&self, chunk_group_id: ChunkGroupId) -> &ChunkGroup {
+        &self.chunk_groups[chunk_group_id]
+    }
+    pub fn chunk_group_by_id_mut(&mut self, chunk_group_id: ChunkGroupId) -> &mut ChunkGroup {
+        &mut self.chunk_groups[chunk_group_id]
+    }
+    pub fn connect_chunk_and_entry_module(&mut self, chunk_id: ChunkId, module_id: ModuleId, entry_point_id: ChunkGroupId){
+        
     }
 }
