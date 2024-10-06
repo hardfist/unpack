@@ -4,6 +4,8 @@ use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory}
 use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
+use dashmap::Entry;
+use indexmap::IndexMap;
 use std::collections::VecDeque;
 use std::sync::Arc;
 
@@ -14,7 +16,11 @@ use crate::{
 };
 
 use super::module_graph::ModuleGraph;
-
+#[derive(Debug)]
+struct EntryData {
+    dependencies: Vec<DependencyId>,
+    name: Option<String>
+}
 pub struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
@@ -41,8 +47,8 @@ impl ModuleScanner {
             scanner_state: ScannerState::default(), // make_artifact: Default::default(),
         }
     }
-    // add_entry
-    pub fn add_entry(&mut self, state: &mut ScannerState) {
+    // add entries
+    pub fn add_entries(&self, state: &mut ScannerState) {
         let entry_ids = self
             .options
             .entry
@@ -51,6 +57,10 @@ impl ModuleScanner {
                 let entry_dep =
                     EntryDependency::new(entry.import.clone(), self.options.context.clone());
                 let entry_dep_id = state.module_graph.add_dependency(Box::new(entry_dep));
+                state.entries.insert(entry.name.clone(), EntryData {
+                    name: Some(entry.name.clone()),
+                    dependencies: vec![entry_dep_id]
+                });
                 return entry_dep_id;
             })
             .collect::<Vec<_>>();
@@ -87,6 +97,7 @@ pub struct ScannerState {
     module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
     pub diagnostics: Diagnostics,
+    entries: IndexMap<String, EntryData>
 }
 /// main loop task
 impl ModuleScanner {
