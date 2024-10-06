@@ -1,7 +1,7 @@
 use camino::Utf8PathBuf;
 use miette::Report;
 
-use crate::dependency::{BoxModuleDependency, DependencyId};
+use crate::dependency::DependencyId;
 use crate::module::ModuleId;
 use derive_new::new;
 // port from https://github.com/webpack/webpack/blob/899f06934391baede59da3dcd35b5ef51c675dbe/lib/Compilation.js#L1842

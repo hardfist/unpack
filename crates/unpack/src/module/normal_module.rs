@@ -6,7 +6,7 @@ use miette::IntoDiagnostic;
 use rspack_sources::BoxSource;
 use swc_core::ecma::utils::swc_ecma_ast;
 
-use super::{ast::parse, BuildContext, BuildResult, Module, ModuleIdentifier};
+use super::{ast::parse, BuildContext, BuildResult, Module};
 #[derive(Debug)]
 pub struct NormalModule {
     context: Option<Utf8PathBuf>,

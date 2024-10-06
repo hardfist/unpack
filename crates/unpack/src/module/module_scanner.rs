@@ -7,7 +7,6 @@ use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use std::collections::VecDeque;
-use std::mem::take;
 use std::sync::Arc;
 
 use crate::{
@@ -176,7 +175,6 @@ impl ModuleScanner {
         );
     }
     fn handle_add(&self, state: &mut ScannerState, task: AddTask) {
-        let mgm = state.module_graph.module_graph_module_by_module_id(task.module_id);
         state.module_graph.set_resolved_module(task.origin_module_id, task.module_dependency_id, task.module_id);
         state.task_queue.push_back(Task::Build(BuildTask {
             module_id: task.module_id,
