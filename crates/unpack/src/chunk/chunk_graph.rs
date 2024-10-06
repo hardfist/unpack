@@ -3,13 +3,15 @@ use rustc_hash::FxHashMap;
 
 use crate::module::ModuleId;
 
-use super::{chunk_group::ChunkGroup, Chunk, ChunkGroupId, ChunkId};
+use super::{chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGroupId, ChunkId};
 
 #[derive(Debug, Default)]
 pub struct ChunkGraph {
     named_chunks: FxHashMap<String, ChunkId>,
     named_chunk_groups: FxHashMap<String, ChunkGroupId>,
     chunks: IndexVec<ChunkId, Chunk>,
+    chunk_graph_chunks: IndexVec<ChunkGraphChunkId, ChunkGraphChunk>,
+    chunk_id_to_chunk_graph_chunk_id: FxHashMap<ChunkId, ChunkGraphChunkId>,
     chunk_groups: IndexVec<ChunkGroupId, ChunkGroup>,
 }
 
@@ -52,5 +54,16 @@ impl ChunkGraph {
     }
     pub fn connect_chunk_and_entry_module(&mut self, chunk_id: ChunkId, module_id: ModuleId, entry_point_id: ChunkGroupId){
         
+    }
+    pub fn chunk_graph_chunk_by_id(&self, cgc_id: ChunkGraphChunkId) -> &ChunkGraphChunk {
+        &self.chunk_graph_chunk_by_id(cgc_id)
+    }
+    pub fn chunk_graph_chunk_id_by_chunk_id(&self, chunk_id: ChunkId) ->ChunkGraphChunkId{
+        self.chunk_id_to_chunk_graph_chunk_id[&chunk_id]
+    }
+    pub fn is_module_in_chunk(&self, module_id: ModuleId, chunk_id: ChunkId) -> bool {
+        let cgc_id = self.chunk_graph_chunk_id_by_chunk_id(chunk_id);
+        let chunk_graph_chunk = self.chunk_graph_chunk_by_id(cgc_id);
+        chunk_graph_chunk.modules.contains(&module_id)
     }
 }
