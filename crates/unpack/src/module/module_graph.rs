@@ -1,5 +1,6 @@
 use index_vec::IndexVec;
 use indexmap::IndexMap;
+use rustc_hash::FxHashMap;
 mod connection;
 mod dependency;
 mod module;
@@ -18,7 +19,7 @@ pub struct ModuleGraph {
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
     pub connections: IndexVec<ConnectionId, Connection>,
     pub dep_to_connection: IndexMap<DependencyId, ConnectionId>,
-    pub module_id_to_module_graph_module_id: IndexMap<ModuleId, ModuleGraphModuleId>
+    pub module_id_to_module_graph_module_id: FxHashMap<ModuleId, ModuleGraphModuleId>
 }
 
 impl ModuleGraph {
@@ -33,6 +34,7 @@ impl ModuleGraph {
             resolved_module_id
         );
         let connection_id = self.add_connection(connection);
+        self.dep_to_connection.insert(dep_id, connection_id);
         let resolved_mgm_id = self.module_graph_module_by_module_id(resolved_module_id);
         let resolved_module = self.module_graph_module_by_id_mut(resolved_mgm_id);
         resolved_module.add_incoming_connection(connection_id);
@@ -44,7 +46,15 @@ impl ModuleGraph {
         }
 
     }
-    pub fn module_graph_module_by_module_id(&self, module_id: ModuleId) -> ModuleGraphModuleId {
-        self.module_id_to_module_graph_module_id[&module_id]
+    pub fn module_graph_module_by_module_id(&mut self, module_id: ModuleId) -> ModuleGraphModuleId {
+        let mgm_id = if let Some(&id) = self.module_id_to_module_graph_module_id.get(&module_id) {
+            id
+        } else {
+            let mgm = ModuleGraphModule::new();
+            let new_id = self.add_module_graph_module(mgm);
+            self.module_id_to_module_graph_module_id.insert(module_id, new_id);
+            new_id
+        };
+        mgm_id
     }
 }

@@ -176,7 +176,8 @@ impl ModuleScanner {
         );
     }
     fn handle_add(&self, state: &mut ScannerState, task: AddTask) {
-       state.module_graph.set_resolved_module(task.origin_module_id, task.module_dependency_id, task.module_id);
+        let mgm = state.module_graph.module_graph_module_by_module_id(task.module_id);
+        state.module_graph.set_resolved_module(task.origin_module_id, task.module_dependency_id, task.module_id);
         state.task_queue.push_back(Task::Build(BuildTask {
             module_id: task.module_id,
         }));

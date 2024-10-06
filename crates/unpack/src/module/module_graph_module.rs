@@ -8,6 +8,12 @@ pub struct ModuleGraphModule {
     outgoing_connections: Vec<ConnectionId>
 }
 impl ModuleGraphModule {
+    pub fn new() -> Self{
+        Self {
+            incoming_connections: Default::default(),
+            outgoing_connections: Default::default()
+        }
+    }
     pub fn add_incoming_connection(&mut self, connection_id: ConnectionId) {
         self.incoming_connections.push(connection_id);
     }
