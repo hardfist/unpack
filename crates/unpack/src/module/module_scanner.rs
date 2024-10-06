@@ -10,8 +10,10 @@ use std::sync::Arc;
 use crate::{
     compiler::CompilerOptions,
     dependency::{DependencyId, EntryDependency},
-    module_graph::ModuleGraph,
+    
 };
+
+use super::module_graph::ModuleGraph;
 
 pub struct ModuleScanner {
     options: Arc<CompilerOptions>,

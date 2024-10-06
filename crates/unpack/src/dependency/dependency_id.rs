@@ -1,6 +1,7 @@
 use index_vec::define_index_type;
 
-use crate::module_graph::ModuleGraph;
+
+use crate::module::ModuleGraph;
 
 use super::BoxDependency;
 

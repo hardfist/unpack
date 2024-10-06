@@ -1,5 +1,5 @@
 use crate::{
-    chunk::chunk_linker::{ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module_graph::ModuleGraph, module_scanner::{ModuleScanner, ScannerState}
+    chunk::chunk_linker::{ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module::{ModuleGraph, ModuleScanner, ScannerState},
 };
 use std::sync::Arc;
 
@@ -32,9 +32,11 @@ impl Compilation {
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
     pub fn link(&mut self) {
-        let linker_state = LinkerState::new();
-        let linker = ChunkLinker::new();
-
+        let mut linker_state = LinkerState::new();
+        let linker = ChunkLinker::new(self.options.clone());
+        linker.prepare_input_entrypoints_and_modules(&mut linker_state);
+        linker.build_chunk_graph(&mut linker_state);
+        
         println!("start link")
     }
 

@@ -1,9 +1,13 @@
 mod ast;
 mod module_id;
 mod normal_module;
+mod module_scanner;
+mod module_graph;
 use camino::Utf8Path;
 pub use module_id::*;
 pub use normal_module::*;
+pub use module_scanner::*;
+pub use module_graph::*;
 use std::fmt::Debug;
 use std::sync::Arc;
 

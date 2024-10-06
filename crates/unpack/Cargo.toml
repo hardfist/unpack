@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 derive-new = { workspace = true }
 index_vec = { workspace = true }
+indexmap = { workspace = true }
 camino = { workspace = true }
 rspack_resolver = { workspace = true }
 miette = { workspace = true, features = ["fancy"]}
