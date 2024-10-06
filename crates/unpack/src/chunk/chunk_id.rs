@@ -6,4 +6,4 @@ define_index_type! {
     pub struct ChunkId = u32;
 }
 
-pub type ModuleVec = IndexVec<ChunkId, Chunk>;
+pub type ChunkVec = IndexVec<ChunkId, Chunk>;

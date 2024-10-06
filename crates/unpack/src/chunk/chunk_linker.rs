@@ -1,4 +1,4 @@
-use super::chunk_graph::ChunkGraph;
+use super::{chunk_graph::ChunkGraph, chunk_group::ChunkGroup};
 use crate::{compilation::Compilation, errors::Diagnostics};
 
 pub struct ChunkLinker {
@@ -16,11 +16,14 @@ impl ChunkLinker {
     }
 
     pub fn prepare_input_entrypoints_and_modules(compilation: &Compilation, state: &mut LinkerState) {
-        for entry in &compilation.options.entry {}
+        for entry in &compilation.options.entry {
+            let chunk_id = state.chunk_graph.create_chunk(Some(entry.name.clone()));
+            let chunk_group_id = state.chunk_graph.create_chunk_group(chunk_id,Some(entry.name.clone()));
+        }
     }
 }
 pub struct LinkerState {
-    pub chunk_graph: ChunkGraph
+    pub(crate) chunk_graph: ChunkGraph
 }
 
 impl LinkerState {
@@ -29,4 +32,5 @@ impl LinkerState {
             chunk_graph: ChunkGraph::default()
         }
     }
+
 }
