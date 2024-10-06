@@ -56,7 +56,7 @@ impl ChunkGraph {
         
     }
     pub fn chunk_graph_chunk_by_id(&self, cgc_id: ChunkGraphChunkId) -> &ChunkGraphChunk {
-        &self.chunk_graph_chunk_by_id(cgc_id)
+        &self.chunk_graph_chunks[cgc_id]
     }
     pub fn chunk_graph_chunk_id_by_chunk_id(&self, chunk_id: ChunkId) ->ChunkGraphChunkId{
         self.chunk_id_to_chunk_graph_chunk_id[&chunk_id]
