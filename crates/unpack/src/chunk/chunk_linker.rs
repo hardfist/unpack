@@ -89,6 +89,14 @@ impl ChunkLinker {
     }
     fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
         println!("add module");
+        let AddAndEnterModule{chunk_id,module_id} = action;
+        if state.chunk_graph.is_module_in_chunk(module_id, chunk_id) {
+            return;
+        }
+        state.chunk_graph.connect_chunk_and_module(chunk_id, module_id);
+
+
+
     }
     fn process_block(&mut self, state: &mut LinkerState, action: ProcessBlock) {}
     pub fn prepare_input_entrypoints_and_modules(

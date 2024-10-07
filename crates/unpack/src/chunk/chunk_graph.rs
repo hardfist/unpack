@@ -3,7 +3,7 @@ use rustc_hash::FxHashMap;
 
 use crate::module::ModuleId;
 
-use super::{chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGroupId, ChunkId};
+use super::{chunk_graph_chunk, chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGraphModule, ChunkGraphModuleId, ChunkGroupId, ChunkId};
 
 #[derive(Debug, Default)]
 pub struct ChunkGraph {
@@ -11,7 +11,9 @@ pub struct ChunkGraph {
     named_chunk_groups: FxHashMap<String, ChunkGroupId>,
     chunks: IndexVec<ChunkId, Chunk>,
     chunk_graph_chunks: IndexVec<ChunkGraphChunkId, ChunkGraphChunk>,
+    chunk_graph_modules: IndexVec<ChunkGraphModuleId, ChunkGraphModule>,
     chunk_id_to_chunk_graph_chunk_id: FxHashMap<ChunkId, ChunkGraphChunkId>,
+    module_id_to_chunk_graph_module_id: FxHashMap<ModuleId, ChunkGraphModuleId>,
     chunk_groups: IndexVec<ChunkGroupId, ChunkGroup>,
 }
 
@@ -55,8 +57,11 @@ impl ChunkGraph {
     pub fn connect_chunk_and_entry_module(&mut self, chunk_id: ChunkId, module_id: ModuleId, entry_point_id: ChunkGroupId){
         
     }
-    pub fn chunk_graph_chunk_by_id(&self, cgc_id: ChunkGraphChunkId) -> &ChunkGraphChunk {
-        &self.chunk_graph_chunks[cgc_id]
+    pub fn chunk_graph_chunk_by_id(&self, chunk_graph_chunk_id: ChunkGraphChunkId) -> &ChunkGraphChunk {
+        &self.chunk_graph_chunks[chunk_graph_chunk_id]
+    }
+    pub fn chunk_graph_chunk_by_id_mut(&mut self,chunk_graph_chunk_id: ChunkGraphChunkId) -> &mut ChunkGraphChunk {
+        &mut self.chunk_graph_chunks[chunk_graph_chunk_id]
     }
     pub fn chunk_graph_chunk_id_by_chunk_id(&self, chunk_id: ChunkId) ->ChunkGraphChunkId{
         self.chunk_id_to_chunk_graph_chunk_id[&chunk_id]
@@ -65,5 +70,27 @@ impl ChunkGraph {
         let cgc_id = self.chunk_graph_chunk_id_by_chunk_id(chunk_id);
         let chunk_graph_chunk = self.chunk_graph_chunk_by_id(cgc_id);
         chunk_graph_chunk.modules.contains(&module_id)
+    }
+    pub fn chunk_graph_module_id_by_module_id(&self,module_id: ModuleId)-> ChunkGraphModuleId{
+        self.module_id_to_chunk_graph_module_id[&module_id]
+    }
+    pub fn chunk_graph_module_by_id(&self, chunk_graph_module_id:ChunkGraphModuleId) -> &ChunkGraphModule {
+        &self.chunk_graph_modules[chunk_graph_module_id]
+    }
+    pub fn chunk_graph_module_by_id_mut(&mut self, chunk_graph_module_id:ChunkGraphModuleId) -> &mut ChunkGraphModule {
+        &mut self.chunk_graph_modules[chunk_graph_module_id]
+    }
+    // connect chunk & module by chunk_graph_module
+    pub fn connect_chunk_and_module(&mut self,chunk_id: ChunkId, module_id: ModuleId){
+        // connect chunk with module
+        let chunk_graph_module_id = self.chunk_graph_module_id_by_module_id(module_id);
+        let chunk_graph_module = self.chunk_graph_module_by_id_mut(chunk_graph_module_id);
+        chunk_graph_module.chunks.insert(chunk_id);
+
+        // connect module with chunk
+        let chunk_graph_chunk_id = self.chunk_graph_chunk_id_by_chunk_id(chunk_id);
+        let chunk_graph_chunk  = self.chunk_graph_chunk_by_id_mut(chunk_graph_chunk_id);
+        chunk_graph_chunk.modules.insert(module_id);
+        
     }
 }
