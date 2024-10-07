@@ -31,7 +31,9 @@ pub struct CodeGenerationContext<'a> {
     pub module_graph: &'a ModuleGraph
 }
 struct ParseResult {
-    dependencies: Vec<BoxDependency>,
+    module_dependencies: Vec<BoxDependency>,
+    
+    
 }
 impl DependenciesBlock for NormalModule {
     fn add_block_id(&mut self, block_id: AsyncDependenciesBlockId) {
@@ -58,7 +60,7 @@ impl Module for NormalModule {
         self.source = NormalModuleSource::Succeed(source.clone());
         let parse_result = self.parse(content)?;
         Ok(BuildResult {
-            dependencies: parse_result.dependencies,
+            dependencies: parse_result.module_dependencies,
         })
     }
     
@@ -105,8 +107,8 @@ impl NormalModule {
             if let Some(dependency) = code_generation_context.module_graph.dependency_by_id(*dep_id).as_dependency_template() {
                 dependency.apply(&mut source, code_generation_context);
             }
-            
         });
+        
         Ok(source.boxed())
     }
     fn parse(&self, content: String) -> Result<ParseResult> {
@@ -126,7 +128,7 @@ impl NormalModule {
             .into_iter()
             .map(|request| Box::new(HarmonyImportSideEffectDependency { request }) as BoxDependency)
             .collect::<Vec<_>>();
-        Ok(ParseResult { dependencies })
+        Ok(ParseResult { module_dependencies: dependencies })
     }
 
 }
