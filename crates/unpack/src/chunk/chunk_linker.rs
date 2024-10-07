@@ -99,7 +99,7 @@ impl ChunkLinker {
         todo!("add entry module");
     }
     fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
-        println!("add module");
+        println!("add module:{:?}",action);
         let AddAndEnterModule{chunk_id,module_id} = action;
         if state.chunk_graph.is_module_in_chunk(module_id, chunk_id) {
             return;

@@ -1,4 +1,5 @@
 use index_vec::IndexVec;
+use indexmap::IndexSet;
 use rustc_hash::FxHashMap;
 
 use crate::module::ModuleId;
@@ -9,7 +10,7 @@ use super::{chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, 
 pub struct ChunkGraph {
     named_chunks: FxHashMap<String, ChunkId>,
     named_chunk_groups: FxHashMap<String, ChunkGroupId>,
-    chunks: IndexVec<ChunkId, Chunk>,
+    pub chunks: IndexVec<ChunkId, Chunk>,
     chunk_graph_chunks: IndexVec<ChunkGraphChunkId, ChunkGraphChunk>,
     chunk_graph_modules: IndexVec<ChunkGraphModuleId, ChunkGraphModule>,
     chunk_id_to_chunk_graph_chunk_id: FxHashMap<ChunkId, ChunkGraphChunkId>,
@@ -69,7 +70,9 @@ impl ChunkGraph {
         }else {
             let chunk_graph_chunk = ChunkGraphChunk::new();
             
-            self.chunk_graph_chunks.push(chunk_graph_chunk)
+            let chunk_graph_chunk_id = self.chunk_graph_chunks.push(chunk_graph_chunk);
+            self.chunk_id_to_chunk_graph_chunk_id.insert(chunk_id, chunk_graph_chunk_id);
+            chunk_graph_chunk_id
         };
         chunk_graph_chunk_id
     }
@@ -105,6 +108,12 @@ impl ChunkGraph {
         let chunk_graph_chunk_id = self.chunk_graph_chunk_id_by_chunk_id(chunk_id);
         let chunk_graph_chunk  = self.chunk_graph_chunk_by_id_mut(chunk_graph_chunk_id);
         chunk_graph_chunk.modules.insert(module_id);
+        dbg!(&chunk_graph_chunk);
         
+    }
+    pub fn get_chunk_modules(&mut self, chunk_id: ChunkId) -> IndexSet<ModuleId> {
+        let chunk_graph_chunk_id = self.chunk_graph_chunk_id_by_chunk_id(chunk_id);
+        let chunk_graph_chunk  = self.chunk_graph_chunk_by_id_mut(chunk_graph_chunk_id);
+        chunk_graph_chunk.modules.clone()
     }
 }
