@@ -18,13 +18,13 @@ pub struct ModuleGraph {
     pub modules: IndexVec<ModuleId, BoxModule>,
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
     pub connections: IndexVec<ConnectionId, Connection>,
-    pub dep_to_connection: IndexMap<DependencyId, ConnectionId>,
+    pub dependency_to_connection: IndexMap<DependencyId, ConnectionId>,
     pub module_id_to_module_graph_module_id: FxHashMap<ModuleId, ModuleGraphModuleId>
 }
 
 impl ModuleGraph {
     pub fn module_id_by_dependency_id(&self, dep_id: DependencyId) -> ModuleId {
-        let connection_id = self.dep_to_connection.get(&dep_id).expect("get connection failed");
+        let connection_id = self.dependency_to_connection.get(&dep_id).expect("get connection failed");
         let connection = self.connection_by_id(*connection_id);
         connection.resolved_module_id
     }
@@ -34,19 +34,19 @@ impl ModuleGraph {
             resolved_module_id
         );
         let connection_id = self.add_connection(connection);
-        self.dep_to_connection.insert(dep_id, connection_id);
-        let resolved_mgm_id = self.module_graph_module_by_module_id(resolved_module_id);
+        self.dependency_to_connection.insert(dep_id, connection_id);
+        let resolved_mgm_id = self.module_graph_module_id_by_module_id(resolved_module_id);
         let resolved_module = self.module_graph_module_by_id_mut(resolved_mgm_id);
         resolved_module.add_incoming_connection(connection_id);
         
         if let Some(origin_module_id) = origin_module_id {
-            let mgm_id = self.module_graph_module_by_module_id(origin_module_id);
+            let mgm_id = self.module_graph_module_id_by_module_id(origin_module_id);
             let mgm = self.module_graph_module_by_id_mut(mgm_id);
             mgm.add_outgoing_connection(connection_id);
         }
 
     }
-    pub fn module_graph_module_by_module_id(&mut self, module_id: ModuleId) -> ModuleGraphModuleId {
+    pub fn module_graph_module_id_by_module_id(&mut self, module_id: ModuleId) -> ModuleGraphModuleId {
         let mgm_id = if let Some(&id) = self.module_id_to_module_graph_module_id.get(&module_id) {
             id
         } else {
@@ -56,5 +56,11 @@ impl ModuleGraph {
             new_id
         };
         mgm_id
+    }
+    pub fn get_outgoing_connections(&mut self, module_id: ModuleId)-> Vec<ConnectionId>{
+        let mgm_id = self.module_graph_module_id_by_module_id(module_id);
+        let mgm = self.module_graph_module_by_id(mgm_id);
+        mgm.outgoing_connections.clone()
+
     }
 }

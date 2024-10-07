@@ -4,8 +4,8 @@ use super::ConnectionId;
 
 #[derive(Debug)]
 pub struct ModuleGraphModule {
-    incoming_connections: Vec<ConnectionId>,
-    outgoing_connections: Vec<ConnectionId>
+    pub incoming_connections: Vec<ConnectionId>,
+    pub outgoing_connections: Vec<ConnectionId>
 }
 impl ModuleGraphModule {
     pub fn new() -> Self{

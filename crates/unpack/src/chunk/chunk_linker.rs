@@ -21,7 +21,7 @@ enum QueueAction {
 struct ProcessBlock {
     module_id: ModuleId,
     block_id: BlockId,
-    chunk: ChunkId,
+    chunk_id: ChunkId,
 }
 #[derive(Debug)]
 struct AddAndEnterEntryModule {}
@@ -36,7 +36,9 @@ struct EnterModule {
     chunk_id: ChunkId
 }
 #[derive(Debug)]
-struct LeaveModule {}
+struct LeaveModule {
+    module_id: ModuleId
+}
 pub struct ChunkLinker {
     pub diagnostics: Diagnostics,
     pub options: Arc<CompilerOptions>,
@@ -66,7 +68,6 @@ impl ChunkLinker {
                     }))
             }
         }
-        dbg!(&state.queue);
         while !state.queue.is_empty() {
             self.process_queue(state);
         }
@@ -84,13 +85,22 @@ impl ChunkLinker {
             QueueAction::AddAndEnterModule(action) => {
                 self.add_and_enter_module(state, action);
             }
+            QueueAction::LeaveModule(action) => {
+                self.leave_module(state,action)
+            },
+            QueueAction::ProcessBlock(action) => {
+                self.process_block(state, action);
+            }
             _ => {
                 todo!("no implemented yet")
             }
         }
     }
+    fn leave_module(&self, state: &mut LinkerState, action: LeaveModule){
+
+    }
     fn add_and_enter_entry_module(&self, state: &mut LinkerState, action: AddAndEnterEntryModule) {
-        println!("add entry module");
+        todo!("add entry module");
     }
     fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
         println!("add module");
@@ -99,9 +109,36 @@ impl ChunkLinker {
             return;
         }
         state.chunk_graph.connect_chunk_and_module(chunk_id, module_id);
-        
+        self.enter_module(state,EnterModule {
+            module_id,
+            chunk_id
+        });
     }
-    fn process_block(&mut self, state: &mut LinkerState, action: ProcessBlock) {}
+    fn enter_module(&self, state: &mut LinkerState, action: EnterModule){
+        state.queue.push_back(QueueAction::LeaveModule(LeaveModule {
+            module_id: action.module_id
+        }));
+        self.process_block(state, ProcessBlock {
+            module_id: action.module_id,
+            chunk_id: action.chunk_id,
+            block_id: BlockId::ModuleId(action.module_id)
+        });
+    }
+    /**
+     * FIXME: add asyncDependenciesBlock handle in the future
+     */
+    fn process_block(&self, state: &mut LinkerState, action: ProcessBlock) {
+        let module_id = action.module_id;
+        let connection_ids = state.module_graph.get_outgoing_connections(module_id);
+        for connection_id in connection_ids {
+            let connection = state.module_graph.connection_by_id(connection_id);
+            let resolved_module_id= connection.resolved_module_id;
+            state.queue.push_back(QueueAction::AddAndEnterModule(AddAndEnterModule{
+                module_id: resolved_module_id,
+                chunk_id: action.chunk_id
+            }));
+        }
+    }
     pub fn prepare_input_entrypoints_and_modules(
         &self,
         state: &mut LinkerState,
