@@ -4,6 +4,7 @@ mod harmony_import_side_effect_dependency;
 mod module_dependency;
 mod dependency_block;
 mod dependency_template;
+mod const_dependency;
 use std::fmt::Debug;
 
 use camino::Utf8Path;
@@ -14,6 +15,7 @@ pub use harmony_import_side_effect_dependency::*;
 pub use module_dependency::*;
 pub use dependency_block::*;
 pub use dependency_template::*;
+pub use const_dependency::*;
 
 pub trait Dependency: AsModuleDependency + AsDependencyTemplate + Debug + DynClone + Send + Sync {
     fn get_context(&self) -> Option<&Utf8Path> {

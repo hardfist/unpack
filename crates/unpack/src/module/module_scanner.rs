@@ -187,7 +187,7 @@ impl ModuleScanner {
         }) {
             Ok(result) => {
                 let dependency_ids = result
-                    .dependencies
+                    .module_dependencies
                     .into_iter()
                     .map(|dep| state.module_graph.add_dependency(dep))
                     .collect::<Vec<_>>();

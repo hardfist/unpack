@@ -9,6 +9,7 @@ use std::sync::Arc;
 use crate::compiler::CompilerOptions;
 
 use crate::dependency::BoxDependency;
+use crate::dependency::BoxDependencyTemplate;
 use crate::dependency::DependenciesBlock;
 use crate::errors::miette::Result;
 
@@ -16,7 +17,8 @@ use crate::errors::miette::Result;
 
 #[derive(Debug)]
 pub struct BuildResult {
-    pub dependencies: Vec<BoxDependency>,
+    pub module_dependencies: Vec<BoxDependency>,
+    pub presentational_dependencies: Vec<BoxDependencyTemplate>
 }
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,

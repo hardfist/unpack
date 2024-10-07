@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::dependency::{AsyncDependenciesBlockId, BoxDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
+use crate::dependency::{AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, ConstDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -17,7 +17,8 @@ pub struct NormalModule {
     request: String,
     diagnostics: Diagnostics,
     original_source: Option<BoxSource>,
-    dependencies: Vec<DependencyId>,
+    module_dependencies: Vec<DependencyId>,
+    presentational_dependencies: Vec<BoxDependencyTemplate>,
     blocks: Vec<AsyncDependenciesBlockId>,
     source: NormalModuleSource
 }
@@ -32,8 +33,7 @@ pub struct CodeGenerationContext<'a> {
 }
 struct ParseResult {
     module_dependencies: Vec<BoxDependency>,
-    
-    
+    presentational_dependencies: Vec<BoxDependencyTemplate>
 }
 impl DependenciesBlock for NormalModule {
     fn add_block_id(&mut self, block_id: AsyncDependenciesBlockId) {
@@ -45,11 +45,11 @@ impl DependenciesBlock for NormalModule {
     }
 
     fn add_dependency_id(&mut self, dependency_id: DependencyId) {
-        self.dependencies.push(dependency_id);
+        self.module_dependencies.push(dependency_id);
     }
 
     fn get_dependencies(&self) -> Vec<DependencyId> {
-        self.dependencies.clone()
+        self.module_dependencies.clone()
     }
 }
 
@@ -60,7 +60,8 @@ impl Module for NormalModule {
         self.source = NormalModuleSource::Succeed(source.clone());
         let parse_result = self.parse(content)?;
         Ok(BuildResult {
-            dependencies: parse_result.module_dependencies,
+            module_dependencies: parse_result.module_dependencies,
+            presentational_dependencies: parse_result.presentational_dependencies
         })
     }
     
@@ -94,16 +95,20 @@ impl NormalModule {
             original_source: None,
             context,
             blocks:  vec![],
-            dependencies: vec![],
+            module_dependencies: vec![],
+            presentational_dependencies: vec![],
             source: NormalModuleSource::UnBuild
         }
+    }
+    fn add_presentational_dependency(&mut self, dependency: BoxDependencyTemplate){
+        self.add_presentational_dependency(dependency);
     }
     fn create_source(&self, content:String) -> BoxSource{
         OriginalSource::new(content, self.resource_path.clone()).boxed()
     }
     fn generate(&self, source: BoxSource, code_generation_context: &CodeGenerationContext) -> Result<BoxSource> {
         let mut source = ReplaceSource::new(source);
-        self.dependencies.iter().for_each(|dep_id| {
+        self.module_dependencies.iter().for_each(|dep_id| {
             if let Some(dependency) = code_generation_context.module_graph.dependency_by_id(*dep_id).as_dependency_template() {
                 dependency.apply(&mut source, code_generation_context);
             }
@@ -114,21 +119,25 @@ impl NormalModule {
     fn parse(&self, content: String) -> Result<ParseResult> {
         let ast = parse(content)?;
         // Analyze the AST for all import dependencies
-        let mut requests = Vec::new();
-
+        let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
+        let mut module_dependencies: Vec<BoxDependency> = vec![];
         for item in &ast.program.as_module().unwrap().body {
             if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(import)) =
                 item
             {
                 let request = import.src.value.clone();
-                requests.push(request);
+                module_dependencies.push(
+                    Box::new(HarmonyImportSideEffectDependency {
+                        request
+                    })
+                );
+                presentational_dependencies.push(
+                    Box::new(ConstDependency::new(0,0,"".into()))
+                );
             }
         }
-        let dependencies = requests
-            .into_iter()
-            .map(|request| Box::new(HarmonyImportSideEffectDependency { request }) as BoxDependency)
-            .collect::<Vec<_>>();
-        Ok(ParseResult { module_dependencies: dependencies })
+        
+        Ok(ParseResult { module_dependencies, presentational_dependencies })
     }
 
 }
