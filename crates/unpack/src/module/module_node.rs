@@ -3,6 +3,8 @@ use super::NormalModule;
 use camino::Utf8Path;
 use index_vec::define_index_type;
 use index_vec::IndexVec;
+use rspack_sources::BoxSource;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -25,7 +27,7 @@ pub struct BuildContext {
 }
 #[derive(Debug)]
 pub struct CodeGenerationResult {
-
+    pub source: BoxSource
 }
 pub trait Module: Debug + DependenciesBlock + Send + Sync {
     fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::dependency::{AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, ConstDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
+use crate::dependency::{AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, ConstDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency, SpanExt};
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -69,19 +69,21 @@ impl Module for NormalModule {
         self.context.as_ref().map(|x| x.as_ref())
     }
     fn code_generation(&self,code_generation_context: CodeGenerationContext) -> Result<CodeGenerationResult> {
-        match &self.source {
+        let generate_result = match &self.source {
             NormalModuleSource::Failed(_) => {
                 todo!("no implemented yet")
             },
             NormalModuleSource::Succeed(source) => {
-                let _generation_result = self.generate(source.clone(),&code_generation_context);
+                self.generate(source.clone(),&code_generation_context)
             },
             NormalModuleSource::UnBuild => {
                 panic!("should have source")
             }
-        }
+        };
         
-        Ok(CodeGenerationResult {  })
+        Ok(CodeGenerationResult { 
+            source: generate_result?
+        })
     }
     
 }
@@ -100,9 +102,6 @@ impl NormalModule {
             source: NormalModuleSource::UnBuild
         }
     }
-    fn add_presentational_dependency(&mut self, dependency: BoxDependencyTemplate){
-        self.add_presentational_dependency(dependency);
-    }
     fn create_source(&self, content:String) -> BoxSource{
         OriginalSource::new(content, self.resource_path.clone()).boxed()
     }
@@ -112,6 +111,9 @@ impl NormalModule {
             if let Some(dependency) = code_generation_context.module_graph.dependency_by_id(*dep_id).as_dependency_template() {
                 dependency.apply(&mut source, code_generation_context);
             }
+        });
+        self.presentational_dependencies.iter().for_each(|dependency| {
+            dependency.apply(&mut source, code_generation_context);
         });
         
         Ok(source.boxed())
@@ -132,7 +134,7 @@ impl NormalModule {
                     })
                 );
                 presentational_dependencies.push(
-                    Box::new(ConstDependency::new(0,0,"".into()))
+                    Box::new(ConstDependency::new(import.span.real_lo(),import.span.real_hi(),"".into()))
                 );
             }
         }

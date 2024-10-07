@@ -49,7 +49,5 @@ impl Compilation {
                 module_graph: &linker_state.module_graph
             })
         }).collect::<Vec<_>>();
-        dbg!(results);
-
     }
 }
