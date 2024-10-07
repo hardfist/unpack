@@ -15,10 +15,11 @@ pub use module_dependency::*;
 pub use dependency_block::*;
 pub use dependency_template::*;
 
-pub trait Dependency: AsModuleDependency + Debug + DynClone + Send + Sync {
+pub trait Dependency: AsModuleDependency + AsDependencyTemplate + Debug + DynClone + Send + Sync {
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }
+    
 }
 
 clone_trait_object!(Dependency);

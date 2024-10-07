@@ -6,7 +6,7 @@ use rspack_sources::{BoxSource, ReplaceSource};
 use crate::module::CodeGenerationContext;
 
 pub trait DependencyTemplate: Debug + DynClone + Send + Sync {
-    fn apply(&self, source:ReplaceSource<BoxSource>, code_generation_context: CodeGenerationContext ) {
+    fn apply(&self, source:&mut ReplaceSource<BoxSource>, code_generation_context: &CodeGenerationContext ) {
 
     }
 }

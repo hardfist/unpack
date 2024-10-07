@@ -71,7 +71,7 @@ impl Module for NormalModule {
                 todo!("no implemented yet")
             },
             NormalModuleSource::Succeed(source) => {
-                let generation_result = self.generate(source.clone(),code_generation_context);
+                let generation_result = self.generate(source.clone(),&code_generation_context);
             },
             NormalModuleSource::UnBuild => {
                 panic!("should have source")
@@ -99,10 +99,12 @@ impl NormalModule {
     fn create_source(&self, content:String) -> BoxSource{
         OriginalSource::new(content, self.resource_path.clone()).boxed()
     }
-    fn generate(&self, source: BoxSource, code_generation_context: CodeGenerationContext) -> Result<BoxSource> {
+    fn generate(&self, source: BoxSource, code_generation_context: &CodeGenerationContext) -> Result<BoxSource> {
         let mut source = ReplaceSource::new(source);
         self.dependencies.iter().for_each(|dep_id| {
-            let dependency = code_generation_context.module_graph.dependency_by_id(*dep_id);
+            if let Some(dependency) = code_generation_context.module_graph.dependency_by_id(*dep_id).as_dependency_template() {
+                dependency.apply(&mut source, code_generation_context);
+            }
             
         });
         Ok(source.boxed())
