@@ -103,6 +103,7 @@ impl NormalModule {
         let mut source = ReplaceSource::new(source);
         self.dependencies.iter().for_each(|dep_id| {
             let dependency = code_generation_context.module_graph.dependency_by_id(*dep_id);
+            
         });
         Ok(source.boxed())
     }

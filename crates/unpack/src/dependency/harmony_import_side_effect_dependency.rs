@@ -13,11 +13,3 @@ impl ModuleDependency for HarmonyImportSideEffectDependency {
         &self.request
     }
 }
-impl AsModuleDependency for HarmonyImportSideEffectDependency {
-    fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
-        Some(self)
-    }
-    fn to_module_dependency(self: Box<Self>) -> Option<Box<dyn ModuleDependency>> {
-        Some(self)
-    }
-}

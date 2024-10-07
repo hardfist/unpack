@@ -24,11 +24,3 @@ impl ModuleDependency for EntryDependency {
         &self.request
     }
 }
-impl AsModuleDependency for EntryDependency {
-    fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
-        Some(self)
-    }
-    fn to_module_dependency(self: Box<Self>) -> Option<Box<dyn ModuleDependency>> {
-        Some(self)
-    }
-}
