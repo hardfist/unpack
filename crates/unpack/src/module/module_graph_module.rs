@@ -7,6 +7,12 @@ pub struct ModuleGraphModule {
     pub incoming_connections: Vec<ConnectionId>,
     pub outgoing_connections: Vec<ConnectionId>
 }
+impl Default for ModuleGraphModule {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ModuleGraphModule {
     pub fn new() -> Self{
         Self {

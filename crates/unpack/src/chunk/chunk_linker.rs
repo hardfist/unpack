@@ -1,7 +1,6 @@
 use std::{collections::VecDeque, sync::Arc};
 
 use indexmap::IndexMap;
-use swc_core::quote;
 
 use super::{chunk_graph::ChunkGraph, ChunkGroupId, ChunkId};
 use crate::{
@@ -91,15 +90,12 @@ impl ChunkLinker {
             QueueAction::ProcessBlock(action) => {
                 self.process_block(state, action);
             }
-            _ => {
-                todo!("no implemented yet")
-            }
         }
     }
-    fn leave_module(&self, state: &mut LinkerState, action: LeaveModule){
+    fn leave_module(&self, _state: &mut LinkerState, _action: LeaveModule){
 
     }
-    fn add_and_enter_entry_module(&self, state: &mut LinkerState, action: AddAndEnterEntryModule) {
+    fn add_and_enter_entry_module(&self, _state: &mut LinkerState, _action: AddAndEnterEntryModule) {
         todo!("add entry module");
     }
     fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {

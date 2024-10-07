@@ -3,7 +3,7 @@ use rustc_hash::FxHashMap;
 
 use crate::module::ModuleId;
 
-use super::{chunk_graph_chunk, chunk_graph_module, chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGraphModule, ChunkGraphModuleId, ChunkGroupId, ChunkId};
+use super::{chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGraphModule, ChunkGraphModuleId, ChunkGroupId, ChunkId};
 
 #[derive(Debug, Default)]
 pub struct ChunkGraph {
@@ -54,7 +54,7 @@ impl ChunkGraph {
     pub fn chunk_group_by_id_mut(&mut self, chunk_group_id: ChunkGroupId) -> &mut ChunkGroup {
         &mut self.chunk_groups[chunk_group_id]
     }
-    pub fn connect_chunk_and_entry_module(&mut self, chunk_id: ChunkId, module_id: ModuleId, entry_point_id: ChunkGroupId){
+    pub fn connect_chunk_and_entry_module(&mut self, _chunk_id: ChunkId, _module_id: ModuleId, _entry_point_id: ChunkGroupId){
         
     }
     pub fn chunk_graph_chunk_by_id(&self, chunk_graph_chunk_id: ChunkGraphChunkId) -> &ChunkGraphChunk {
@@ -68,8 +68,8 @@ impl ChunkGraph {
             *id
         }else {
             let chunk_graph_chunk = ChunkGraphChunk::new();
-            let chunk_graph_chunk_id = self.chunk_graph_chunks.push(chunk_graph_chunk);
-            chunk_graph_chunk_id
+            
+            self.chunk_graph_chunks.push(chunk_graph_chunk)
         };
         chunk_graph_chunk_id
     }
@@ -83,8 +83,8 @@ impl ChunkGraph {
             *id
         }else {
             let chunk_graph_module = ChunkGraphModule::new();
-            let chunk_graph_module_id = self.chunk_graph_modules.push(chunk_graph_module);
-            chunk_graph_module_id
+            
+            self.chunk_graph_modules.push(chunk_graph_module)
         };
         chunk_graph_module_id
     }

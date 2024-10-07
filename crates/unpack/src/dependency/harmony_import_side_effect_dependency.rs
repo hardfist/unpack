@@ -1,6 +1,6 @@
 use swc_core::atoms::Atom;
 
-use super::{AsDependencyTemplate, AsModuleDependency, Dependency, ModuleDependency};
+use super::{AsDependencyTemplate, Dependency, ModuleDependency};
 
 #[derive(Debug, Clone)]
 pub struct HarmonyImportSideEffectDependency {

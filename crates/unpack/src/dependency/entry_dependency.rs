@@ -2,7 +2,7 @@ use camino::Utf8PathBuf;
 use derive_new::new;
 
 use super::{
-    module_dependency::{AsModuleDependency, ModuleDependency}, AsDependencyTemplate, Dependency
+    module_dependency::ModuleDependency, AsDependencyTemplate, Dependency
 };
 
 // dependency for entry

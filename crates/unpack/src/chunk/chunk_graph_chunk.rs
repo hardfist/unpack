@@ -12,6 +12,12 @@ pub struct ChunkGraphChunk {
     pub modules: IndexSet<ModuleId>,
     pub runtime_modules: IndexSet<ModuleId>
 }
+impl Default for ChunkGraphChunk {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ChunkGraphChunk {
     pub fn new() -> Self {
         Self {

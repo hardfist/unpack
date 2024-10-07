@@ -5,6 +5,12 @@ pub struct ChunkGroup {
     named_chunk_groups: FxHashMap<String, ChunkGroupId>,
     chunks: Vec<ChunkId>,
 }
+impl Default for ChunkGroup {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ChunkGroup {
     pub fn new() -> Self {
         Self {

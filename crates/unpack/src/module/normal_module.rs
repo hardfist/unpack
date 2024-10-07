@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use crate::dependency::{AsyncDependenciesBlockId, BlockId, BoxDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
+use crate::dependency::{AsyncDependenciesBlockId, BoxDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
-use rspack_sources::{BoxSource, OriginalSource, RawSource, ReplaceSource, SourceExt};
+use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 use swc_core::ecma::utils::swc_ecma_ast;
 
 use super::{CodeGenerationResult, ModuleGraph};
@@ -71,7 +71,7 @@ impl Module for NormalModule {
                 todo!("no implemented yet")
             },
             NormalModuleSource::Succeed(source) => {
-                let generation_result = self.generate(source.clone(),&code_generation_context);
+                let _generation_result = self.generate(source.clone(),&code_generation_context);
             },
             NormalModuleSource::UnBuild => {
                 panic!("should have source")

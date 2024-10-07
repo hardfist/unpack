@@ -1,4 +1,3 @@
-use std::slice::Iter;
 
 use index_vec::IndexVec;
 use indexmap::IndexMap;
