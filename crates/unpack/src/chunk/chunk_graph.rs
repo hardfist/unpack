@@ -3,7 +3,7 @@ use rustc_hash::FxHashMap;
 
 use crate::module::ModuleId;
 
-use super::{chunk_graph_chunk, chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGraphModule, ChunkGraphModuleId, ChunkGroupId, ChunkId};
+use super::{chunk_graph_chunk, chunk_graph_module, chunk_group::ChunkGroup, Chunk, ChunkGraphChunk, ChunkGraphChunkId, ChunkGraphModule, ChunkGraphModuleId, ChunkGroupId, ChunkId};
 
 #[derive(Debug, Default)]
 pub struct ChunkGraph {
@@ -63,16 +63,30 @@ impl ChunkGraph {
     pub fn chunk_graph_chunk_by_id_mut(&mut self,chunk_graph_chunk_id: ChunkGraphChunkId) -> &mut ChunkGraphChunk {
         &mut self.chunk_graph_chunks[chunk_graph_chunk_id]
     }
-    pub fn chunk_graph_chunk_id_by_chunk_id(&self, chunk_id: ChunkId) ->ChunkGraphChunkId{
-        self.chunk_id_to_chunk_graph_chunk_id[&chunk_id]
+    pub fn chunk_graph_chunk_id_by_chunk_id(&mut self, chunk_id: ChunkId) ->ChunkGraphChunkId{
+        let chunk_graph_chunk_id = if let Some(id) = self.chunk_id_to_chunk_graph_chunk_id.get(&chunk_id) {
+            *id
+        }else {
+            let chunk_graph_chunk = ChunkGraphChunk::new();
+            let chunk_graph_chunk_id = self.chunk_graph_chunks.push(chunk_graph_chunk);
+            chunk_graph_chunk_id
+        };
+        chunk_graph_chunk_id
     }
-    pub fn is_module_in_chunk(&self, module_id: ModuleId, chunk_id: ChunkId) -> bool {
+    pub fn is_module_in_chunk(&mut self, module_id: ModuleId, chunk_id: ChunkId) -> bool {
         let cgc_id = self.chunk_graph_chunk_id_by_chunk_id(chunk_id);
         let chunk_graph_chunk = self.chunk_graph_chunk_by_id(cgc_id);
         chunk_graph_chunk.modules.contains(&module_id)
     }
-    pub fn chunk_graph_module_id_by_module_id(&self,module_id: ModuleId)-> ChunkGraphModuleId{
-        self.module_id_to_chunk_graph_module_id[&module_id]
+    pub fn chunk_graph_module_id_by_module_id(&mut self,module_id: ModuleId)-> ChunkGraphModuleId{
+        let chunk_graph_module_id = if let Some(id) =  self.module_id_to_chunk_graph_module_id.get(&module_id){
+            *id
+        }else {
+            let chunk_graph_module = ChunkGraphModule::new();
+            let chunk_graph_module_id = self.chunk_graph_modules.push(chunk_graph_module);
+            chunk_graph_module_id
+        };
+        chunk_graph_module_id
     }
     pub fn chunk_graph_module_by_id(&self, chunk_graph_module_id:ChunkGraphModuleId) -> &ChunkGraphModule {
         &self.chunk_graph_modules[chunk_graph_module_id]

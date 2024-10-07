@@ -9,6 +9,13 @@ pub struct ChunkGraphModule {
     pub chunks: IndexSet<ChunkId>,
     pub runtime_in_chunks: IndexSet<ChunkId>
 }
+impl ChunkGraphModule {
+    pub fn new()-> Self{
+        Self {
+            ..Default::default()
+        }
+    }
+}
 define_index_type! {
     pub struct ChunkGraphModuleId = u32;
 }

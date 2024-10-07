@@ -31,6 +31,11 @@ struct AddAndEnterModule {
     chunk_id: ChunkId,
 }
 #[derive(Debug)]
+struct EnterModule {
+    module_id: ModuleId,
+    chunk_id: ChunkId
+}
+#[derive(Debug)]
 struct LeaveModule {}
 pub struct ChunkLinker {
     pub diagnostics: Diagnostics,
@@ -94,9 +99,7 @@ impl ChunkLinker {
             return;
         }
         state.chunk_graph.connect_chunk_and_module(chunk_id, module_id);
-
-
-
+        
     }
     fn process_block(&mut self, state: &mut LinkerState, action: ProcessBlock) {}
     pub fn prepare_input_entrypoints_and_modules(
