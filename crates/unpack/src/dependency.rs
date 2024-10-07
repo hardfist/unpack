@@ -13,7 +13,7 @@ pub use harmony_import_side_effect_dependency::*;
 pub use module_dependency::*;
 pub use dependency_block::*;
 
-pub trait Dependency: AsModuleDependency + Debug + DynClone {
+pub trait Dependency: AsModuleDependency + Debug + DynClone + Send + Sync {
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }

@@ -1,8 +1,10 @@
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
+
 use crate::{
     chunk::{ChunkLinker, LinkerState},
     compiler::CompilerOptions,
     errors::Diagnostics,
-    module::{ModuleGraph, ModuleScanner, ScannerState},
+    module::{CodeGenerationContext, ModuleGraph, ModuleScanner, ScannerState},
 };
 use std::sync::Arc;
 
@@ -37,6 +39,16 @@ impl Compilation {
         linker.build_chunk_graph(&mut linker_state);
         linker_state
     }
+    /// code generation
+    pub fn code_generation(&mut self, linker_state: LinkerState) {
+        
+        let results = linker_state.module_graph.modules.indices().collect::<Vec<_>>().into_par_iter().map(|module_id| {
+            let module = linker_state.module_graph.module_by_id(module_id);
+            let code_generation_result = module.code_generation(CodeGenerationContext {
+                module_graph: &linker_state.module_graph
+            });
+            code_generation_result
+        }).collect::<Vec<_>>();
 
-    pub fn emit(&mut self, _linker_state: LinkerState) {}
+    }
 }

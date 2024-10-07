@@ -1,3 +1,4 @@
+use super::CodeGenerationContext;
 use super::NormalModule;
 use camino::Utf8Path;
 use index_vec::define_index_type;
@@ -20,11 +21,16 @@ pub struct BuildResult {
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,
 }
-pub trait Module: Debug + DependenciesBlock {
+#[derive(Debug)]
+pub struct CodeGenerationResult {
+
+}
+pub trait Module: Debug + DependenciesBlock + Send + Sync {
     fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }
+    fn code_generation(&self, code_generation_context: CodeGenerationContext) -> Result<CodeGenerationResult>;
 }
 
 pub type BoxModule = Box<dyn Module>;

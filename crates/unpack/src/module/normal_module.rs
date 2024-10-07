@@ -1,11 +1,14 @@
+use std::sync::Arc;
+
 use crate::dependency::{AsyncDependenciesBlockId, BlockId, BoxDependency, DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency};
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use camino::{Utf8Path, Utf8PathBuf};
-use miette::IntoDiagnostic;
-use rspack_sources::BoxSource;
+use miette::{IntoDiagnostic, Report};
+use rspack_sources::{BoxSource, OriginalSource, RawSource, ReplaceSource, SourceExt};
 use swc_core::ecma::utils::swc_ecma_ast;
 
+use super::{CodeGenerationResult, ModuleGraph};
 use super::{ast::parse, BuildContext, BuildResult, Module};
 #[derive(Debug)]
 pub struct NormalModule {
@@ -15,7 +18,17 @@ pub struct NormalModule {
     diagnostics: Diagnostics,
     original_source: Option<BoxSource>,
     dependencies: Vec<DependencyId>,
-    blocks: Vec<AsyncDependenciesBlockId>
+    blocks: Vec<AsyncDependenciesBlockId>,
+    source: NormalModuleSource
+}
+#[derive(Debug,Clone)]
+enum NormalModuleSource {
+    UnBuild,
+    Succeed(BoxSource),
+    Failed(Arc<Report>)
+}
+pub struct CodeGenerationContext<'a> {
+    pub module_graph: &'a ModuleGraph
 }
 struct ParseResult {
     dependencies: Vec<BoxDependency>,
@@ -37,17 +50,37 @@ impl DependenciesBlock for NormalModule {
         self.dependencies.clone()
     }
 }
+
 impl Module for NormalModule {
     fn build(&mut self, _build_context: BuildContext) -> Result<BuildResult> {
         let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
+        let source = self.create_source(content.clone());
+        self.source = NormalModuleSource::Succeed(source.clone());
         let parse_result = self.parse(content)?;
         Ok(BuildResult {
             dependencies: parse_result.dependencies,
         })
     }
+    
     fn get_context(&self) -> Option<&Utf8Path> {
         self.context.as_ref().map(|x| x.as_ref())
     }
+    fn code_generation(&self,code_generation_context: CodeGenerationContext) -> Result<CodeGenerationResult> {
+        match &self.source {
+            NormalModuleSource::Failed(_) => {
+                todo!("no implemented yet")
+            },
+            NormalModuleSource::Succeed(source) => {
+                let generation_result = self.generate(source.clone(),code_generation_context);
+            },
+            NormalModuleSource::UnBuild => {
+                panic!("should have source")
+            }
+        }
+        
+        Ok(CodeGenerationResult {  })
+    }
+    
 }
 impl NormalModule {
     pub fn new(request: String, resource_path: Utf8PathBuf) -> Self {
@@ -59,8 +92,19 @@ impl NormalModule {
             original_source: None,
             context,
             blocks:  vec![],
-            dependencies: vec![]
+            dependencies: vec![],
+            source: NormalModuleSource::UnBuild
         }
+    }
+    fn create_source(&self, content:String) -> BoxSource{
+        OriginalSource::new(content, self.resource_path.clone()).boxed()
+    }
+    fn generate(&self, source: BoxSource, code_generation_context: CodeGenerationContext) -> Result<BoxSource> {
+        let mut source = ReplaceSource::new(source);
+        self.dependencies.iter().for_each(|dep_id| {
+            let dependency = code_generation_context.module_graph.dependency_by_id(*dep_id);
+        });
+        Ok(source.boxed())
     }
     fn parse(&self, content: String) -> Result<ParseResult> {
         let ast = parse(content)?;
@@ -81,4 +125,5 @@ impl NormalModule {
             .collect::<Vec<_>>();
         Ok(ParseResult { dependencies })
     }
+
 }

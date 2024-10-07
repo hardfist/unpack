@@ -1,3 +1,5 @@
+use std::slice::Iter;
+
 use index_vec::IndexVec;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;

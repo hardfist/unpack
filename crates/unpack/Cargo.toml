@@ -16,4 +16,5 @@ dashmap = { workspace = true }
 thiserror = { workspace = true }
 rustc-hash = { workspace = true }
 rspack_sources = { workspace = true }
+rayon = { workspace = true }
 swc_core = { workspace = true, features = ["__parser", "common","__utils", "base", "ecma_quote"]}
