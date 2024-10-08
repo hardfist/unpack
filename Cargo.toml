@@ -24,3 +24,16 @@ swc_core = { version = "0.106.4", features = ["__parser"]}
 rustc-hash = { version = "2.0.0"}
 indexmap = { version = "2.6.0"}
 rayon = { version = "1.10.0"}
+
+[profile.release]
+codegen-units = 1
+debug         = false
+# Performs “thin” LTO. This is similar to “fat”, but takes substantially less time to run while still achieving performance gains similar to “fat”.
+lto       = "thin"
+opt-level = 3
+panic     = "abort"
+strip     = true
+[profile.release-debug]
+debug    = true
+inherits = "release"
+strip    = false

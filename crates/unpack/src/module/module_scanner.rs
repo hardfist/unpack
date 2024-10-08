@@ -6,6 +6,7 @@ use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
+use rustc_hash::FxHashMap;
 use std::collections::VecDeque;
 use std::sync::Arc;
 
@@ -95,6 +96,7 @@ impl ModuleScanner {
 
 #[derive(Debug, Default)]
 pub struct ScannerState {
+    _modules: FxHashMap<String,ModuleId>,
     pub module_graph: ModuleGraph,
     task_queue: VecDeque<Task>,
     pub diagnostics: Diagnostics,
@@ -150,11 +152,9 @@ impl ModuleScanner {
             options: self.options.clone(),
         }) {
             Ok(factory_result) => {
-                let module_id = state
-                    .module_graph
-                    .add_module(Box::new(factory_result.module));
+                let module = Box::new(factory_result.module);
                 state.task_queue.push_back(Task::Add(AddTask {
-                    module_id,
+                    module: module,
                     module_dependency_id: task.module_dependency_id,
                     origin_module_id: task.origin_module_id,
                 }));
@@ -178,13 +178,19 @@ impl ModuleScanner {
         );
     }
     fn handle_add(&self, state: &mut ScannerState, task: AddTask) {
+        if state._modules.contains_key(task.module.identifier()) {
+            return;
+        }
+        let identifier = task.module.identifier().to_string().clone();
+        let module_id = state.module_graph.add_module(task.module);
+        state._modules.insert(identifier, module_id);
         state.module_graph.set_resolved_module(
             task.origin_module_id,
             task.module_dependency_id,
-            task.module_id,
+            module_id,
         );
         state.task_queue.push_back(Task::Build(BuildTask {
-            module_id: task.module_id,
+            module_id: module_id,
         }));
     }
     fn handle_build(&self, state: &mut ScannerState, task: BuildTask) {

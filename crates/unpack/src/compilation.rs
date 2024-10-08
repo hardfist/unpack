@@ -48,7 +48,7 @@ impl Compilation {
         module_scanner.add_entries(&mut scanner_state);
         let elapsed = start.elapsed();
         println!("elapsed: {:?}", elapsed);
-        dbg!(&scanner_state);
+        dbg!(&scanner_state.module_graph.modules.len());
         scanner_state
     }
     /// similar with webpack's seal phase

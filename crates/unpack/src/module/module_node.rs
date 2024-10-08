@@ -27,6 +27,7 @@ pub struct CodeGenerationResult {
     pub source: BoxSource,
 }
 pub trait Module: Debug + DependenciesBlock + Send + Sync {
+    fn identifier(&self) -> &str;
     fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None

@@ -57,6 +57,9 @@ impl DependenciesBlock for NormalModule {
 }
 
 impl Module for NormalModule {
+    fn identifier(&self) -> &str {
+        self.resource_path.as_str()
+    }
     fn build(&mut self, _build_context: BuildContext) -> Result<BuildResult> {
         let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
         let source = self.create_source(content.clone());
@@ -156,7 +159,7 @@ impl NormalModule {
                     }
                 }
             },
-            swc_ecma_ast::Program::Script(script) => {
+            swc_ecma_ast::Program::Script(_) => {
 
             },
         };
