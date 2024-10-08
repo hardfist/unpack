@@ -4,7 +4,7 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{Chunk, ChunkGraph, ChunkId, ChunkLinker, LinkerState},
+    chunk::{ ChunkGraph, ChunkId, ChunkLinker, LinkerState},
     compiler::CompilerOptions,
     errors::Diagnostics,
     module::{
@@ -12,7 +12,7 @@ use crate::{
         ScannerState,
     },
 };
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -42,10 +42,12 @@ impl Compilation {
     }
     /// similar with webpack's make phase, which will make module graph
     pub fn scan(&mut self) -> ScannerState {
-        println!("start scan");
+        let start = Instant::now();
         let module_scanner = ModuleScanner::new(self.options.clone(), self.options.context.clone());
         let mut scanner_state = ScannerState::default();
         module_scanner.add_entries(&mut scanner_state);
+        let elapsed = start.elapsed();
+        println!("elapsed: {:?}",elapsed);
         scanner_state
     }
     /// similar with webpack's seal phase

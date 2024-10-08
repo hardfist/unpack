@@ -38,7 +38,6 @@ pub fn build(
                 b
             }
         };
-        dbg!(call_result);
         unpack(CompilerOptions {
             context: Utf8PathBuf::from(context),
             entry: vec![EntryItem {

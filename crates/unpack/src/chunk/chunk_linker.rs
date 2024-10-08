@@ -99,7 +99,6 @@ impl ChunkLinker {
         todo!("add entry module");
     }
     fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
-        println!("add module:{:?}", action);
         let AddAndEnterModule {
             chunk_id,
             module_id,

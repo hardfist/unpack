@@ -4,7 +4,6 @@ use camino::Utf8Path;
 use index_vec::define_index_type;
 use index_vec::IndexVec;
 use rspack_sources::BoxSource;
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 
