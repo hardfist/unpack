@@ -1,11 +1,14 @@
 {
-  "name": "unpack_node_binding",
-  "version": "0.0.0",
+  "name": "@unpack-js/core",
+  "version": "0.0.1",
   "main": "index.js",
   "types": "index.d.ts",
   "napi": {
     "name": "unpack_node_binding",
     "triples": {}
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT",
   "devDependencies": {
@@ -24,5 +27,10 @@
     "universal": "napi universal",
     "version": "napi version",
     "test": "node --test"
+  },
+  "optionalDependencies": {
+    "@unpack-js/core-win32-x64-msvc": "0.0.1",
+    "@unpack-js/core-darwin-x64": "0.0.1",
+    "@unpack-js/core-linux-x64-gnu": "0.0.1"
   }
 }
