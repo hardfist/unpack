@@ -8,12 +8,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
-napi = { version = "3.0.0-alpha", features = ["async", "anyhow", "napi4"] }
+napi = { version = "2.15.2", features = ["anyhow", "napi4"] }
 napi-derive = "2.12.2"
 unpack = { path = "../unpack"}
 camino = { workspace = true }
-
-
 [build-dependencies]
 napi-build = "2.0.1"
 

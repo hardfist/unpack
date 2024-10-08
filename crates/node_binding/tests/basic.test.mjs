@@ -4,7 +4,8 @@ import binding from '../index.js'
 test('basic', (t) => {
     const context = path.resolve(import.meta.dirname, './fixtures');
     console.log('context:',context);
-    binding.build(context, './src/index.mjs',function hook(err, x){
+    binding.build(context, './src/index.mjs',function hook(err, x,cb){
+        console.log('xxx',x);
         return `${x}-${x}`
     })
 })
