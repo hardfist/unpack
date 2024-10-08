@@ -1,14 +1,20 @@
 #![deny(clippy::all)]
-use camino::Utf8PathBuf;
-use unpack::compiler::EntryItem;
+use std::ptr::copy_nonoverlapping;
 
+use camino::Utf8PathBuf;
+use napi::threadsafe_function::ThreadsafeFunction;
+use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
+
 use unpack::{bundler::unpack, compiler::CompilerOptions};
+use napi::bindgen_prelude::*;
 #[macro_use]
 extern crate napi_derive;
 
 #[napi]
-pub fn build(context: String,entry:String) ->napi::Result<()> {
+pub async fn build(context: String,entry:String, callback: ThreadsafeFunction<u32,String>) ->napi::Result<()> {
+  let res = callback.call_async(Ok(123)).await.unwrap();
+  println!("res:{:?}",res);
   let result = unpack(CompilerOptions{
     context: Utf8PathBuf::from(context),
     entry: vec![EntryItem{
