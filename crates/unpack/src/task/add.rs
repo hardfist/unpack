@@ -1,4 +1,7 @@
-use crate::{dependency::DependencyId, module::{BoxModule, ModuleId}};
+use crate::{
+    dependency::DependencyId,
+    module::{BoxModule, ModuleId},
+};
 
 #[derive(Debug)]
 pub struct AddTask {

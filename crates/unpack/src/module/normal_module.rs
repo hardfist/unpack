@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{mpsc, Arc};
 
 use crate::dependency::{
     AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, ConstDependency,
@@ -61,10 +61,21 @@ impl Module for NormalModule {
         self.resource_path.as_str()
     }
     fn build(&mut self, _build_context: BuildContext) -> Result<BuildResult> {
-        let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
-        let source = self.create_source(content.clone());
-        self.source = NormalModuleSource::Succeed(source.clone());
-        let parse_result = self.parse(content)?;
+        let (sender, receiver) = mpsc::channel();
+        rayon::scope(|s| {
+            s.spawn(|_| {
+                let parse_result = (|| {
+                    let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
+                    let source = self.create_source(content.clone());
+                    self.source = NormalModuleSource::Succeed(source.clone());
+                    self.parse(content)
+                })();
+                sender.send(parse_result).unwrap();
+            });
+        });
+
+        let parse_result = receiver.recv().unwrap()?;
+
         Ok(BuildResult {
             module_dependencies: parse_result.module_dependencies,
             presentational_dependencies: parse_result.presentational_dependencies,
@@ -158,10 +169,8 @@ impl NormalModule {
                         )));
                     }
                 }
-            },
-            swc_ecma_ast::Program::Script(_) => {
-
-            },
+            }
+            swc_ecma_ast::Program::Script(_) => {}
         };
 
         Ok(ParseResult {
