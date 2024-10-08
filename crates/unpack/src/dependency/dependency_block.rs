@@ -11,16 +11,16 @@ pub trait DependenciesBlock {
 }
 
 pub struct AsyncDependenciesBlock {
-    dependencies: Vec<DependencyId>
+    dependencies: Vec<DependencyId>,
 }
 define_index_type! {
     pub struct AsyncDependenciesBlockId = u32;
 }
 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum BlockId {
     ModuleId(ModuleId),
-    AsyncDependenciesBlockId(AsyncDependenciesBlockId)
+    AsyncDependenciesBlockId(AsyncDependenciesBlockId),
 }
 
 impl BlockId {

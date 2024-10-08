@@ -22,7 +22,7 @@ impl ChunkGroup {
     pub fn set_entry_point_chunk(&mut self, chunk_id: ChunkId) {
         self.entry_point_chunk_id = Some(chunk_id);
     }
-    pub fn get_entry_point_chunk(&self) -> Option<ChunkId>{
+    pub fn get_entry_point_chunk(&self) -> Option<ChunkId> {
         self.entry_point_chunk_id
     }
     pub fn connect_chunk(&mut self, chunk_id: ChunkId) {

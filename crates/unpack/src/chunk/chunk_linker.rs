@@ -32,11 +32,11 @@ struct AddAndEnterModule {
 #[derive(Debug)]
 struct EnterModule {
     module_id: ModuleId,
-    chunk_id: ChunkId
+    chunk_id: ChunkId,
 }
 #[derive(Debug)]
 struct LeaveModule {
-    module_id: ModuleId
+    module_id: ModuleId,
 }
 pub struct ChunkLinker {
     pub diagnostics: Diagnostics,
@@ -84,41 +84,52 @@ impl ChunkLinker {
             QueueAction::AddAndEnterModule(action) => {
                 self.add_and_enter_module(state, action);
             }
-            QueueAction::LeaveModule(action) => {
-                self.leave_module(state,action)
-            },
+            QueueAction::LeaveModule(action) => self.leave_module(state, action),
             QueueAction::ProcessBlock(action) => {
                 self.process_block(state, action);
             }
         }
     }
-    fn leave_module(&self, _state: &mut LinkerState, _action: LeaveModule){
-
-    }
-    fn add_and_enter_entry_module(&self, _state: &mut LinkerState, _action: AddAndEnterEntryModule) {
+    fn leave_module(&self, _state: &mut LinkerState, _action: LeaveModule) {}
+    fn add_and_enter_entry_module(
+        &self,
+        _state: &mut LinkerState,
+        _action: AddAndEnterEntryModule,
+    ) {
         todo!("add entry module");
     }
     fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
-        println!("add module:{:?}",action);
-        let AddAndEnterModule{chunk_id,module_id} = action;
+        println!("add module:{:?}", action);
+        let AddAndEnterModule {
+            chunk_id,
+            module_id,
+        } = action;
         if state.chunk_graph.is_module_in_chunk(module_id, chunk_id) {
             return;
         }
-        state.chunk_graph.connect_chunk_and_module(chunk_id, module_id);
-        self.enter_module(state,EnterModule {
-            module_id,
-            chunk_id
-        });
+        state
+            .chunk_graph
+            .connect_chunk_and_module(chunk_id, module_id);
+        self.enter_module(
+            state,
+            EnterModule {
+                module_id,
+                chunk_id,
+            },
+        );
     }
-    fn enter_module(&self, state: &mut LinkerState, action: EnterModule){
+    fn enter_module(&self, state: &mut LinkerState, action: EnterModule) {
         state.queue.push_back(QueueAction::LeaveModule(LeaveModule {
-            module_id: action.module_id
-        }));
-        self.process_block(state, ProcessBlock {
             module_id: action.module_id,
-            chunk_id: action.chunk_id,
-            block_id: BlockId::ModuleId(action.module_id)
-        });
+        }));
+        self.process_block(
+            state,
+            ProcessBlock {
+                module_id: action.module_id,
+                chunk_id: action.chunk_id,
+                block_id: BlockId::ModuleId(action.module_id),
+            },
+        );
     }
     /**
      * FIXME: add asyncDependenciesBlock handle in the future
@@ -128,11 +139,13 @@ impl ChunkLinker {
         let connection_ids = state.module_graph.get_outgoing_connections(module_id);
         for connection_id in connection_ids {
             let connection = state.module_graph.connection_by_id(connection_id);
-            let resolved_module_id= connection.resolved_module_id;
-            state.queue.push_back(QueueAction::AddAndEnterModule(AddAndEnterModule{
-                module_id: resolved_module_id,
-                chunk_id: action.chunk_id
-            }));
+            let resolved_module_id = connection.resolved_module_id;
+            state
+                .queue
+                .push_back(QueueAction::AddAndEnterModule(AddAndEnterModule {
+                    module_id: resolved_module_id,
+                    chunk_id: action.chunk_id,
+                }));
         }
     }
     pub fn prepare_input_entrypoints_and_modules(

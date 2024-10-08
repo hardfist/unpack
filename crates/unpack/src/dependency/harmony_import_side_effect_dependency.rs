@@ -13,6 +13,4 @@ impl ModuleDependency for HarmonyImportSideEffectDependency {
         &self.request
     }
 }
-impl AsDependencyTemplate for HarmonyImportSideEffectDependency {
-    
-}
+impl AsDependencyTemplate for HarmonyImportSideEffectDependency {}

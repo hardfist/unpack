@@ -1,9 +1,7 @@
 use camino::Utf8PathBuf;
 use derive_new::new;
 
-use super::{
-    module_dependency::ModuleDependency, AsDependencyTemplate, Dependency
-};
+use super::{module_dependency::ModuleDependency, AsDependencyTemplate, Dependency};
 
 // dependency for entry
 #[derive(new, Debug, Clone)]
@@ -23,6 +21,4 @@ impl ModuleDependency for EntryDependency {
         &self.request
     }
 }
-impl AsDependencyTemplate for EntryDependency {
-    
-}
+impl AsDependencyTemplate for EntryDependency {}

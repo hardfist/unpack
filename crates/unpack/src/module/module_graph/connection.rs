@@ -2,7 +2,6 @@ use crate::module::{Connection, ConnectionId};
 
 use super::ModuleGraph;
 
-
 impl ModuleGraph {
     pub fn add_connection(&mut self, connection: Connection) -> ConnectionId {
         self.connections.push(connection)

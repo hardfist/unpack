@@ -6,8 +6,11 @@ use rspack_sources::{BoxSource, ReplaceSource};
 use crate::module::CodeGenerationContext;
 
 pub trait DependencyTemplate: Debug + DynClone + Send + Sync {
-    fn apply(&self, _source:&mut ReplaceSource<BoxSource>, _code_generation_context: &CodeGenerationContext ) {
-
+    fn apply(
+        &self,
+        _source: &mut ReplaceSource<BoxSource>,
+        _code_generation_context: &CodeGenerationContext,
+    ) {
     }
 }
 
@@ -19,7 +22,7 @@ pub trait AsDependencyTemplate {
     }
 }
 
-impl <T: DependencyTemplate> AsDependencyTemplate for T {
+impl<T: DependencyTemplate> AsDependencyTemplate for T {
     fn as_dependency_template(&self) -> Option<&dyn DependencyTemplate> {
         Some(self)
     }

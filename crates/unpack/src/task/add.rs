@@ -4,5 +4,5 @@ use crate::{dependency::DependencyId, module::ModuleId};
 pub struct AddTask {
     pub module_id: ModuleId,
     pub module_dependency_id: DependencyId,
-    pub origin_module_id: Option<ModuleId>
+    pub origin_module_id: Option<ModuleId>,
 }

@@ -23,8 +23,7 @@ pub trait AsModuleDependency {
 //impl_downcast!(AsModuleDependency);
 pub type BoxModuleDependency = Box<dyn ModuleDependency>;
 
-
-impl <T: ModuleDependency + 'static> AsModuleDependency for T {
+impl<T: ModuleDependency + 'static> AsModuleDependency for T {
     fn as_module_dependency(&self) -> Option<&dyn ModuleDependency> {
         Some(self)
     }

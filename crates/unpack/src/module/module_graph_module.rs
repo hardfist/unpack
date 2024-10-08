@@ -5,7 +5,7 @@ use super::ConnectionId;
 #[derive(Debug)]
 pub struct ModuleGraphModule {
     pub incoming_connections: Vec<ConnectionId>,
-    pub outgoing_connections: Vec<ConnectionId>
+    pub outgoing_connections: Vec<ConnectionId>,
 }
 impl Default for ModuleGraphModule {
     fn default() -> Self {
@@ -14,10 +14,10 @@ impl Default for ModuleGraphModule {
 }
 
 impl ModuleGraphModule {
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         Self {
             incoming_connections: Default::default(),
-            outgoing_connections: Default::default()
+            outgoing_connections: Default::default(),
         }
     }
     pub fn add_incoming_connection(&mut self, connection_id: ConnectionId) {

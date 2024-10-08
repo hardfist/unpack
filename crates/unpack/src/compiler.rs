@@ -4,6 +4,7 @@ use std::sync::Arc;
 pub use options::CompilerOptions;
 pub use options::EntryItem;
 
+use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
 
 pub struct Compiler {
@@ -22,12 +23,18 @@ impl Compiler {
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);
         let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
-        dbg!(asset_state);
+        self.emit_assets(asset_state);
         println!("finish build");
         if !compilation.diagnostics.is_empty() {
             for diag in compilation.diagnostics {
                 println!("{:?}", diag);
             }
+        }
+    }
+    pub fn emit_assets(&self, asset_state: ChunkAssetState) {
+        for (name, source) in asset_state.assets {
+            println!("{name}:\n{}",source.source());
+            // std::fs::write(name, source.buffer().as_ref());
         }
     }
 }

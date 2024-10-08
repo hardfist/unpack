@@ -130,7 +130,11 @@ impl ModuleScanner {
             .origin_module_id
             .map(|id| state.module_graph.module_by_id(id));
         let module_dependency_id = task.module_dependency_id;
-        let module_dependency = <Box<dyn Dependency> as Clone>::clone(state.module_graph.dependency_by_id(module_dependency_id)).to_module_dependency().expect("expect module dependency");
+        let module_dependency = <Box<dyn Dependency> as Clone>::clone(
+            state.module_graph.dependency_by_id(module_dependency_id),
+        )
+        .to_module_dependency()
+        .expect("expect module dependency");
         let original_module_context = original_module.and_then(|x| x.get_context());
         let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
@@ -149,12 +153,11 @@ impl ModuleScanner {
                 let module_id = state
                     .module_graph
                     .add_module(Box::new(factory_result.module));
-                state.task_queue.push_back(Task::Add(AddTask { 
-                    
+                state.task_queue.push_back(Task::Add(AddTask {
                     module_id,
                     module_dependency_id: task.module_dependency_id,
                     origin_module_id: task.origin_module_id,
-                 }));
+                }));
             }
             Err(err) => {
                 state.diagnostics.push(err);
@@ -175,7 +178,11 @@ impl ModuleScanner {
         );
     }
     fn handle_add(&self, state: &mut ScannerState, task: AddTask) {
-        state.module_graph.set_resolved_module(task.origin_module_id, task.module_dependency_id, task.module_id);
+        state.module_graph.set_resolved_module(
+            task.origin_module_id,
+            task.module_dependency_id,
+            task.module_id,
+        );
         state.task_queue.push_back(Task::Build(BuildTask {
             module_id: task.module_id,
         }));
