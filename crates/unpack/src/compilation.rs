@@ -4,7 +4,7 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ ChunkGraph, ChunkId, ChunkLinker, LinkerState},
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState},
     compiler::CompilerOptions,
     errors::Diagnostics,
     module::{
@@ -47,7 +47,8 @@ impl Compilation {
         let mut scanner_state = ScannerState::default();
         module_scanner.add_entries(&mut scanner_state);
         let elapsed = start.elapsed();
-        println!("elapsed: {:?}",elapsed);
+        println!("elapsed: {:?}", elapsed);
+        dbg!(&scanner_state);
         scanner_state
     }
     /// similar with webpack's seal phase

@@ -1,12 +1,12 @@
 #![deny(clippy::all)]
 use camino::Utf8PathBuf;
+use napi::bindgen_prelude::{block_on, Promise};
 use napi::threadsafe_function::ErrorStrategy::{self, T};
 use napi::threadsafe_function::ThreadsafeFunction;
 use napi::Either;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
 use unpack::{bundler::unpack, compiler::CompilerOptions};
-use napi::bindgen_prelude::{block_on, Promise};
 #[macro_use]
 extern crate napi_derive;
 
@@ -21,7 +21,7 @@ pub fn build(
         callback.call_with_return_value(
             Ok(32),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: Either<Promise<String>,String>| {
+            move |ret: Either<Promise<String>, String>| {
                 send.send(ret).unwrap();
                 Ok(())
             },
@@ -29,14 +29,8 @@ pub fn build(
     });
     std::thread::spawn(move || {
         let call_result = match recv.recv().unwrap() {
-            Either::A(p) => {
-               block_on(async move {
-                p.await
-               }).unwrap()
-            },
-            Either::B(b) => {
-                b
-            }
+            Either::A(p) => block_on(async move { p.await }).unwrap(),
+            Either::B(b) => b,
         };
         unpack(CompilerOptions {
             context: Utf8PathBuf::from(context),

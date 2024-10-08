@@ -138,19 +138,28 @@ impl NormalModule {
         // Analyze the AST for all import dependencies
         let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
         let mut module_dependencies: Vec<BoxDependency> = vec![];
-        for item in &ast.program.as_module().unwrap().body {
-            if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(import)) =
-                item
-            {
-                let request = import.src.value.clone();
-                module_dependencies.push(Box::new(HarmonyImportSideEffectDependency { request }));
-                presentational_dependencies.push(Box::new(ConstDependency::new(
-                    import.span.real_lo(),
-                    import.span.real_hi(),
-                    "".into(),
-                )));
-            }
-        }
+        match &ast.program {
+            swc_ecma_ast::Program::Module(module) => {
+                for item in &module.body {
+                    if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(
+                        import,
+                    )) = item
+                    {
+                        let request = import.src.value.clone();
+                        module_dependencies
+                            .push(Box::new(HarmonyImportSideEffectDependency { request }));
+                        presentational_dependencies.push(Box::new(ConstDependency::new(
+                            import.span.real_lo(),
+                            import.span.real_hi(),
+                            "".into(),
+                        )));
+                    }
+                }
+            },
+            swc_ecma_ast::Program::Script(script) => {
+
+            },
+        };
 
         Ok(ParseResult {
             module_dependencies,

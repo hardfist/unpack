@@ -1,6 +1,6 @@
 use camino::{Utf8Path, Utf8PathBuf};
-use rspack_resolver::{ResolveError as InnerResolverError, Resolver};
 pub use rspack_resolver::ResolveOptions;
+use rspack_resolver::{ResolveError as InnerResolverError, Resolver};
 
 use crate::utils::path::AssertUtf8;
 

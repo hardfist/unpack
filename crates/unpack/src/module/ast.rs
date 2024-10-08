@@ -4,7 +4,7 @@ use crate::errors::miette::{miette, Result};
 use miette::LabeledSpan;
 use swc_core::common::{FileName, SourceMap, Spanned};
 use swc_core::ecma::ast::Program;
-use swc_core::ecma::parser::{Parser, StringInput, Syntax};
+use swc_core::ecma::parser::{EsSyntax, Parser, StringInput, Syntax};
 
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
@@ -16,7 +16,10 @@ pub fn parse(content: String) -> Result<AST> {
     let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content);
 
     let lexer = swc_core::ecma::parser::lexer::Lexer::new(
-        Syntax::Es(Default::default()),
+        Syntax::Es(EsSyntax {
+            jsx: true,
+            ..Default::default()
+        }),
         Default::default(),
         StringInput::from(&*fm),
         None,
