@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "target": "ESNext",
+        "esModuleInterop": true,
+        "allowJs": true,
+        "types": ["node"]
+    },
+    "include": ["tests/**/*.mjs"]
+}

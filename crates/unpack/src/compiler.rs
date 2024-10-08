@@ -16,7 +16,7 @@ impl Compiler {
     pub fn new(options: CompilerOptions) -> Self {
         Self { options }
     }
-    pub fn build(&mut self) {
+    pub fn build(&mut self)  {
         println!("start build");
         let mut compilation = Compilation::new(Arc::new(self.options.clone()));
         let scanner_state = compilation.scan();
