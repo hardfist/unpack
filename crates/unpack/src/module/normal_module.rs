@@ -62,20 +62,21 @@ impl Module for NormalModule {
     }
     fn build(&mut self, _build_context: BuildContext) -> Result<BuildResult> {
         let (sender, receiver) = mpsc::channel();
-        rayon::scope(|s| {
-            s.spawn(|_| {
-                let parse_result = (|| {
-                    let content = std::fs::read_to_string(&self.resource_path).into_diagnostic()?;
-                    let source = self.create_source(content.clone());
-                    self.source = NormalModuleSource::Succeed(source.clone());
-                    self.parse(content)
+        {
+            let resource_path = self.resource_path.clone();
+            rayon::spawn(move || {
+                let _: Result<()> = (|| {
+                    let content = std::fs::read_to_string(resource_path.clone()).into_diagnostic()?;
+                    let source = Self::create_source(resource_path.to_string().clone(),content.clone());
+                    let parse_result = Self::parse(content)?;
+                    sender.send((source,parse_result)).unwrap();
+                    Ok(())
                 })();
-                sender.send(parse_result).unwrap();
             });
-        });
-
-        let parse_result = receiver.recv().unwrap()?;
-
+            
+        }
+        let (source,parse_result) = receiver.recv().unwrap();
+        self.source = NormalModuleSource::Succeed(source.clone());
         Ok(BuildResult {
             module_dependencies: parse_result.module_dependencies,
             presentational_dependencies: parse_result.presentational_dependencies,
@@ -121,9 +122,7 @@ impl NormalModule {
             source: NormalModuleSource::UnBuild,
         }
     }
-    fn create_source(&self, content: String) -> BoxSource {
-        OriginalSource::new(content, self.resource_path.clone()).boxed()
-    }
+
     fn generate(
         &self,
         source: BoxSource,
@@ -147,7 +146,14 @@ impl NormalModule {
 
         Ok(source.boxed())
     }
-    fn parse(&self, content: String) -> Result<ParseResult> {
+    
+}
+
+impl NormalModule {
+    fn create_source(resource_path: String, content: String) -> BoxSource {
+        OriginalSource::new(content, resource_path).boxed()
+    }
+    fn parse(content: String) -> Result<ParseResult> {
         let ast = parse(content)?;
         // Analyze the AST for all import dependencies
         let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
