@@ -30,7 +30,7 @@ impl Compiler {
         }
     }
     pub fn emit_assets(&self, asset_state: ChunkAssetState) {
-        for (_name, source) in asset_state.assets {
+        for (_name, _source) in asset_state.assets {
             // std::fs::write(name, source.buffer().as_ref());
         }
     }
