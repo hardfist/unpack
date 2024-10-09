@@ -1,7 +1,6 @@
 #![deny(clippy::all)]
 use camino::Utf8PathBuf;
 use napi::bindgen_prelude::{block_on, Promise};
-use napi::threadsafe_function::ErrorStrategy::{self, T};
 use napi::threadsafe_function::ThreadsafeFunction;
 use napi::Either;
 use unpack::compiler::EntryItem;

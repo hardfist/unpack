@@ -150,6 +150,7 @@ impl ModuleScanner {
         let Some(task) = self.handle_build(state, task) else {
             return;
         };
+        
         self.handle_process_deps(state, task);
     }
     fn handle_factorize(&self, state: &mut ScannerState, task: FactorizeTask) -> Option<AddTask> {
