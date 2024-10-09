@@ -11,8 +11,12 @@ use crate::{
         CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
         ScannerState,
     },
+    task::Task,
 };
-use std::{sync::Arc, time::Instant};
+use std::{
+    sync::{mpsc::channel, Arc},
+    time::Instant,
+};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -43,8 +47,10 @@ impl Compilation {
     /// similar with webpack's make phase, which will make module graph
     pub fn scan(&mut self) -> ScannerState {
         let start = Instant::now();
-        let module_scanner = ModuleScanner::new(self.options.clone(), self.options.context.clone());
-        let mut scanner_state = ScannerState::default();
+        let (send, recv) = channel::<Task>();
+        let module_scanner =
+            ModuleScanner::new(self.options.clone(), self.options.context.clone(), recv);
+        let mut scanner_state = ScannerState::new(send);
         module_scanner.add_entries(&mut scanner_state);
         let elapsed = start.elapsed();
         println!("elapsed: {:?}", elapsed);

@@ -8,6 +8,8 @@ use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 use std::collections::VecDeque;
+use std::os::macos::raw::stat;
+use std::sync::mpsc::{channel, sync_channel, Receiver, Sender};
 use std::sync::Arc;
 
 use crate::{
@@ -21,16 +23,17 @@ pub struct EntryData {
     pub dependencies: Vec<DependencyId>,
     name: Option<String>,
 }
+#[derive(Debug, Clone)]
 pub struct ModuleScanner {
     options: Arc<CompilerOptions>,
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
-    scanner_state: ScannerState,
+    recv: Arc<Receiver<Task>>,
 }
 struct FactorizeParams {}
 impl ModuleScanner {
-    pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf) -> Self {
+    pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf, recv: Receiver<Task>) -> Self {
         let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
             options.resolve.clone(),
         ));
@@ -44,7 +47,7 @@ impl ModuleScanner {
             context,
             resolver_factory: resolver_factory.clone(),
             module_factory,
-            scanner_state: ScannerState::default(), // make_artifact: Default::default(),
+            recv: Arc::new(recv),
         }
     }
     // add entries
@@ -84,33 +87,54 @@ impl ModuleScanner {
                 dep.as_module_dependency().is_some()
             })
             .for_each(|id| {
-                state.task_queue.push_back(Task::Factorize(FactorizeTask {
-                    module_dependency_id: *id,
-                    origin_module_id,
-                    origin_module_context: context.clone(),
-                }));
+                state.remaining+=1;
+                state
+                    .task_queue
+                    .send(Task::Factorize(FactorizeTask {
+                        module_dependency_id: *id,
+                        origin_module_id,
+                        origin_module_context: context.clone(),
+                    }))
+                    .unwrap();
             });
     }
     pub fn resolve_module() {}
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ScannerState {
     _modules: FxHashMap<String, ModuleId>,
     pub module_graph: ModuleGraph,
-    task_queue: VecDeque<Task>,
+    pub task_queue: Sender<Task>,
     pub diagnostics: Diagnostics,
     pub entries: IndexMap<String, EntryData>,
+    pub remaining: i32,
+}
+impl ScannerState {
+    pub fn new(task_queue: Sender<Task>) -> Self {
+        Self {
+            task_queue,
+            _modules: Default::default(),
+            module_graph: Default::default(),
+            diagnostics: Default::default(),
+            entries: Default::default(),
+            remaining: 0,
+        }
+    }
 }
 /// main loop task
 impl ModuleScanner {
     pub fn build_loop(&self, state: &mut ScannerState, dependencies: Vec<DependencyId>) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
-        while let Some(task) = state.task_queue.pop_front() {
+
+        while state.remaining >0 {
+            let task = self.recv.recv().unwrap();
+            state.remaining -=1;
             self.handle_task(task, state);
         }
     }
+
     fn handle_task(&self, task: Task, state: &mut ScannerState) {
         match task {
             Task::Factorize(factorize_task) => {
@@ -153,11 +177,15 @@ impl ModuleScanner {
         }) {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
-                state.task_queue.push_back(Task::Add(AddTask {
-                    module: module,
-                    module_dependency_id: task.module_dependency_id,
-                    origin_module_id: task.origin_module_id,
-                }));
+                state.remaining+=1;
+                state
+                    .task_queue
+                    .send(Task::Add(AddTask {
+                        module: module,
+                        module_dependency_id: task.module_dependency_id,
+                        origin_module_id: task.origin_module_id,
+                    }))
+                    .unwrap();
             }
             Err(err) => {
                 state.diagnostics.push(err);
@@ -189,9 +217,13 @@ impl ModuleScanner {
             task.module_dependency_id,
             module_id,
         );
-        state.task_queue.push_back(Task::Build(BuildTask {
-            module_id: module_id,
-        }));
+        state.remaining+=1;
+        state
+            .task_queue
+            .send(Task::Build(BuildTask {
+                module_id: module_id,
+            }))
+            .unwrap();
     }
     fn handle_build(&self, state: &mut ScannerState, task: BuildTask) {
         let module = state.module_graph.module_by_id_mut(task.module_id);
@@ -208,12 +240,14 @@ impl ModuleScanner {
                 for dep_id in &dependency_ids {
                     module.add_dependency_id(*dep_id);
                 }
+                state.remaining+=1;
                 state
                     .task_queue
-                    .push_back(Task::ProcessDeps(ProcessDepsTask {
+                    .send(Task::ProcessDeps(ProcessDepsTask {
                         dependencies: dependency_ids,
                         original_module_id: Some(task.module_id),
-                    }));
+                    }))
+                    .unwrap();
             }
             Err(err) => {
                 state.diagnostics.push(err);
