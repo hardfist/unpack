@@ -1,5 +1,5 @@
 use crate::{
-    compiler::CompilerOptions, dependency::BoxModuleDependency, module::NormalModule,
+    compiler::CompilerOptions, dependency::{BoxDependency, BoxModuleDependency}, module::NormalModule,
     resolver_factory::ResolverFactory,
 };
 use camino::Utf8PathBuf;
@@ -14,7 +14,7 @@ pub struct NormalModuleFactory {
 }
 #[derive(Debug)]
 pub struct ModuleFactoryCreateData {
-    pub module_dependency: BoxModuleDependency,
+    pub module_dependency: BoxDependency,
     pub context: Utf8PathBuf,
     pub options: Arc<CompilerOptions>,
 }
@@ -24,8 +24,9 @@ pub struct ModuleFactoryResult {
 }
 impl NormalModuleFactory {
     pub fn create(&self, data: ModuleFactoryCreateData) -> Result<ModuleFactoryResult> {
+        let dependency = data.module_dependency.as_module_dependency().unwrap();
         let context = data.context.clone();
-        let request = data.module_dependency.request();
+        let request = dependency.request();
         let resolve_result = self
             .resolver_factory
             .base_resolver

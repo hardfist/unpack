@@ -1,6 +1,8 @@
-use crate::module::ModuleId;
+use crate::{dependency::{BoxDependency, BoxModuleDependency, ModuleDependency}, module::{BoxModule, ModuleId}};
 
 #[derive(Debug)]
 pub struct BuildTask {
-    pub module_id: ModuleId,
+    pub origin_module_id: Option<ModuleId>,
+    pub module: BoxModule,
+    pub module_dependency: BoxDependency
 }

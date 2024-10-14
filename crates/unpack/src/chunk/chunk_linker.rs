@@ -160,11 +160,12 @@ impl ChunkLinker {
             let chunk_group = state.chunk_graph.chunk_group_by_id_mut(chunk_group_id);
             chunk_group.set_entry_point_chunk(chunk_id);
             state.entry_points.insert(name.clone(), chunk_group_id);
-            let module_ids = entry_data
-                .dependencies
-                .iter()
-                .map(|dep_id| state.module_graph.module_id_by_dependency_id(*dep_id))
-                .collect::<Vec<_>>();
+            // let module_ids = entry_data
+            //     .dependencies
+            //     .iter()
+            //     .map(|dep_id| state.module_graph.module_id_by_dependency_id(*dep_id))
+            //     .collect::<Vec<_>>();
+            let module_ids = vec![];
             entrypoint_module_map.insert(chunk_group_id, module_ids);
         }
         entrypoint_module_map

@@ -11,7 +11,6 @@ pub use process_dependencies::*;
 
 #[derive(Debug)]
 pub enum Task {
-    Add(AddTask),
     Factorize(FactorizeTask),
     ProcessDeps(ProcessDepsTask),
     Build(BuildTask),
