@@ -155,7 +155,16 @@ impl ModuleScanner {
     fn handle_task(&self, task: Task, state: &mut ScannerState) {
         match task {
             Task::Factorize(factorize_task) => {
-                self.handle_factorize(state, factorize_task);
+                let original_module = factorize_task.origin_module_id.map(|x|state.module_graph.module_by_id(x));
+                let original_module_context = original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
+                state.add();
+                let tx = state.tx.clone();
+                let scanner = self.clone();
+                Self::handle_factorize( scanner,tx,factorize_task,original_module_context);   
+                // rayon::spawn(|| {
+                    
+                // });
+                
             }
             Task::Build(task) => {
                 let scanner = self.clone();
@@ -173,12 +182,9 @@ impl ModuleScanner {
             }
         }
     }
-    fn handle_factorize(&self, state: &mut ScannerState, task: FactorizeTask) {
-        let original_module = task
-            .origin_module_id
-            .map(|id| state.module_graph.module_by_id(id));
+    fn handle_factorize(self,tx: Sender<Result<Task>>,task: FactorizeTask, original_module_context: Option<Utf8PathBuf>) {
         let module_dependency = task.module_dependency.clone();
-        let original_module_context = original_module.and_then(|x| x.get_context());
+        
         let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
         } else if let Some(context) = original_module_context {
@@ -194,9 +200,7 @@ impl ModuleScanner {
         }) {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
-                state.add();
-                state
-                    .tx
+                    tx
                     .send(Ok(Task::Build(BuildTask {
                         origin_module_id: task.origin_module_id,
                         module,
@@ -205,7 +209,7 @@ impl ModuleScanner {
                     .unwrap();
             }
             Err(err) => {
-                state.tx.send(Err(err)).unwrap();
+                tx.send(Err(err)).unwrap();
             }
         }
     }
