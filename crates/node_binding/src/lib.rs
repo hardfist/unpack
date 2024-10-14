@@ -1,7 +1,6 @@
 #![deny(clippy::all)]
 use camino::Utf8PathBuf;
 use napi::bindgen_prelude::{block_on, Promise};
-use napi::threadsafe_function::ErrorStrategy::{self, T};
 use napi::threadsafe_function::ThreadsafeFunction;
 use napi::Either;
 use unpack::compiler::EntryItem;
@@ -29,7 +28,7 @@ pub fn build(
     });
     std::thread::spawn(move || {
         let call_result = match recv.recv().unwrap() {
-            Either::A(p) => block_on(async move { p.await }).unwrap(),
+            Either::A(p) => block_on(p).unwrap(),
             Either::B(b) => b,
         };
         unpack(CompilerOptions {

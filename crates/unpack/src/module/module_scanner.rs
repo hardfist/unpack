@@ -1,25 +1,21 @@
 use crate::dependency::{BoxDependency, Dependency};
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
-
+use crate::errors::miette::{Result,Report};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
-use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask};
+use crate::task::{BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use crossbeam_channel::{Receiver, Sender};
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
-use std::clone;
-use std::collections::VecDeque;
-use std::os::macos::raw::stat;
 use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
 
 use crate::{
     compiler::CompilerOptions,
-    dependency::{DependencyId, EntryDependency},
+    dependency::EntryDependency,
 };
-
 use super::module_graph::ModuleGraph;
 #[derive(Debug)]
 pub struct EntryData {
@@ -31,11 +27,11 @@ pub struct ModuleScanner {
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
-    recv: Arc<Receiver<Task>>,
+    recv: Arc<Receiver<Result<Task>>>,
 }
 struct FactorizeParams {}
 impl ModuleScanner {
-    pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf, recv: Receiver<Task>) -> Self {
+    pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf, recv: Receiver<Result<Task>>) -> Self {
         let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
             options.resolve.clone(),
         ));
@@ -86,11 +82,11 @@ impl ModuleScanner {
             state.add();
             state
                 .tx
-                .send(Task::Factorize(FactorizeTask {
+                .send(Ok(Task::Factorize(FactorizeTask {
                     module_dependency: dep,
                     origin_module_id,
                     origin_module_context: context.clone(),
-                }))
+                })))
                 .unwrap();
         });
     }
@@ -101,7 +97,7 @@ impl ModuleScanner {
 pub struct ScannerState {
     _modules: FxHashMap<String, ModuleId>,
     pub module_graph: ModuleGraph,
-    pub tx: Sender<Task>,
+    pub tx: Sender<Result<Task>>,
     pub diagnostics: Arc<Mutex<Diagnostics>>,
     pub entries: IndexMap<String, EntryData>,
     pub remaining: AtomicU32,
@@ -118,9 +114,12 @@ impl ScannerState {
     fn get_count(&self) -> u32 {
         self.remaining.load(std::sync::atomic::Ordering::SeqCst)
     }
+    fn add_diagnostic(&self,diag:Report) {
+        self.diagnostics.lock().unwrap().push(diag);
+    }
 }
 impl ScannerState {
-    pub fn new(tx: Sender<Task>) -> Self {
+    pub fn new(tx: Sender<Result<Task>>) -> Self {
         Self {
             tx,
             _modules: Default::default(),
@@ -139,8 +138,17 @@ impl ModuleScanner {
 
         while state.get_count() > 0 {
             let task = self.recv.recv().unwrap();
+            
             state.sub();
-            self.handle_task(task, state);
+            match task {
+                Ok(task) => {
+                    self.handle_task(task, state);
+                },
+                Err(err) => {
+                    state.add_diagnostic(err);
+                }
+            }
+            
         }
     }
 
@@ -155,9 +163,9 @@ impl ModuleScanner {
                     return;
                 };
                 state.add();
-                let tx = state.tx.clone();
+                let sender = state.tx.clone();
                 rayon::spawn(move || {
-                    Self::handle_build(scanner, tx, task);
+                    Self::handle_build(scanner, sender, task);
                 });
             }
             Task::ProcessDeps(task) => {
@@ -189,15 +197,15 @@ impl ModuleScanner {
                 state.add();
                 state
                     .tx
-                    .send(Task::Build(BuildTask {
+                    .send(Ok(Task::Build(BuildTask {
                         origin_module_id: task.origin_module_id,
-                        module: module,
+                        module,
                         module_dependency: task.module_dependency.clone(),
-                    }))
+                    })))
                     .unwrap();
             }
             Err(err) => {
-                // state.diagnostics.push(err);
+                state.tx.send(Err(err)).unwrap();
             }
         }
     }
@@ -219,7 +227,7 @@ impl ModuleScanner {
             original_module_context,
         );
     }
-    fn handle_build(self, tx: Sender<Task>, task: BuildTask) {
+    fn handle_build(self, tx: Sender<Result<Task>>, task: BuildTask) {
         let mut module = task.module;
         let module_dependency = task.module_dependency;
 
@@ -227,16 +235,16 @@ impl ModuleScanner {
             options: self.options.clone(),
         }) {
             Ok(result) => {
-                tx.send(Task::ProcessDeps(ProcessDepsTask {
+                tx.send(Ok(Task::ProcessDeps(ProcessDepsTask {
                     dependencies: result.module_dependencies,
                     origin_module_id: task.origin_module_id,
-                    module_dependency: module_dependency,
+                    module_dependency,
                     module,
-                }))
+                })))
                 .unwrap();
             }
             Err(err) => {
-                // state.diagnostics.push(err);
+                tx.send(Err(err)).unwrap();
             }
         };
     }

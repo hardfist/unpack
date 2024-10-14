@@ -1,5 +1,6 @@
 use crossbeam_channel::unbounded;
 use indexmap::IndexSet;
+use miette::Result;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
@@ -15,7 +16,7 @@ use crate::{
     task::Task,
 };
 use std::{
-    sync::{mpsc::channel, Arc},
+    sync::Arc,
     time::Instant,
 };
 #[derive(Debug, Default)]
@@ -48,7 +49,7 @@ impl Compilation {
     /// similar with webpack's make phase, which will make module graph
     pub fn scan(&mut self) -> ScannerState {
         let start = Instant::now();
-        let (send, recv) = unbounded();
+        let (send, recv) = unbounded::<Result<Task>>();
         let module_scanner =
             ModuleScanner::new(self.options.clone(), self.options.context.clone(), recv);
         let mut scanner_state = ScannerState::new(send);

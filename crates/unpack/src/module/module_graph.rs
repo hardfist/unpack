@@ -1,4 +1,3 @@
-use crossbeam_channel::Receiver;
 use index_vec::IndexVec;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;

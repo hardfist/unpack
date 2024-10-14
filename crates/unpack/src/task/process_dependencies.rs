@@ -1,5 +1,5 @@
 use crate::{
-    dependency::{BoxDependency, BoxModuleDependency, DependencyId},
+    dependency::BoxDependency,
     module::{BoxModule, ModuleId},
 };
 
