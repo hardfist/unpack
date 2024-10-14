@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+crossbeam-channel = { workspace = true }
 derive-new = { workspace = true }
 index_vec = { workspace = true }
 indexmap = { workspace = true }

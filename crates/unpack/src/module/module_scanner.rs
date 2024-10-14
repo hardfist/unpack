@@ -1,15 +1,18 @@
 use crate::dependency::{BoxDependency, Dependency};
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
+
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::task::{AddTask, BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
+use crossbeam_channel::{Receiver, Sender};
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
+use std::clone;
 use std::collections::VecDeque;
-use std::sync::mpsc::{channel, sync_channel, Receiver, Sender};
-use std::sync::Arc;
+use std::sync::atomic::AtomicU32;
+use std::sync::{Arc, Mutex};
 
 use crate::{
     compiler::CompilerOptions,
@@ -77,7 +80,7 @@ impl ModuleScanner {
         context: Option<Utf8PathBuf>,
     ) {
         dependencies.into_iter().for_each(|dep| {
-                state.remaining+=1;
+                state.add();
                 state
                     .tx
                     .send(Task::Factorize(FactorizeTask {
@@ -96,9 +99,20 @@ pub struct ScannerState {
     _modules: FxHashMap<String, ModuleId>,
     pub module_graph: ModuleGraph,
     pub tx: Sender<Task>,
-    pub diagnostics: Diagnostics,
+    pub diagnostics: Arc<Mutex<Diagnostics>>,
     pub entries: IndexMap<String, EntryData>,
-    pub remaining: i32,
+    pub remaining: AtomicU32
+}
+impl ScannerState {
+    fn add(&self){
+        self.remaining.fetch_add(1,std::sync::atomic::Ordering::SeqCst);
+    }
+    fn sub(&self){
+        self.remaining.fetch_sub(1,std::sync::atomic::Ordering::SeqCst);
+    }
+    fn get_count(&self) -> u32{
+       self.remaining.load(std::sync::atomic::Ordering::SeqCst)
+    }
 }
 impl ScannerState {
     pub fn new(tx: Sender<Task>) -> Self {
@@ -108,7 +122,7 @@ impl ScannerState {
             module_graph: Default::default(),
             diagnostics: Default::default(),
             entries: Default::default(),
-            remaining: 0,
+            remaining: 0.into(),
         }
     }
 }
@@ -118,9 +132,9 @@ impl ModuleScanner {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
 
-        while state.remaining >0 {
+        while state.get_count()>0 {
             let task = self.recv.recv().unwrap();
-            state.remaining -=1;
+            state.sub();
             self.handle_task(task, state);
         }
     }
@@ -131,7 +145,14 @@ impl ModuleScanner {
                 self.handle_factorize(state, factorize_task);
             }
             Task::Build(task) => {
-                self.handle_build(state, task);
+                let scanner = self.clone();
+                rayon::scope(|s| {
+                    s.spawn(move|_| {
+                    Self::handle_build(scanner,&state, task);   
+                   });
+                })
+                
+                
             }
             Task::ProcessDeps(task) => {
                 self.handle_process_deps(state, task);
@@ -159,7 +180,7 @@ impl ModuleScanner {
         }) {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
-                state.remaining+=1;
+                state.add();
                 state
                     .tx
                     .send(Task::Build(BuildTask {
@@ -170,7 +191,7 @@ impl ModuleScanner {
                     .unwrap();
             }
             Err(err) => {
-                state.diagnostics.push(err);
+               // state.diagnostics.push(err);
             }
         }
     }
@@ -194,7 +215,7 @@ impl ModuleScanner {
             original_module_context,
         );
     }
-    fn handle_build(&self, state: &mut ScannerState, task: BuildTask) {
+    fn handle_build(self, state: &ScannerState, task: BuildTask) {
         let mut module = task.module;
         let module_dependency = task.module_dependency;
         if state._modules.contains_key(module.identifier()) {
@@ -204,7 +225,7 @@ impl ModuleScanner {
             options: self.options.clone(),
         }) {
             Ok(result) => {
-                state.remaining+=1;
+                state.add();
                 state
                     .tx
                     .send(Task::ProcessDeps(ProcessDepsTask {
@@ -216,7 +237,7 @@ impl ModuleScanner {
                     .unwrap();
             }
             Err(err) => {
-                state.diagnostics.push(err);
+               // state.diagnostics.push(err);
             }
         };
     }

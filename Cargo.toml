@@ -24,7 +24,7 @@ swc_core = { version = "0.106.4", features = ["__parser"]}
 rustc-hash = { version = "2.0.0"}
 indexmap = { version = "2.6.0"}
 rayon = { version = "1.10.0"}
-
+crossbeam-channel = { version = "*"}
 [profile.release]
 codegen-units = 1
 debug         = false

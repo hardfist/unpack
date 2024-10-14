@@ -1,3 +1,4 @@
+use crossbeam_channel::unbounded;
 use indexmap::IndexSet;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rspack_sources::{BoxSource, ConcatSource, SourceExt};
@@ -47,7 +48,7 @@ impl Compilation {
     /// similar with webpack's make phase, which will make module graph
     pub fn scan(&mut self) -> ScannerState {
         let start = Instant::now();
-        let (send, recv) = channel::<Task>();
+        let (send, recv) = unbounded();
         let module_scanner =
             ModuleScanner::new(self.options.clone(), self.options.context.clone(), recv);
         let mut scanner_state = ScannerState::new(send);
