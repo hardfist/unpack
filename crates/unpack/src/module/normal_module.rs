@@ -64,17 +64,15 @@ impl Module for NormalModule {
         let (sender, receiver) = mpsc::channel();
         {
             let resource_path = self.resource_path.clone();
-            rayon::spawn(move || {
-                let _: Result<()> = (|| {
-                    let content =
-                        std::fs::read_to_string(resource_path.clone()).into_diagnostic()?;
-                    let source =
-                        Self::create_source(resource_path.to_string().clone(), content.clone());
-                    let parse_result = Self::parse(content)?;
-                    sender.send((source, parse_result)).unwrap();
-                    Ok(())
-                })();
-            });
+
+            let _: Result<()> = (|| {
+                let content = std::fs::read_to_string(resource_path.clone()).into_diagnostic()?;
+                let source =
+                    Self::create_source(resource_path.to_string().clone(), content.clone());
+                let parse_result = Self::parse(content)?;
+                sender.send((source, parse_result)).unwrap();
+                Ok(())
+            })();
         }
         let (source, parse_result) = receiver.recv().unwrap();
         self.source = NormalModuleSource::Succeed(source.clone());

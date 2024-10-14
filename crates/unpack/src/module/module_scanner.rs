@@ -11,6 +11,7 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 use std::clone;
 use std::collections::VecDeque;
+use std::os::macos::raw::stat;
 use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
 
@@ -58,8 +59,10 @@ impl ModuleScanner {
             .entry
             .iter()
             .map(|entry| {
-                let entry_dep: BoxDependency =
-                    Box::new(EntryDependency::new(entry.import.clone(), self.options.context.clone()));
+                let entry_dep: BoxDependency = Box::new(EntryDependency::new(
+                    entry.import.clone(),
+                    self.options.context.clone(),
+                ));
                 state.entries.insert(
                     entry.name.clone(),
                     EntryData {
@@ -80,16 +83,16 @@ impl ModuleScanner {
         context: Option<Utf8PathBuf>,
     ) {
         dependencies.into_iter().for_each(|dep| {
-                state.add();
-                state
-                    .tx
-                    .send(Task::Factorize(FactorizeTask {
-                        module_dependency:dep,
-                        origin_module_id,
-                        origin_module_context: context.clone(),
-                    }))
-                    .unwrap();
-            });
+            state.add();
+            state
+                .tx
+                .send(Task::Factorize(FactorizeTask {
+                    module_dependency: dep,
+                    origin_module_id,
+                    origin_module_context: context.clone(),
+                }))
+                .unwrap();
+        });
     }
     pub fn resolve_module() {}
 }
@@ -101,17 +104,19 @@ pub struct ScannerState {
     pub tx: Sender<Task>,
     pub diagnostics: Arc<Mutex<Diagnostics>>,
     pub entries: IndexMap<String, EntryData>,
-    pub remaining: AtomicU32
+    pub remaining: AtomicU32,
 }
 impl ScannerState {
-    fn add(&self){
-        self.remaining.fetch_add(1,std::sync::atomic::Ordering::SeqCst);
+    fn add(&self) {
+        self.remaining
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     }
-    fn sub(&self){
-        self.remaining.fetch_sub(1,std::sync::atomic::Ordering::SeqCst);
+    fn sub(&self) {
+        self.remaining
+            .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
     }
-    fn get_count(&self) -> u32{
-       self.remaining.load(std::sync::atomic::Ordering::SeqCst)
+    fn get_count(&self) -> u32 {
+        self.remaining.load(std::sync::atomic::Ordering::SeqCst)
     }
 }
 impl ScannerState {
@@ -132,7 +137,7 @@ impl ModuleScanner {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
 
-        while state.get_count()>0 {
+        while state.get_count() > 0 {
             let task = self.recv.recv().unwrap();
             state.sub();
             self.handle_task(task, state);
@@ -146,13 +151,14 @@ impl ModuleScanner {
             }
             Task::Build(task) => {
                 let scanner = self.clone();
-                rayon::scope(|s| {
-                    s.spawn(move|_| {
-                    Self::handle_build(scanner,&state, task);   
-                   });
-                })
-                
-                
+                if state._modules.contains_key(task.module.identifier()) {
+                    return;
+                };
+                state.add();
+                let tx = state.tx.clone();
+                rayon::spawn(move || {
+                    Self::handle_build(scanner, tx, task);
+                });
             }
             Task::ProcessDeps(task) => {
                 self.handle_process_deps(state, task);
@@ -186,12 +192,12 @@ impl ModuleScanner {
                     .send(Task::Build(BuildTask {
                         origin_module_id: task.origin_module_id,
                         module: module,
-                        module_dependency:task.module_dependency.clone(),
+                        module_dependency: task.module_dependency.clone(),
                     }))
                     .unwrap();
             }
             Err(err) => {
-               // state.diagnostics.push(err);
+                // state.diagnostics.push(err);
             }
         }
     }
@@ -203,11 +209,9 @@ impl ModuleScanner {
         let dependency_id = state.module_graph.add_dependency(task.module_dependency);
         state._modules.insert(identifier.to_string(), module_id);
         // update origin -> self
-        state.module_graph.set_resolved_module(
-            task.origin_module_id,
-            dependency_id,
-            module_id,
-        );
+        state
+            .module_graph
+            .set_resolved_module(task.origin_module_id, dependency_id, module_id);
         self.handle_module_creation(
             state,
             task.dependencies,
@@ -215,29 +219,24 @@ impl ModuleScanner {
             original_module_context,
         );
     }
-    fn handle_build(self, state: &ScannerState, task: BuildTask) {
+    fn handle_build(self, tx: Sender<Task>, task: BuildTask) {
         let mut module = task.module;
         let module_dependency = task.module_dependency;
-        if state._modules.contains_key(module.identifier()) {
-            return;
-        };
+
         match module.build(BuildContext {
             options: self.options.clone(),
         }) {
             Ok(result) => {
-                state.add();
-                state
-                    .tx
-                    .send(Task::ProcessDeps(ProcessDepsTask {
-                        dependencies: result.module_dependencies,
-                        origin_module_id: task.origin_module_id,
-                        module_dependency: module_dependency,
-                        module,
-                    }))
-                    .unwrap();
+                tx.send(Task::ProcessDeps(ProcessDepsTask {
+                    dependencies: result.module_dependencies,
+                    origin_module_id: task.origin_module_id,
+                    module_dependency: module_dependency,
+                    module,
+                }))
+                .unwrap();
             }
             Err(err) => {
-               // state.diagnostics.push(err);
+                // state.diagnostics.push(err);
             }
         };
     }

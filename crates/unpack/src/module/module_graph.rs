@@ -1,7 +1,7 @@
+use crossbeam_channel::Receiver;
 use index_vec::IndexVec;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
-use crossbeam_channel::Receiver;
 
 mod connection;
 mod dependency;
