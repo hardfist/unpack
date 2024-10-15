@@ -1,17 +1,21 @@
 use std::sync::Arc;
 
+use crate::dependency::{BoxDependency, BoxDependencyTemplate, ConstDependency, HarmonyImportSideEffectDependency, SpanExt};
 use crate::errors::miette::{miette, Result};
 use miette::LabeledSpan;
 use swc_core::common::{FileName, SourceMap, Spanned};
 use swc_core::ecma::ast::Program;
 use swc_core::ecma::parser::{EsSyntax, Parser, StringInput, Syntax};
+use swc_core::ecma::utils::swc_ecma_ast;
+
+use super::ParseResult;
 
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct AST {
     pub program: Program,
 }
-pub fn parse(content: String) -> Result<AST> {
+pub fn parse(content: String) -> Result<ParseResult> {
     let cm = SourceMap::default();
     let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content);
 
@@ -48,6 +52,32 @@ pub fn parse(content: String) -> Result<AST> {
             return Err(miette!(labels = labels, "parse error"));
         }
     };
+        // Analyze the AST for all import dependencies
+        let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
+        let mut module_dependencies: Vec<BoxDependency> = vec![];
+        match &program {
+            swc_ecma_ast::Program::Module(module) => {
+                for item in &module.body {
+                    if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(
+                        import,
+                    )) = item
+                    {
+                        let request = import.src.value.clone();
+                        module_dependencies
+                            .push(Box::new(HarmonyImportSideEffectDependency { request }));
+                        presentational_dependencies.push(Box::new(ConstDependency::new(
+                            import.span.real_lo(),
+                            import.span.real_hi(),
+                            "".into(),
+                        )));
+                    }
+                }
+            }
+            swc_ecma_ast::Program::Script(_) => {}
+        };
 
-    Ok(AST { program })
+     Ok(ParseResult {
+            module_dependencies,
+            presentational_dependencies,
+        })
 }
