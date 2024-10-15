@@ -1,7 +1,7 @@
 use crate::dependency::{BoxDependency, Dependency};
+use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
-use crate::errors::miette::{Result,Report};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::task::{BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
@@ -12,11 +12,8 @@ use rustc_hash::FxHashMap;
 use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
 
-use crate::{
-    compiler::CompilerOptions,
-    dependency::EntryDependency,
-};
 use super::module_graph::ModuleGraph;
+use crate::{compiler::CompilerOptions, dependency::EntryDependency};
 #[derive(Debug)]
 pub struct EntryData {
     name: Option<String>,
@@ -31,7 +28,11 @@ pub struct ModuleScanner {
 }
 struct FactorizeParams {}
 impl ModuleScanner {
-    pub fn new(options: Arc<CompilerOptions>, context: Utf8PathBuf, recv: Receiver<Result<Task>>) -> Self {
+    pub fn new(
+        options: Arc<CompilerOptions>,
+        context: Utf8PathBuf,
+        recv: Receiver<Result<Task>>,
+    ) -> Self {
         let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
             options.resolve.clone(),
         ));
@@ -114,7 +115,7 @@ impl ScannerState {
     fn get_count(&self) -> u32 {
         self.remaining.load(std::sync::atomic::Ordering::SeqCst)
     }
-    fn add_diagnostic(&self,diag:Report) {
+    fn add_diagnostic(&self, diag: Report) {
         self.diagnostics.lock().unwrap().push(diag);
     }
 }
@@ -138,33 +139,34 @@ impl ModuleScanner {
 
         while state.get_count() > 0 {
             let task = self.recv.recv().unwrap();
-            
+
             state.sub();
             match task {
                 Ok(task) => {
                     self.handle_task(task, state);
-                },
+                }
                 Err(err) => {
                     state.add_diagnostic(err);
                 }
             }
-            
         }
     }
 
     fn handle_task(&self, task: Task, state: &mut ScannerState) {
         match task {
             Task::Factorize(factorize_task) => {
-                let original_module = factorize_task.origin_module_id.map(|x|state.module_graph.module_by_id(x));
-                let original_module_context = original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
+                let original_module = factorize_task
+                    .origin_module_id
+                    .map(|x| state.module_graph.module_by_id(x));
+                let original_module_context =
+                    original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
                 state.add();
                 let tx = state.tx.clone();
                 let scanner = self.clone();
-                Self::handle_factorize( scanner,tx,factorize_task,original_module_context);   
-                // rayon::spawn(|| {
-                    
-                // });
-                
+
+                rayon::spawn(|| {
+                    Self::handle_factorize(scanner, tx, factorize_task, original_module_context);
+                });
             }
             Task::Build(task) => {
                 let scanner = self.clone();
@@ -182,9 +184,14 @@ impl ModuleScanner {
             }
         }
     }
-    fn handle_factorize(self,tx: Sender<Result<Task>>,task: FactorizeTask, original_module_context: Option<Utf8PathBuf>) {
+    fn handle_factorize(
+        self,
+        tx: Sender<Result<Task>>,
+        task: FactorizeTask,
+        original_module_context: Option<Utf8PathBuf>,
+    ) {
         let module_dependency = task.module_dependency.clone();
-        
+
         let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
         } else if let Some(context) = original_module_context {
@@ -200,13 +207,12 @@ impl ModuleScanner {
         }) {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
-                    tx
-                    .send(Ok(Task::Build(BuildTask {
-                        origin_module_id: task.origin_module_id,
-                        module,
-                        module_dependency: task.module_dependency.clone(),
-                    })))
-                    .unwrap();
+                tx.send(Ok(Task::Build(BuildTask {
+                    origin_module_id: task.origin_module_id,
+                    module,
+                    module_dependency: task.module_dependency.clone(),
+                })))
+                .unwrap();
             }
             Err(err) => {
                 tx.send(Err(err)).unwrap();

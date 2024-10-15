@@ -1,7 +1,5 @@
 use crate::{
-    compiler::CompilerOptions,
-    dependency::BoxDependency,
-    module::NormalModule,
+    compiler::CompilerOptions, dependency::BoxDependency, module::NormalModule,
     resolver_factory::ResolverFactory,
 };
 use camino::Utf8PathBuf;

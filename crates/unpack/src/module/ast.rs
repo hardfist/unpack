@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use crate::dependency::{BoxDependency, BoxDependencyTemplate, ConstDependency, HarmonyImportSideEffectDependency, SpanExt};
+use crate::dependency::{
+    BoxDependency, BoxDependencyTemplate, ConstDependency, HarmonyImportSideEffectDependency,
+    SpanExt,
+};
 use crate::errors::miette::{miette, Result};
 use miette::LabeledSpan;
 use swc_core::common::{FileName, SourceMap, Spanned};
@@ -52,32 +55,32 @@ pub fn parse(content: String) -> Result<ParseResult> {
             return Err(miette!(labels = labels, "parse error"));
         }
     };
-        // Analyze the AST for all import dependencies
-        let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
-        let mut module_dependencies: Vec<BoxDependency> = vec![];
-        match &program {
-            swc_ecma_ast::Program::Module(module) => {
-                for item in &module.body {
-                    if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(
-                        import,
-                    )) = item
-                    {
-                        let request = import.src.value.clone();
-                        module_dependencies
-                            .push(Box::new(HarmonyImportSideEffectDependency { request }));
-                        presentational_dependencies.push(Box::new(ConstDependency::new(
-                            import.span.real_lo(),
-                            import.span.real_hi(),
-                            "".into(),
-                        )));
-                    }
+    // Analyze the AST for all import dependencies
+    let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
+    let mut module_dependencies: Vec<BoxDependency> = vec![];
+    match &program {
+        swc_ecma_ast::Program::Module(module) => {
+            for item in &module.body {
+                if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(
+                    import,
+                )) = item
+                {
+                    let request = import.src.value.clone();
+                    module_dependencies
+                        .push(Box::new(HarmonyImportSideEffectDependency { request }));
+                    presentational_dependencies.push(Box::new(ConstDependency::new(
+                        import.span.real_lo(),
+                        import.span.real_hi(),
+                        "".into(),
+                    )));
                 }
             }
-            swc_ecma_ast::Program::Script(_) => {}
-        };
+        }
+        swc_ecma_ast::Program::Script(_) => {}
+    };
 
-     Ok(ParseResult {
-            module_dependencies,
-            presentational_dependencies,
-        })
+    Ok(ParseResult {
+        module_dependencies,
+        presentational_dependencies,
+    })
 }

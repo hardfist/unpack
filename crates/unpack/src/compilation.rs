@@ -15,10 +15,7 @@ use crate::{
     },
     task::Task,
 };
-use std::{
-    sync::Arc,
-    time::Instant,
-};
+use std::{sync::Arc, time::Instant};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
