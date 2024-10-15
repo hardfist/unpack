@@ -11,6 +11,7 @@ use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 use swc_core::ecma::utils::swc_ecma_ast;
 
+use super::ast2::parse2;
 use super::{ast::parse, BuildContext, BuildResult, Module};
 use super::{CodeGenerationResult, ModuleGraph};
 #[derive(Debug)]
@@ -152,6 +153,7 @@ impl NormalModule {
         OriginalSource::new(content, resource_path).boxed()
     }
     fn parse(content: String) -> Result<ParseResult> {
-        parse(content)
+       //  parse(content)
+       parse2(content)
     }
 }
