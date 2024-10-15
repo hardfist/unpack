@@ -4,12 +4,11 @@ use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
 
 fn main() {
     let current_file = file!();
+    dbg!(current_file);
     let context = PathBuf::from(current_file)
-        .join("../fixtures")
+        .join("../../../../benchmark/performance-compare-ng/apps/10000")
         .canonicalize()
         .unwrap();
-    // for local bench
-    let context = PathBuf::from("/Users/bytedance/project/performance-compare-ext/apps/10000");
     let compiler_options: CompilerOptions = CompilerOptions {
         context: context.try_into().expect("expect utf8 path"),
         entry: vec![EntryItem {
