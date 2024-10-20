@@ -1,12 +1,7 @@
 #![deny(clippy::all)]
 mod js_plugin;
-use std::thread;
-
 use camino::Utf8PathBuf;
 use js_plugin::JsPluginAdapter;
-use napi::bindgen_prelude::{block_on, spawn, Promise};
-use napi::threadsafe_function::ThreadsafeFunction;
-use napi::Either;
 use unpack::compiler::EntryItem;
 use unpack::plugin::Plugin;
 use unpack::resolver::ResolveOptions;

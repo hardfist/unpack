@@ -152,7 +152,7 @@ impl ChunkLinker {
         state: &mut LinkerState,
     ) -> IndexMap<ChunkGroupId, Vec<ModuleId>> {
         let mut entrypoint_module_map = IndexMap::default();
-        for (name, entry_data) in &self.entries {
+        for (name, _entry_data) in &self.entries {
             let chunk_id = state.chunk_graph.create_chunk(Some(name.clone()));
             let chunk_group_id = state
                 .chunk_graph

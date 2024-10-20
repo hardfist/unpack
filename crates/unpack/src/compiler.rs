@@ -1,9 +1,6 @@
 mod options;
-use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::Arc;
 
-use camino::Utf8PathBuf;
 pub use options::CompilerOptions;
 pub use options::EntryItem;
 
@@ -16,21 +13,26 @@ use crate::plugin::PluginContext;
 pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
-    plugins: Vec<Box<dyn Plugin>>
+    plugins: Vec<Box<dyn Plugin>>,
 }
 
 impl Compiler {
-    pub fn new(options: Arc<CompilerOptions>,plugins: Vec<Box<dyn Plugin>>) -> Self {
+    pub fn new(options: Arc<CompilerOptions>, plugins: Vec<Box<dyn Plugin>>) -> Self {
         Self { options, plugins }
     }
     pub fn build(&mut self) {
-        let plugin_context = PluginContext{
-            options: self.options.clone()
+        let plugin_context = PluginContext {
+            options: self.options.clone(),
         };
         for plugin in &self.plugins {
-            let result = plugin.load(plugin_context.clone(), LoadArgs {
-                path: self.options.context.clone()
-            }).unwrap();
+            let result = plugin
+                .load(
+                    plugin_context.clone(),
+                    LoadArgs {
+                        path: self.options.context.clone(),
+                    },
+                )
+                .unwrap();
             dbg!(result);
         }
         let mut compilation = Compilation::new(self.options.clone());

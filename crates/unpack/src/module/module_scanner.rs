@@ -1,4 +1,4 @@
-use crate::dependency::{BoxDependency, Dependency};
+use crate::dependency::BoxDependency;
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};

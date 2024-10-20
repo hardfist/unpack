@@ -1,18 +1,17 @@
 use std::sync::{mpsc, Arc};
 
 use crate::dependency::{
-    AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, ConstDependency,
-    DependenciesBlock, DependencyId, HarmonyImportSideEffectDependency, SpanExt,
+    AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate,
+    DependenciesBlock, DependencyId,
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
-use swc_core::ecma::utils::swc_ecma_ast;
 
 use super::ast2::parse2;
-use super::{ast::parse, BuildContext, BuildResult, Module};
+use super::{ BuildContext, BuildResult, Module};
 use super::{CodeGenerationResult, ModuleGraph};
 #[derive(Debug)]
 pub struct NormalModule {

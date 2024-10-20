@@ -1,4 +1,4 @@
-use napi::{bindgen_prelude::Promise, threadsafe_function::ThreadsafeFunction, Either};
+use napi::{ threadsafe_function::ThreadsafeFunction, tokio::sync::oneshot};
 use unpack::plugin::{LoadArgs, Plugin};
 
 #[napi(object, object_to_js = false)]
@@ -14,9 +14,8 @@ impl Plugin for JsPluginAdapter {
         _ctx: unpack::plugin::PluginContext,
         args: LoadArgs,
     ) -> unpack::errors::miette::Result<Option<String>> {
-        let (send, recv) = std::sync::mpsc::channel();
+        let (send, recv) = oneshot::channel();
         let callback = self.on_load.clone();
-        std::thread::spawn(move || {
             callback.call_with_return_value(
                 Ok(args.path.to_string()),
                 napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
@@ -25,8 +24,7 @@ impl Plugin for JsPluginAdapter {
                     Ok(())
                 },
             );
-        });
-        let result = recv.recv().unwrap();
+        let result = recv.blocking_recv().unwrap();
         Ok(Some(result))
     }
 }
