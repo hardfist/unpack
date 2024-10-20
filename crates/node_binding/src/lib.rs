@@ -1,36 +1,22 @@
 #![deny(clippy::all)]
+mod js_plugin;
+use std::thread;
+
 use camino::Utf8PathBuf;
-use napi::bindgen_prelude::{block_on, Promise};
+use js_plugin::JsPluginAdapter;
+use napi::bindgen_prelude::{block_on, spawn, Promise};
 use napi::threadsafe_function::ThreadsafeFunction;
 use napi::Either;
 use unpack::compiler::EntryItem;
+use unpack::plugin::Plugin;
 use unpack::resolver::ResolveOptions;
 use unpack::{bundler::unpack, compiler::CompilerOptions};
 #[macro_use]
 extern crate napi_derive;
 
 #[napi]
-pub fn build(
-    context: String,
-    entry: String,
-    callback: ThreadsafeFunction<u32>,
-) -> napi::Result<()> {
-    let (send, recv) = std::sync::mpsc::channel();
+pub fn build(context: String, entry: String, plugins: Vec<JsPluginAdapter>) -> napi::Result<()> {
     std::thread::spawn(move || {
-        callback.call_with_return_value(
-            Ok(32),
-            napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: Either<Promise<String>, String>| {
-                send.send(ret).unwrap();
-                Ok(())
-            },
-        );
-    });
-    std::thread::spawn(move || {
-        let call_result = match recv.recv().unwrap() {
-            Either::A(p) => block_on(p).unwrap(),
-            Either::B(b) => b,
-        };
         unpack(CompilerOptions {
             context: Utf8PathBuf::from(context),
             entry: vec![EntryItem {
@@ -44,7 +30,7 @@ pub fn build(
                     .collect::<Vec<_>>(),
                 ..Default::default()
             },
-        });
+        }, plugins.into_iter().map(|x| Box::new(x) as Box<dyn Plugin>).collect());
     });
 
     Ok(())

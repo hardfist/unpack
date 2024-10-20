@@ -153,7 +153,7 @@ impl NormalModule {
         OriginalSource::new(content, resource_path).boxed()
     }
     fn parse(content: String) -> Result<ParseResult> {
-       //  parse(content)
-       parse2(content)
+        //  parse(content)
+        parse2(content)
     }
 }
