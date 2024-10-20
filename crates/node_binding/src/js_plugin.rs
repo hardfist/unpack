@@ -1,4 +1,4 @@
-use napi::{ threadsafe_function::ThreadsafeFunction, tokio::sync::oneshot};
+use napi::{ bindgen_prelude::{block_on, Promise}, threadsafe_function::ThreadsafeFunction, tokio::sync::oneshot, Either};
 use unpack::plugin::{LoadArgs, Plugin};
 
 #[napi(object, object_to_js = false)]
@@ -19,12 +19,21 @@ impl Plugin for JsPluginAdapter {
             callback.call_with_return_value(
                 Ok(args.path.to_string()),
                 napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-                move |ret: String| {
-                    send.send(ret).unwrap();
+                move |ret: Either<String,Promise<String>>| {
+                    let _ = send.send(ret);
                     Ok(())
                 },
             );
+        
         let result = recv.blocking_recv().unwrap();
-        Ok(Some(result))
+        let s = match result {
+            Either::A(s)=> {
+                s
+            },
+            Either::B(s) => {
+                block_on(s).unwrap()
+            }
+        };
+        Ok(Some(s))
     }
 }

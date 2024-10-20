@@ -10,4 +10,10 @@ test('basic', (t) => {
             return `${path}-${path}`
         }
     }])
+     binding.build(context, './src/index.mjs',[{
+        async onLoad(err, path){
+            console.log('path:', path,err)
+            return `${path}-${path}`
+        }
+    }])
 })
