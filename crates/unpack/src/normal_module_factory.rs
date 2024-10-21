@@ -39,6 +39,7 @@ impl NormalModuleFactory {
             context: context.clone(),
             path: Utf8PathBuf::from_str(request).unwrap(),
         })?;
+        dbg!(&load_result);
         let resource_path = match load_result {
             Some(res) => Utf8PathBuf::from(res),
             None => {

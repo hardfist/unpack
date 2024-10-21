@@ -1,7 +1,7 @@
-use std::{fmt::Debug, sync::Arc};
-
+use std::{fmt::Debug, future::IntoFuture, sync::Arc};
+use async_std::task::block_on;
 use napi::{
-    bindgen_prelude::{block_on, Promise},
+    bindgen_prelude::{ Promise},
     threadsafe_function::ThreadsafeFunction,
     tokio::sync::oneshot,
     Either,
@@ -31,17 +31,17 @@ impl Plugin for JsPluginAdapter {
         callback.call_with_return_value(
             Ok(args.path.to_string()),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: Either<String, Promise<String>>| {
+            move |ret: Either<Option<String>, Promise<Option<String>>>| {
                 let _ = send.send(ret);
                 Ok(())
             },
         );
 
-        let result = recv.blocking_recv().unwrap();
+        let result = block_on(recv.into_future()).unwrap();
         let s = match result {
             Either::A(s) => s,
             Either::B(s) => block_on(s).unwrap(),
         };
-        Ok(Some(s))
+        Ok(s)
     }
 }
