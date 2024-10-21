@@ -1,5 +1,5 @@
 use rspack_resolver::ResolveOptions;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
 
 fn main() {
@@ -28,6 +28,6 @@ fn main() {
             ..Default::default()
         },
     };
-    let mut compiler = Compiler::new(compiler_options);
+    let mut compiler = Compiler::new(Arc::new(compiler_options),vec![]);
     compiler.build();
 }

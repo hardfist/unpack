@@ -10,10 +10,23 @@
             "sourceLanguages": [
               "rust"
             ],
-            "name": "debug-binding",
+            "name": "debug-basic",
             "program": "node",
             "args": [
                 "tests/build.js"
+            ],
+            "cwd": "${workspaceFolder}/crates/node_binding"
+          },
+           {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+              "rust"
+            ],
+            "name": "debug-bench",
+            "program": "node",
+            "args": [
+                "tests/bench.js"
             ],
             "cwd": "${workspaceFolder}/crates/node_binding"
           },

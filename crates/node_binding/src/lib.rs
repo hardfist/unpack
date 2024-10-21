@@ -22,7 +22,7 @@ pub fn build(context: String, entry: String, plugins: Vec<JsPluginAdapter>) -> n
                     import: entry,
                 }],
                 resolve: ResolveOptions {
-                    extensions: vec![".js", ".ts", ".mjs"]
+                    extensions: vec![".js", ".ts", ".mjs",".jsx"]
                         .into_iter()
                         .map(|x| x.to_string())
                         .collect::<Vec<_>>(),
