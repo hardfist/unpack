@@ -24,7 +24,10 @@ impl Compiler {
     }
     pub fn build(&mut self) {
         let plugin_driver = PluginDriver {
-            plugins: self.plugins.clone()
+            plugins: self.plugins.clone(),
+            plugin_context: Arc::new(PluginContext {
+                options: self.options.clone()
+            })
         };
         let mut compilation = Compilation::new(self.options.clone(), plugin_driver);
         let scanner_state = compilation.scan();

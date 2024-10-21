@@ -1,6 +1,11 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, sync::Arc};
 
-use napi::{ bindgen_prelude::{block_on, Promise}, threadsafe_function::ThreadsafeFunction, tokio::sync::oneshot, Either};
+use napi::{
+    bindgen_prelude::{block_on, Promise},
+    threadsafe_function::ThreadsafeFunction,
+    tokio::sync::oneshot,
+    Either,
+};
 use unpack::plugin::{LoadArgs, Plugin};
 
 #[napi(object, object_to_js = false)]
@@ -18,28 +23,24 @@ impl Plugin for JsPluginAdapter {
     }
     fn load(
         &self,
-        _ctx: unpack::plugin::PluginContext,
+        _ctx: Arc<unpack::plugin::PluginContext>,
         args: LoadArgs,
     ) -> unpack::errors::miette::Result<Option<String>> {
         let (send, recv) = oneshot::channel();
         let callback = self.on_load.clone();
-            callback.call_with_return_value(
-                Ok(args.path.to_string()),
-                napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-                move |ret: Either<String,Promise<String>>| {
-                    let _ = send.send(ret);
-                    Ok(())
-                },
-            );
-        
+        callback.call_with_return_value(
+            Ok(args.path.to_string()),
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
+            move |ret: Either<String, Promise<String>>| {
+                let _ = send.send(ret);
+                Ok(())
+            },
+        );
+
         let result = recv.blocking_recv().unwrap();
         let s = match result {
-            Either::A(s)=> {
-                s
-            },
-            Either::B(s) => {
-                block_on(s).unwrap()
-            }
+            Either::A(s) => s,
+            Either::B(s) => block_on(s).unwrap(),
         };
         Ok(Some(s))
     }

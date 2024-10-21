@@ -1,9 +1,13 @@
 use crate::{
-    compiler::CompilerOptions, dependency::BoxDependency, module::NormalModule, plugin::PluginDriver, resolver_factory::ResolverFactory
+    compiler::CompilerOptions,
+    dependency::BoxDependency,
+    module::NormalModule,
+    plugin::{LoadArgs, PluginDriver},
+    resolver_factory::ResolverFactory,
 };
 use camino::Utf8PathBuf;
 use miette::{IntoDiagnostic, Result};
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 #[derive(Debug)]
 pub struct NormalModuleFactory {
@@ -23,17 +27,31 @@ pub struct ModuleFactoryResult {
     pub module: NormalModule,
 }
 impl NormalModuleFactory {
-    pub fn create(&self, data: ModuleFactoryCreateData, plugins: PluginDriver) -> Result<ModuleFactoryResult> {
+    pub fn create(
+        &self,
+        data: ModuleFactoryCreateData,
+        plugin_driver: PluginDriver,
+    ) -> Result<ModuleFactoryResult> {
         let dependency = data.module_dependency.as_module_dependency().unwrap();
         let context = data.context.clone();
         let request = dependency.request();
-        
-        let resolve_result = self
-            .resolver_factory
-            .base_resolver
-            .resolve(&context, request)
-            .into_diagnostic()?;
-        let resource_path = resolve_result.path;
+        let load_result = plugin_driver.run_load_hook(LoadArgs {
+            context: context.clone(),
+            path: Utf8PathBuf::from_str(request).unwrap(),
+        })?;
+        let resource_path = match load_result {
+            Some(res) => Utf8PathBuf::from(res),
+            None => {
+                let resolve_result = self
+                    .resolver_factory
+                    .base_resolver
+                    .resolve(&context, request)
+                    .into_diagnostic()?;
+                let resource_path = resolve_result.path;
+                resource_path
+            }
+        };
+
         let module = NormalModule::new(request.to_string(), resource_path);
         Ok(ModuleFactoryResult { module })
     }
