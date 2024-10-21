@@ -6,36 +6,27 @@ pub use options::EntryItem;
 
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
+use crate::plugin::BoxPlugin;
 use crate::plugin::LoadArgs;
 use crate::plugin::Plugin;
 use crate::plugin::PluginContext;
+use crate::plugin::PluginDriver;
 
 pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
-    plugins: Vec<Box<dyn Plugin>>,
+    plugins: Vec<BoxPlugin>
 }
 
 impl Compiler {
-    pub fn new(options: Arc<CompilerOptions>, plugins: Vec<Box<dyn Plugin>>) -> Self {
+    pub fn new(options: Arc<CompilerOptions>, plugins: Vec<BoxPlugin>) -> Self {
         Self { options, plugins }
     }
     pub fn build(&mut self) {
-        let plugin_context = PluginContext {
-            options: self.options.clone(),
+        let plugin_driver = PluginDriver {
+            plugins: self.plugins.clone()
         };
-        for plugin in &self.plugins {
-            let result = plugin
-                .load(
-                    plugin_context.clone(),
-                    LoadArgs {
-                        path: self.options.context.clone(),
-                    },
-                )
-                .unwrap();
-            dbg!(result);
-        }
-        let mut compilation = Compilation::new(self.options.clone());
+        let mut compilation = Compilation::new(self.options.clone(), plugin_driver);
         let scanner_state = compilation.scan();
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);

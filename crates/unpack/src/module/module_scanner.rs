@@ -3,6 +3,7 @@ use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
+use crate::plugin::PluginDriver;
 use crate::task::{BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
@@ -25,6 +26,7 @@ pub struct ModuleScanner {
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
     recv: Arc<Receiver<Result<Task>>>,
+    plugins: PluginDriver
 }
 struct FactorizeParams {}
 impl ModuleScanner {
@@ -32,6 +34,7 @@ impl ModuleScanner {
         options: Arc<CompilerOptions>,
         context: Utf8PathBuf,
         recv: Receiver<Result<Task>>,
+        plugins: PluginDriver
     ) -> Self {
         let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
             options.resolve.clone(),
@@ -47,6 +50,7 @@ impl ModuleScanner {
             resolver_factory: resolver_factory.clone(),
             module_factory,
             recv: Arc::new(recv),
+            plugins
         }
     }
     // add entries
@@ -204,7 +208,8 @@ impl ModuleScanner {
             module_dependency: module_dependency.clone(),
             context,
             options: self.options.clone(),
-        }) {
+            
+        }, self.plugins.clone()) {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
                 tx.send(Ok(Task::Build(BuildTask {

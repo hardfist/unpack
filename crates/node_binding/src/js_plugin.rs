@@ -1,9 +1,16 @@
+use std::fmt::Debug;
+
 use napi::{ bindgen_prelude::{block_on, Promise}, threadsafe_function::ThreadsafeFunction, tokio::sync::oneshot, Either};
 use unpack::plugin::{LoadArgs, Plugin};
 
 #[napi(object, object_to_js = false)]
 pub struct JsPluginAdapter {
     pub on_load: ThreadsafeFunction<String>,
+}
+impl Debug for JsPluginAdapter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("JsPluginAdapter").finish()
+    }
 }
 impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {

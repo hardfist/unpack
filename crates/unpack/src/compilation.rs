@@ -6,14 +6,10 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState},
-    compiler::CompilerOptions,
-    errors::Diagnostics,
-    module::{
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module::{
         CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
         ScannerState,
-    },
-    task::Task,
+    }, plugin::{BoxPlugin, PluginDriver}, task::Task
 };
 use std::{sync::Arc, time::Instant};
 #[derive(Debug, Default)]
@@ -33,14 +29,16 @@ pub struct Compilation {
     pub options: Arc<CompilerOptions>,
     module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
+    pub plugins: PluginDriver
 }
 
 impl Compilation {
-    pub fn new(options: Arc<CompilerOptions>) -> Self {
+    pub fn new(options: Arc<CompilerOptions>, plugins: PluginDriver) -> Self {
         Self {
             options,
             module_graph: Default::default(),
             diagnostics: Default::default(),
+            plugins 
         }
     }
     /// similar with webpack's make phase, which will make module graph
@@ -48,7 +46,7 @@ impl Compilation {
         let start = Instant::now();
         let (send, recv) = unbounded::<Result<Task>>();
         let module_scanner =
-            ModuleScanner::new(self.options.clone(), self.options.context.clone(), recv);
+            ModuleScanner::new(self.options.clone(), self.options.context.clone(), recv, self.plugins.clone());
         let mut scanner_state = ScannerState::new(send);
         module_scanner.add_entries(&mut scanner_state);
         let elapsed = start.elapsed();

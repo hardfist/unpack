@@ -1,6 +1,5 @@
 use crate::{
-    compiler::CompilerOptions, dependency::BoxDependency, module::NormalModule,
-    resolver_factory::ResolverFactory,
+    compiler::CompilerOptions, dependency::BoxDependency, module::NormalModule, plugin::PluginDriver, resolver_factory::ResolverFactory
 };
 use camino::Utf8PathBuf;
 use miette::{IntoDiagnostic, Result};
@@ -18,15 +17,17 @@ pub struct ModuleFactoryCreateData {
     pub context: Utf8PathBuf,
     pub options: Arc<CompilerOptions>,
 }
+
 #[derive(Debug)]
 pub struct ModuleFactoryResult {
     pub module: NormalModule,
 }
 impl NormalModuleFactory {
-    pub fn create(&self, data: ModuleFactoryCreateData) -> Result<ModuleFactoryResult> {
+    pub fn create(&self, data: ModuleFactoryCreateData, plugins: PluginDriver) -> Result<ModuleFactoryResult> {
         let dependency = data.module_dependency.as_module_dependency().unwrap();
         let context = data.context.clone();
         let request = dependency.request();
+        
         let resolve_result = self
             .resolver_factory
             .base_resolver

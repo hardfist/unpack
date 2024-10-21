@@ -1,9 +1,11 @@
 #![deny(clippy::all)]
 mod js_plugin;
+use std::sync::Arc;
+
 use camino::Utf8PathBuf;
 use js_plugin::JsPluginAdapter;
 use unpack::compiler::EntryItem;
-use unpack::plugin::Plugin;
+use unpack::plugin::{BoxPlugin, Plugin};
 use unpack::resolver::ResolveOptions;
 use unpack::{bundler::unpack, compiler::CompilerOptions};
 #[macro_use]
@@ -25,7 +27,7 @@ pub fn build(context: String, entry: String, plugins: Vec<JsPluginAdapter>) -> n
                     .collect::<Vec<_>>(),
                 ..Default::default()
             },
-        }, plugins.into_iter().map(|x| Box::new(x) as Box<dyn Plugin>).collect());
+        }, plugins.into_iter().map(|x| Arc::new(x) as BoxPlugin).collect());
     });
 
     Ok(())
