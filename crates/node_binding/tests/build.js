@@ -3,7 +3,7 @@ const path = require('path');
 const context = path.resolve(__dirname, './fixtures');
 console.log('context:', context);
 binding.build(context, './src/index.mjs', [{
-    onLoad(err, path) {
+    onResolve(err, path) {
         return undefined;
     }
 }])

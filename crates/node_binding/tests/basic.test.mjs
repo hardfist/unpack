@@ -5,7 +5,7 @@ test('basic', (t) => {
     const context = path.resolve(import.meta.dirname, './fixtures');
     console.log('context:',context);
     binding.build(context, './src/index.mjs',[{
-        onLoad(err, path){
+        onResolve(err, path){
             return undefined;
         }
     }])

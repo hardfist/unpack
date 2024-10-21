@@ -10,7 +10,7 @@ use unpack::plugin::{LoadArgs, Plugin};
 
 #[napi(object, object_to_js = false)]
 pub struct JsPluginAdapter {
-    pub on_load: ThreadsafeFunction<String>,
+    pub on_resolve: ThreadsafeFunction<String>,
 }
 impl Debug for JsPluginAdapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -21,13 +21,13 @@ impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {
         "js_plugin_adapter"
     }
-    fn load(
+    fn resolve(
         &self,
         _ctx: Arc<unpack::plugin::PluginContext>,
         args: LoadArgs,
     ) -> unpack::errors::miette::Result<Option<String>> {
         let (send, recv) = oneshot::channel();
-        let callback = self.on_load.clone();
+        let callback = self.on_resolve.clone();
         callback.call_with_return_value(
             Ok(args.path.to_string()),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,

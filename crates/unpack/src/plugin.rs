@@ -16,7 +16,7 @@ pub struct LoadArgs {
 
 pub trait Plugin: Send + Sync + Debug {
     fn name(&self) -> &'static str;
-    fn load(&self, _ctx: Arc<PluginContext>, _args: LoadArgs) -> Result<Option<String>> {
+    fn resolve(&self, _ctx: Arc<PluginContext>, _args: LoadArgs) -> Result<Option<String>> {
         Ok(None)
     }
 }
@@ -29,9 +29,9 @@ pub struct PluginDriver {
     pub plugin_context: Arc<PluginContext>
 }
 impl PluginDriver {
-    pub fn run_load_hook(&self,args:LoadArgs)-> Result<Option<String>>{
+    pub fn run_resolve_hook(&self,args:LoadArgs)-> Result<Option<String>>{
         for plugin in &self.plugins {
-            let load_result = plugin.load(self.plugin_context.clone(), args.clone())?;
+            let load_result = plugin.resolve(self.plugin_context.clone(), args.clone())?;
             if load_result.is_some() {
                 return Ok(load_result)
             }else{
