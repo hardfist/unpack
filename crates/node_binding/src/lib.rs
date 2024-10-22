@@ -34,7 +34,7 @@ pub fn build(context: String, entry: String, plugins: Vec<JsPluginAdapter>) -> n
                 .map(|x| Arc::new(x) as BoxPlugin)
                 .collect(),
         );
-    });
+    }).join().unwrap();
 
     Ok(())
 }
