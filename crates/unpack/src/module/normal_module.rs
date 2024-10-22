@@ -6,6 +6,7 @@ use crate::dependency::{
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
+use crate::plugin::{LoadArgs, PluginDriver};
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
@@ -23,7 +24,7 @@ pub struct NormalModule {
     module_dependencies: Vec<DependencyId>,
     presentational_dependencies: Vec<BoxDependencyTemplate>,
     blocks: Vec<AsyncDependenciesBlockId>,
-    source: NormalModuleSource,
+    source: NormalModuleSource
 }
 #[derive(Debug, Clone)]
 enum NormalModuleSource {
@@ -60,13 +61,21 @@ impl Module for NormalModule {
     fn identifier(&self) -> &str {
         self.resource_path.as_str()
     }
-    fn build(&mut self, _build_context: BuildContext) -> Result<BuildResult> {
+    fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
         let (sender, receiver) = mpsc::channel();
         {
             let resource_path = self.resource_path.clone();
 
             let _: Result<()> = (|| {
-                let content = std::fs::read_to_string(resource_path.clone()).into_diagnostic()?;
+                let content = build_context.plugin_driver.run_load_hook(LoadArgs{
+                    path:resource_path.clone()
+                })?;
+                let content = match content {
+                    Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
+                    None => {
+                        std::fs::read_to_string(resource_path.clone()).into_diagnostic()?
+                    }
+                };
                 let source =
                     Self::create_source(resource_path.to_string().clone(), content.clone());
                 let parse_result = Self::parse(content)?;

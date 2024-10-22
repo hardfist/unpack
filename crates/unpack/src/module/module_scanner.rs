@@ -26,7 +26,7 @@ pub struct ModuleScanner {
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
     recv: Arc<Receiver<Result<Task>>>,
-    plugins: PluginDriver
+    plugin_driver: Arc<PluginDriver>
 }
 struct FactorizeParams {}
 impl ModuleScanner {
@@ -34,7 +34,7 @@ impl ModuleScanner {
         options: Arc<CompilerOptions>,
         context: Utf8PathBuf,
         recv: Receiver<Result<Task>>,
-        plugins: PluginDriver
+        plugins: Arc<PluginDriver>
     ) -> Self {
         let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
             options.resolve.clone(),
@@ -50,7 +50,7 @@ impl ModuleScanner {
             resolver_factory: resolver_factory.clone(),
             module_factory,
             recv: Arc::new(recv),
-            plugins
+            plugin_driver: plugins
         }
     }
     // add entries
@@ -209,7 +209,7 @@ impl ModuleScanner {
             context,
             options: self.options.clone(),
             
-        }, self.plugins.clone()) {
+        }, self.plugin_driver.clone()) {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
                 tx.send(Ok(Task::Build(BuildTask {
@@ -248,6 +248,7 @@ impl ModuleScanner {
 
         match module.build(BuildContext {
             options: self.options.clone(),
+            plugin_driver: self.plugin_driver.clone(),
         }) {
             Ok(result) => {
                 tx.send(Ok(Task::ProcessDeps(ProcessDepsTask {

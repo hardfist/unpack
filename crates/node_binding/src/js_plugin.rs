@@ -1,7 +1,6 @@
 use std::{fmt::Debug, sync::Arc};
 use napi::{
-    threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction},
-    Either,
+    bindgen_prelude::Buffer, threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction}, Either
 };
 use unpack::errors::miette::Result;
 use std::sync::mpsc::channel;
@@ -29,14 +28,14 @@ impl Plugin for JsPluginAdapter {
         callback.call_with_return_value(
             args.path.to_string(),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: Option<Vec<u8>>| {
+            move |ret: Option<Buffer>| {
                 let _ = send.send(ret);
                 Ok(())
             },
         );
 
         let result = recv.recv().unwrap();
-        Ok(result)
+        Ok(result.map(|x| x.into()))
     }
     fn resolve(
         &self,

@@ -29,7 +29,7 @@ impl Compiler {
                 options: self.options.clone()
             })
         };
-        let mut compilation = Compilation::new(self.options.clone(), plugin_driver);
+        let mut compilation = Compilation::new(self.options.clone(), Arc::new(plugin_driver));
         let scanner_state = compilation.scan();
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);

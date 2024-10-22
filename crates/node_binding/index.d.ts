@@ -7,4 +7,4 @@ export interface JsPluginAdapter {
   onResolve?: (arg: string) => any
   onLoad?: (arg: string) => any
 }
-export declare function build(context: string, entry: string, plugins: Array<JsPluginAdapter>): void
+export declare function build(context: string, entry: string, plugins: Array<JsPluginAdapter>): Promise<void>

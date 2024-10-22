@@ -30,7 +30,7 @@ impl NormalModuleFactory {
     pub fn create(
         &self,
         data: ModuleFactoryCreateData,
-        plugin_driver: PluginDriver,
+        plugin_driver: Arc<PluginDriver>,
     ) -> Result<ModuleFactoryResult> {
         let dependency = data.module_dependency.as_module_dependency().unwrap();
         let context = data.context.clone();

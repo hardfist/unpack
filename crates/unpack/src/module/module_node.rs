@@ -13,6 +13,7 @@ use crate::dependency::BoxDependency;
 use crate::dependency::BoxDependencyTemplate;
 use crate::dependency::DependenciesBlock;
 use crate::errors::miette::Result;
+use crate::plugin::PluginDriver;
 
 #[derive(Debug)]
 pub struct BuildResult {
@@ -21,6 +22,7 @@ pub struct BuildResult {
 }
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,
+    pub plugin_driver: Arc<PluginDriver>
 }
 #[derive(Debug)]
 pub struct CodeGenerationResult {
