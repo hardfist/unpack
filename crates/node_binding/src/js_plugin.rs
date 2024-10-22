@@ -1,11 +1,10 @@
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
 use async_std::task::block_on;
 use napi::{
-    bindgen_prelude::{ Promise},
     threadsafe_function::ThreadsafeFunction,
-    tokio::sync::oneshot,
     Either,
 };
+use std::sync::mpsc::channel;
 use unpack::plugin::{LoadArgs, Plugin};
 
 #[napi(object, object_to_js = false)]
@@ -26,24 +25,20 @@ impl Plugin for JsPluginAdapter {
         _ctx: Arc<unpack::plugin::PluginContext>,
         args: LoadArgs,
     ) -> unpack::errors::miette::Result<Option<String>> {
-        let (send, recv) = oneshot::channel();
+        let (send, recv) = channel();
         let Some(callback) = &self.on_resolve else {
             return Ok(None);
         };
         callback.call_with_return_value(
             Ok(args.path.to_string()),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: Either<Option<String>, Promise<Option<String>>>| {
+            move |ret: Option<String>| {
                 let _ = send.send(ret);
                 Ok(())
             },
         );
 
-        let result = block_on(recv.into_future()).unwrap();
-        let s = match result {
-            Either::A(s) => s,
-            Either::B(s) => block_on(s).unwrap(),
-        };
-        Ok(s)
+        let result = recv.recv().unwrap();
+        Ok(result)
     }
 }
