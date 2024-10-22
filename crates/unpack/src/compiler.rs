@@ -7,7 +7,7 @@ pub use options::EntryItem;
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
 use crate::plugin::BoxPlugin;
-use crate::plugin::LoadArgs;
+use crate::plugin::ResolveArgs;
 use crate::plugin::Plugin;
 use crate::plugin::PluginContext;
 use crate::plugin::PluginDriver;
