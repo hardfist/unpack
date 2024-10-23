@@ -1,6 +1,7 @@
-use std::{fmt::Debug, sync::Arc};
+use std::{fmt::Debug, future::IntoFuture, sync::Arc};
+use async_std::task::block_on;
 use napi::{
-    bindgen_prelude::Buffer, threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction}, Either
+    bindgen_prelude::{Buffer, Promise}, threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction}, Either
 };
 use unpack::errors::miette::Result;
 use std::sync::mpsc::channel;
@@ -28,13 +29,22 @@ impl Plugin for JsPluginAdapter {
         callback.call_with_return_value(
             args.path.to_string(),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: Option<Buffer>| {
+            move |ret: Either<Option<Buffer>,Promise<Option<Buffer>>>| {
                 let _ = send.send(ret);
                 Ok(())
             },
         );
 
         let result = recv.recv().unwrap();
+        let result =  match result {
+            Either::A(s) => {
+                s
+            },
+            Either::B(s) =>{
+                let res = block_on(s.into_future()).unwrap();
+                res
+            }
+        };
         Ok(result.map(|x| x.into()))
     }
     fn resolve(
