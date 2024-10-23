@@ -11,6 +11,7 @@ use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 
+use super::ast::parse;
 use super::ast2::parse2;
 use super::{ BuildContext, BuildResult, Module};
 use super::{CodeGenerationResult, ModuleGraph};
@@ -161,7 +162,7 @@ impl NormalModule {
         OriginalSource::new(content, resource_path).boxed()
     }
     fn parse(content: String) -> Result<ParseResult> {
-        //  parse(content)
-        parse2(content)
+        parse(content)
+        //parse2(content)
     }
 }

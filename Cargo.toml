@@ -24,6 +24,7 @@ swc_core = { version = "0.106.4", features = ["__parser"]}
 rustc-hash = { version = "2.0.0"}
 indexmap = { version = "2.6.0"}
 rayon = { version = "1.10.0"}
+mimalloc = { version = "0.1.43"}
 crossbeam-channel = { version = "*"}
 async-std = { version = "1.13.0"}
 [profile.release]

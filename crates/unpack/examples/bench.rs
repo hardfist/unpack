@@ -6,7 +6,7 @@ fn main() {
     let current_file = file!();
     dbg!(current_file);
     let context = PathBuf::from(current_file)
-        .join("../../../../benchmark/performance-compare-ng/apps/10000")
+        .join("../../../../benchmark/performance-compare-ng/apps/10000-big")
         .canonicalize()
         .unwrap();
     let compiler_options: CompilerOptions = CompilerOptions {

@@ -12,6 +12,7 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use super::module_graph::ModuleGraph;
 use crate::{compiler::CompilerOptions, dependency::EntryDependency};
@@ -140,10 +141,10 @@ impl ModuleScanner {
     pub fn build_loop(&self, state: &mut ScannerState, dependencies: Vec<BoxDependency>) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
-
         while state.get_count() > 0 {
-            let task = self.recv.recv().unwrap();
-
+            let Ok(task) = self.recv.recv_timeout(Duration::from_millis(10)) else {
+                break;
+            };
             state.sub();
             match task {
                 Ok(task) => {

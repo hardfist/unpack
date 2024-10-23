@@ -14,6 +14,7 @@ miette = { workspace = true, features = ["fancy"]}
 dyn-clone = { workspace = true }
 downcast-rs = { workspace = true }
 dashmap = { workspace = true }
+mimalloc = { workspace = true }
 thiserror = { workspace = true }
 rustc-hash = { workspace = true }
 rspack_sources = { workspace = true }

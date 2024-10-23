@@ -1,3 +1,4 @@
+use std::mem;
 use std::sync::Arc;
 
 use crate::dependency::{
@@ -78,7 +79,7 @@ pub fn parse(content: String) -> Result<ParseResult> {
         }
         swc_ecma_ast::Program::Script(_) => {}
     };
-
+    //mem::forget(program);
     Ok(ParseResult {
         module_dependencies,
         presentational_dependencies,
