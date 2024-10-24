@@ -19,6 +19,7 @@ struct CodeGenerationResults {
 pub struct CodeGenerationState {
     chunk_graph: ChunkGraph,
     code_generation_results: CodeGenerationResults,
+    pub diagnostics: Diagnostics
 }
 #[derive(Debug, Clone)]
 pub struct ChunkAssetState {
@@ -38,7 +39,7 @@ impl Compilation {
             options,
             module_graph: Default::default(),
             diagnostics: Default::default(),
-            plugin_driver: plugin_driver
+            plugin_driver: plugin_driver,
         }
     }
     /// similar with webpack's make phase, which will make module graph
@@ -57,7 +58,7 @@ impl Compilation {
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
     pub fn link(&mut self, scanner_state: ScannerState) -> LinkerState {
-        let mut linker_state = LinkerState::new(scanner_state.module_graph);
+        let mut linker_state = LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.build_chunk_graph(&mut linker_state);
         linker_state
@@ -88,6 +89,7 @@ impl Compilation {
         CodeGenerationState {
             chunk_graph: linker_state.chunk_graph,
             code_generation_results,
+            diagnostics: linker_state.diagnostics
         }
     }
     // chunk asset

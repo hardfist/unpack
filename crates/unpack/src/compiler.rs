@@ -1,4 +1,5 @@
 mod options;
+use std::mem;
 use std::sync::Arc;
 
 pub use options::CompilerOptions;
@@ -33,8 +34,10 @@ impl Compiler {
         let scanner_state = compilation.scan();
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);
+        compilation.diagnostics.extend(mem::take(&mut code_generation_state.diagnostics));
         let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
         self.emit_assets(asset_state);
+        
         if !compilation.diagnostics.is_empty() {
             for diag in compilation.diagnostics {
                 println!("{:?}", diag);

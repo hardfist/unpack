@@ -176,16 +176,18 @@ pub struct LinkerState {
     pub chunk_graph: ChunkGraph,
     pub module_graph: ModuleGraph,
     pub entry_points: IndexMap<String, ChunkGroupId>,
+    pub diagnostics: Diagnostics,
     queue: VecDeque<QueueAction>,
 }
 
 impl LinkerState {
-    pub fn new(module_graph: ModuleGraph) -> Self {
+    pub fn new(module_graph: ModuleGraph, diagnostics: Diagnostics) -> Self {
         Self {
             chunk_graph: ChunkGraph::default(),
             entry_points: Default::default(),
             module_graph,
             queue: Default::default(),
+            diagnostics
         }
     }
 }

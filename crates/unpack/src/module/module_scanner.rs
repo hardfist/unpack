@@ -104,7 +104,7 @@ pub struct ScannerState {
     _modules: FxHashMap<String, ModuleId>,
     pub module_graph: ModuleGraph,
     pub tx: Sender<Result<Task>>,
-    pub diagnostics: Arc<Mutex<Diagnostics>>,
+    pub diagnostics:Diagnostics,
     pub entries: IndexMap<String, EntryData>,
     // means job which doesn't have result yet
     pub remaining: AtomicU32,
@@ -121,8 +121,8 @@ impl ScannerState {
     fn get_remaining_result(&self) -> u32 {
         self.remaining.load(std::sync::atomic::Ordering::SeqCst)
     }
-    fn add_diagnostic(&self, diag: Report) {
-        self.diagnostics.lock().unwrap().push(diag);
+    fn add_diagnostic(&mut self, diag: Report) {
+        self.diagnostics.push(diag);
     }
 }
 impl ScannerState {
