@@ -1,20 +1,24 @@
 #![deny(clippy::all)]
 mod js_plugin;
-use std::sync::Arc;
+use async_std::channel::bounded;
 use async_std::task::block_on;
 use camino::Utf8PathBuf;
 use js_plugin::JsPluginAdapter;
+use std::sync::Arc;
 use unpack::compiler::EntryItem;
 use unpack::plugin::BoxPlugin;
-use async_std::channel::bounded;
 use unpack::resolver::ResolveOptions;
 use unpack::{bundler::unpack, compiler::CompilerOptions};
 #[macro_use]
 extern crate napi_derive;
 
 #[napi]
-pub async fn build(context: String, entry: String, plugins: Vec<JsPluginAdapter>) -> napi::Result<()> {
-    let (tx,rx) = bounded(1);
+pub async fn build(
+    context: String,
+    entry: String,
+    plugins: Vec<JsPluginAdapter>,
+) -> napi::Result<()> {
+    let (tx, rx) = bounded(1);
     std::thread::spawn(move || {
         unpack(
             CompilerOptions {
@@ -24,7 +28,7 @@ pub async fn build(context: String, entry: String, plugins: Vec<JsPluginAdapter>
                     import: entry,
                 }],
                 resolve: ResolveOptions {
-                    extensions: vec![".js", ".ts", ".mjs",".jsx"]
+                    extensions: vec![".js", ".ts", ".mjs", ".jsx"]
                         .into_iter()
                         .map(|x| x.to_string())
                         .collect::<Vec<_>>(),

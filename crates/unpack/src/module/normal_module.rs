@@ -1,8 +1,7 @@
 use std::sync::{mpsc, Arc};
 
 use crate::dependency::{
-    AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate,
-    DependenciesBlock, DependencyId,
+    AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, DependenciesBlock, DependencyId,
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
@@ -13,7 +12,7 @@ use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 
 use super::ast::parse;
 use super::ast2::parse2;
-use super::{ BuildContext, BuildResult, Module};
+use super::{BuildContext, BuildResult, Module};
 use super::{CodeGenerationResult, ModuleGraph};
 #[derive(Debug)]
 pub struct NormalModule {
@@ -25,7 +24,7 @@ pub struct NormalModule {
     module_dependencies: Vec<DependencyId>,
     presentational_dependencies: Vec<BoxDependencyTemplate>,
     blocks: Vec<AsyncDependenciesBlockId>,
-    source: NormalModuleSource
+    source: NormalModuleSource,
 }
 #[derive(Debug, Clone)]
 enum NormalModuleSource {
@@ -63,28 +62,17 @@ impl Module for NormalModule {
         self.resource_path.as_str()
     }
     fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
-        let (sender, receiver) = mpsc::channel();
-        {
-            let resource_path = self.resource_path.clone();
+        let resource_path = self.resource_path.clone();
+        let content = build_context.plugin_driver.run_load_hook(LoadArgs {
+            path: resource_path.clone(),
+        })?;
+        let content = match content {
+            Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
+            None => std::fs::read_to_string(resource_path.clone()).into_diagnostic()?,
+        };
+        let source = Self::create_source(resource_path.to_string().clone(), content.clone());
+        let parse_result = Self::parse(content)?;
 
-            let _: Result<()> = (|| {
-                let content = build_context.plugin_driver.run_load_hook(LoadArgs{
-                    path:resource_path.clone()
-                })?;
-                let content = match content {
-                    Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
-                    None => {
-                        std::fs::read_to_string(resource_path.clone()).into_diagnostic()?
-                    }
-                };
-                let source =
-                    Self::create_source(resource_path.to_string().clone(), content.clone());
-                let parse_result = Self::parse(content)?;
-                sender.send((source, parse_result)).unwrap();
-                Ok(())
-            })();
-        }
-        let (source, parse_result) = receiver.recv().unwrap();
         self.source = NormalModuleSource::Succeed(source.clone());
         Ok(BuildResult {
             module_dependencies: parse_result.module_dependencies,
