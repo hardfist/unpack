@@ -85,7 +85,7 @@ impl ModuleScanner {
         context: Option<Utf8PathBuf>,
     ) {
         dependencies.into_iter().for_each(|dep| {
-            state.add();
+            state.add_remaining_result();
             state
                 .tx
                 .send(Ok(Task::Factorize(FactorizeTask {
@@ -106,18 +106,19 @@ pub struct ScannerState {
     pub tx: Sender<Result<Task>>,
     pub diagnostics: Arc<Mutex<Diagnostics>>,
     pub entries: IndexMap<String, EntryData>,
+    // means job which doesn't have result yet
     pub remaining: AtomicU32,
 }
 impl ScannerState {
-    fn add(&self) {
+    fn add_remaining_result(&self) {
         self.remaining
             .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     }
-    fn sub(&self) {
+    fn sub_remaining_result(&self) {
         self.remaining
             .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
     }
-    fn get_count(&self) -> u32 {
+    fn get_remaining_result(&self) -> u32 {
         self.remaining.load(std::sync::atomic::Ordering::SeqCst)
     }
     fn add_diagnostic(&self, diag: Report) {
@@ -141,11 +142,9 @@ impl ModuleScanner {
     pub fn build_loop(&self, state: &mut ScannerState, dependencies: Vec<BoxDependency>) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
-        while state.get_count() > 0 {
-            let Ok(task) = self.recv.recv_timeout(Duration::from_millis(10)) else {
-                break;
-            };
-            state.sub();
+        while state.get_remaining_result() > 0 {
+            let task = self.recv.recv().unwrap();
+            state.sub_remaining_result();
             match task {
                 Ok(task) => {
                     self.handle_task(task, state);
@@ -165,7 +164,7 @@ impl ModuleScanner {
                     .map(|x| state.module_graph.module_by_id(x));
                 let original_module_context =
                     original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
-                state.add();
+                state.add_remaining_result();
                 let tx = state.tx.clone();
                 let scanner = self.clone();
 
@@ -178,7 +177,7 @@ impl ModuleScanner {
                 if state._modules.contains_key(task.module.identifier()) {
                     return;
                 };
-                state.add();
+                state.add_remaining_result();
                 let sender = state.tx.clone();
                 rayon::spawn(move || {
                     Self::handle_build(scanner, sender, task);
