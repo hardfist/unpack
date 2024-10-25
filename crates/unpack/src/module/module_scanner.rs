@@ -183,7 +183,7 @@ impl ModuleScanner {
                 state.add_remaining_result();
                 let sender = state.tx.clone();
                 Handle::current().spawn(async move  {
-                    Self::handle_build(scanner, sender, task);
+                    Self::handle_build(scanner, sender, task).await;
                 });
             }
             Task::ProcessDeps(task) => {
@@ -245,14 +245,14 @@ impl ModuleScanner {
             original_module_context,
         );
     }
-    fn handle_build(self, tx: Sender<Result<Task>>, task: BuildTask) {
+    async fn handle_build(self, tx: Sender<Result<Task>>, task: BuildTask) {
         let mut module = task.module;
         let module_dependency = task.module_dependency;
 
         match module.build(BuildContext {
             options: self.options.clone(),
             plugin_driver: self.plugin_driver.clone(),
-        }) {
+        }).await {
             Ok(result) => {
                 tx.send(Ok(Task::ProcessDeps(ProcessDepsTask {
                     dependencies: result.module_dependencies,

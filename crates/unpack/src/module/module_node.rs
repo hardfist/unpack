@@ -6,7 +6,7 @@ use index_vec::IndexVec;
 use rspack_sources::BoxSource;
 use std::fmt::Debug;
 use std::sync::Arc;
-
+use async_trait::async_trait;
 use crate::compiler::CompilerOptions;
 
 use crate::dependency::BoxDependency;
@@ -28,9 +28,10 @@ pub struct BuildContext {
 pub struct CodeGenerationResult {
     pub source: BoxSource,
 }
+#[async_trait]
 pub trait Module: Debug + DependenciesBlock + Send + Sync {
     fn identifier(&self) -> &str;
-    fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
+    async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }

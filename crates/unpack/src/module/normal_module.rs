@@ -1,5 +1,5 @@
 use std::sync::{mpsc, Arc};
-
+use async_trait::async_trait;
 use crate::dependency::{
     AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, DependenciesBlock, DependencyId,
 };
@@ -56,16 +56,16 @@ impl DependenciesBlock for NormalModule {
         self.module_dependencies.clone()
     }
 }
-
+#[async_trait]
 impl Module for NormalModule {
     fn identifier(&self) -> &str {
         self.resource_path.as_str()
     }
-    fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
+    async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
         let resource_path = self.resource_path.clone();
         let content = build_context.plugin_driver.run_load_hook(LoadArgs {
             path: resource_path.clone(),
-        })?;
+        }).await?;
         let content = match content {
             Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
             None => std::fs::read_to_string(resource_path.clone()).into_diagnostic()?,

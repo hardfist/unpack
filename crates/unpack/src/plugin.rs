@@ -2,7 +2,7 @@ use crate::compiler::CompilerOptions;
 use camino::Utf8PathBuf;
 use miette::Result;
 use std::{fmt::Debug, sync::Arc};
-
+use async_trait::async_trait;
 #[derive(Clone,Debug)]
 pub struct PluginContext {
     pub options: Arc<CompilerOptions>,
@@ -17,13 +17,13 @@ pub struct ResolveArgs {
 pub struct LoadArgs {
     pub path: Utf8PathBuf
 }
-
+#[async_trait]
 pub trait Plugin: Send + Sync + Debug {
     fn name(&self) -> &'static str;
     fn resolve(&self, _ctx: Arc<PluginContext>, _args: ResolveArgs) -> Result<Option<String>> {
         Ok(None)
     }
-    fn load(&self, _ctx: Arc<PluginContext>,_args: LoadArgs) -> Result<Option<Vec<u8>>>{
+    async fn load(&self, _ctx: Arc<PluginContext>,_args: LoadArgs) -> Result<Option<Vec<u8>>>{
         Ok(None)
     }
 }
@@ -47,9 +47,9 @@ impl PluginDriver {
         }
         return Ok(None)
     }
-    pub fn run_load_hook(&self, args: LoadArgs) -> Result<Option<Vec<u8>>> {
+    pub async fn run_load_hook(&self, args: LoadArgs) -> Result<Option<Vec<u8>>> {
          for plugin in &self.plugins {
-            let load_result = plugin.load(self.plugin_context.clone(), args.clone())?;
+            let load_result = plugin.load(self.plugin_context.clone(), args.clone()).await?;
             if load_result.is_some() {
                 return Ok(load_result)
             }else{

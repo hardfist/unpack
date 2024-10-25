@@ -4,6 +4,7 @@ use napi::{
     threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction},
     Either,
 };
+use async_trait::async_trait;
 use std::sync::mpsc::channel;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
 use unpack::errors::miette::Result;
@@ -19,11 +20,12 @@ impl Debug for JsPluginAdapter {
         f.debug_struct("JsPluginAdapter").finish()
     }
 }
+#[async_trait]
 impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {
         "js_plugin_adapter"
     }
-    fn load(&self, _ctx: Arc<PluginContext>, args: LoadArgs) -> Result<Option<Vec<u8>>> {
+    async fn load(&self, _ctx: Arc<PluginContext>, args: LoadArgs) -> Result<Option<Vec<u8>>> {
         let (send, recv) = channel();
         let Some(callback) = &self.on_load else {
             return Ok(None);
