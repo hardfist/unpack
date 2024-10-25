@@ -10,6 +10,7 @@ use camino::Utf8PathBuf;
 use crossbeam_channel::{Receiver, Sender};
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
+use tokio::runtime::Handle;
 use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -142,6 +143,8 @@ impl ModuleScanner {
     pub fn build_loop(&self, state: &mut ScannerState, dependencies: Vec<BoxDependency>) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let _guard = runtime.enter();
         while state.get_remaining_result() > 0 {
             let task = self.recv.recv().unwrap();
             state.sub_remaining_result();
@@ -168,7 +171,7 @@ impl ModuleScanner {
                 let tx = state.tx.clone();
                 let scanner = self.clone();
 
-                rayon::spawn(|| {
+                Handle::current().spawn(async {
                     Self::handle_factorize(scanner, tx, factorize_task, original_module_context);
                 });
             }
@@ -179,7 +182,7 @@ impl ModuleScanner {
                 };
                 state.add_remaining_result();
                 let sender = state.tx.clone();
-                rayon::spawn(move || {
+                Handle::current().spawn(async move  {
                     Self::handle_build(scanner, sender, task);
                 });
             }

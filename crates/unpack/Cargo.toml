@@ -24,3 +24,4 @@ oxc_allocator = { version = "0.31.0"}
 oxc_ast = { version = "0.31.0"}
 oxc_parser = { version = "0.31.0"}
 oxc_span = { version = "0.31.0"}
+tokio = { version = "1.41.0", features = ["full"]}
