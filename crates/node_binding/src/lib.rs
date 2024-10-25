@@ -1,7 +1,6 @@
 #![deny(clippy::all)]
 mod js_plugin;
 use async_std::channel::bounded;
-use async_std::task::block_on;
 use camino::Utf8PathBuf;
 use js_plugin::JsPluginAdapter;
 use std::sync::Arc;
