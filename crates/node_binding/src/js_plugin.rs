@@ -1,4 +1,3 @@
-use async_std::task::block_on;
 use napi::{
     bindgen_prelude::{Buffer, Promise},
     threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction},
@@ -43,7 +42,7 @@ impl Plugin for JsPluginAdapter {
         let result = match result {
             Either::A(s) => s,
             Either::B(s) => {
-                let res = block_on(s.into_future()).unwrap();
+                let res =(s.into_future()).await.unwrap();
                 res
             }
         };

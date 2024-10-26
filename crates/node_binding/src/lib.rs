@@ -1,8 +1,8 @@
 #![deny(clippy::all)]
 mod js_plugin;
-use async_std::channel::bounded;
 use camino::Utf8PathBuf;
 use js_plugin::JsPluginAdapter;
+use napi::bindgen_prelude::spawn_blocking;
 use std::sync::Arc;
 use unpack::compiler::EntryItem;
 use unpack::plugin::BoxPlugin;
@@ -17,8 +17,7 @@ pub async fn build(
     entry: String,
     plugins: Vec<JsPluginAdapter>,
 ) -> napi::Result<()> {
-    let (tx, rx) = bounded(1);
-    std::thread::spawn(move || {
+    spawn_blocking(move || {
         unpack(
             CompilerOptions {
                 context: Utf8PathBuf::from(context),
@@ -39,8 +38,6 @@ pub async fn build(
                 .map(|x| Arc::new(x) as BoxPlugin)
                 .collect(),
         );
-        tx.send_blocking(()).unwrap();
-    });
-    rx.recv().await.unwrap();
+    }).await.unwrap();
     Ok(())
 }

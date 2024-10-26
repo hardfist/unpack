@@ -12,7 +12,6 @@ napi = { version = "2.16.11", features = ["anyhow", "napi4", "tokio_rt"] }
 napi-derive = "2.12.2"
 unpack = { path = "../unpack"}
 camino = { workspace = true }
-async-std = { workspace = true }
 async-trait = { version = "0.1.83" }
 [build-dependencies]
 napi-build = "2.0.1"
