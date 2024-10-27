@@ -1,17 +1,16 @@
-use std::sync::{mpsc, Arc};
+use std::sync::Arc;
 use async_trait::async_trait;
 use crate::dependency::{
     AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, DependenciesBlock, DependencyId,
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
-use crate::plugin::{LoadArgs, PluginDriver};
+use crate::plugin::LoadArgs;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 
 use super::ast::parse;
-use super::ast2::parse2;
 use super::{BuildContext, BuildResult, Module};
 use super::{CodeGenerationResult, ModuleGraph};
 #[derive(Debug)]
@@ -68,7 +67,7 @@ impl Module for NormalModule {
         }).await?;
         let content = match content {
             Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
-            None => std::fs::read_to_string(resource_path.clone()).into_diagnostic()?,
+            None => tokio::fs::read_to_string(resource_path.clone()).await.into_diagnostic()?,
         };
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;

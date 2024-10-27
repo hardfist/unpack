@@ -47,8 +47,8 @@ impl NormalModuleFactory {
                     .base_resolver
                     .resolve(&context, request)
                     .into_diagnostic()?;
-                let resource_path = resolve_result.path;
-                resource_path
+                
+                resolve_result.path
             }
         };
 

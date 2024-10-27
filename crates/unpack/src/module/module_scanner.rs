@@ -12,8 +12,7 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 use tokio::runtime::Handle;
 use std::sync::atomic::AtomicU32;
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::sync::Arc;
 
 use super::module_graph::ModuleGraph;
 use crate::{compiler::CompilerOptions, dependency::EntryDependency};

@@ -9,7 +9,7 @@ use crate::{
     chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module::{
         CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
         ScannerState,
-    }, plugin::{BoxPlugin, PluginDriver}, task::Task
+    }, plugin::PluginDriver, task::Task
 };
 use std::{sync::Arc, time::Instant};
 #[derive(Debug, Default)]
@@ -39,7 +39,7 @@ impl Compilation {
             options,
             module_graph: Default::default(),
             diagnostics: Default::default(),
-            plugin_driver: plugin_driver,
+            plugin_driver,
         }
     }
     /// similar with webpack's make phase, which will make module graph

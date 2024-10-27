@@ -45,7 +45,7 @@ impl PluginDriver {
                 continue;
             }
         }
-        return Ok(None)
+        Ok(None)
     }
     pub async fn run_load_hook(&self, args: LoadArgs) -> Result<Option<Vec<u8>>> {
          for plugin in &self.plugins {
@@ -56,6 +56,6 @@ impl PluginDriver {
                 continue;
             }
         }
-        return Ok(None)
+        Ok(None)
     }
 }

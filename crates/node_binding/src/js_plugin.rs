@@ -42,8 +42,8 @@ impl Plugin for JsPluginAdapter {
         let result = match result {
             Either::A(s) => s,
             Either::B(s) => {
-                let res =(s.into_future()).await.unwrap();
-                res
+                
+                (s.into_future()).await.unwrap()
             }
         };
         Ok(result.map(|x| x.into()))

@@ -1,4 +1,3 @@
-use std::mem;
 use std::sync::Arc;
 
 use crate::dependency::{
