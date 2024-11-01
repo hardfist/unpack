@@ -4,6 +4,7 @@ use napi::{
     Either,
 };
 use async_trait::async_trait;
+
 use std::sync::mpsc::channel;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
 use unpack::errors::miette::Result;
@@ -42,8 +43,9 @@ impl Plugin for JsPluginAdapter {
         let result = match result {
             Either::A(s) => s,
             Either::B(s) => {
-                
                 (s.into_future()).await.unwrap()
+               // use pollster::block_on;
+               // block_on(s.into_future()).unwrap()
             }
         };
         Ok(result.map(|x| x.into()))
