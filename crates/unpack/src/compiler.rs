@@ -41,6 +41,7 @@ impl Compiler {
                 println!("{:?}", diag);
             }
         }
+        println!("Compilation finished");
     }
     pub fn emit_assets(&self, asset_state: ChunkAssetState) {
         for (_name, _source) in asset_state.assets {

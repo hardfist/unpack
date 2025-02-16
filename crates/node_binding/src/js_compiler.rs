@@ -2,6 +2,8 @@ use std::sync::Arc;
 use crate::EntryItem;
 use crate::Utf8PathBuf;
 use crate::ResolveOptions;
+use napi::bindgen_prelude::spawn_blocking;
+use napi::tokio::task::block_in_place;
 use napi_derive::napi;
 use unpack::{compiler::{Compiler, CompilerOptions}, plugin::BoxPlugin};
 
@@ -39,7 +41,9 @@ impl JsCompiler {
     }
     #[napi]
     pub async unsafe fn build(&mut self) -> napi::Result<()>{
-        self.inner.build();
+        block_in_place(|| {
+            self.inner.build();
+        });
         Ok(())
     }
 }

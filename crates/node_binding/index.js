@@ -310,7 +310,6 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { JsCompiler, build } = nativeBinding
+const { JsCompiler } = nativeBinding
 
 module.exports.JsCompiler = JsCompiler
-module.exports.build = build
