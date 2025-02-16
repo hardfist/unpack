@@ -41,16 +41,11 @@ impl JsCompiler {
     #[napi]
     pub async unsafe fn build(&mut self) -> napi::Result<()>{
         let mut compiler = self.inner.take().unwrap();
-        
-        // spawn a new thread to avoid blocking main thread and blok js function execution
-        let compiler = spawn_blocking(move || {
-            println!("start");
-            let rt = Handle::current();
-            rt.block_on(compiler.build());
-            println!("finished");
+        let compiler = napi::tokio::spawn(async {
+            compiler.build().await;
             compiler
         }).await.unwrap();
-        self.inner = Some(compiler);
+        //self.inner = Some(compiler);
         Ok(())
     }
    
