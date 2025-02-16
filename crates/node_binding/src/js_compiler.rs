@@ -44,6 +44,7 @@ impl JsCompiler {
         block_in_place(|| {
             self.inner.build();
         });
+        println!("build finished");
         Ok(())
     }
 }
