@@ -3,6 +3,7 @@ use napi::{
     threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction},
     Either,
 };
+use napi_derive::napi;
 use async_trait::async_trait;
 
 use std::sync::mpsc::channel;

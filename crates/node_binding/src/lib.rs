@@ -5,5 +5,3 @@ mod js_compiler;
 use camino::Utf8PathBuf;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
-#[macro_use]
-extern crate napi_derive;
