@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-pub mod bundler;
 mod allocator;
 pub mod chunk;
 pub mod compilation;

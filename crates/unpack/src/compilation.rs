@@ -1,9 +1,9 @@
-use crossbeam_channel::unbounded;
 use indexmap::IndexSet;
 use miette::Result;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
+use tokio::sync::mpsc::unbounded_channel;
 
 use crate::{
     chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module::{
@@ -43,13 +43,13 @@ impl Compilation {
         }
     }
     /// similar with webpack's make phase, which will make module graph
-    pub fn scan(&mut self) -> ScannerState {
+    pub async fn scan(&mut self) -> ScannerState {
         let start = Instant::now();
-        let (send, recv) = unbounded::<Result<Task>>();
+        let (send, mut recv) = unbounded_channel::<Result<Task>>();
         let module_scanner =
-            ModuleScanner::new(self.options.clone(), self.options.context.clone(), recv, self.plugin_driver.clone());
+            ModuleScanner::new(self.options.clone(), self.options.context.clone(), self.plugin_driver.clone());
         let mut scanner_state = ScannerState::new(send);
-        module_scanner.add_entries(&mut scanner_state);
+        module_scanner.add_entries(&mut scanner_state,&mut recv).await;
         let elapsed = start.elapsed();
         println!("elapsed: {:?}", elapsed);
         dbg!(&scanner_state.module_graph.modules.len());

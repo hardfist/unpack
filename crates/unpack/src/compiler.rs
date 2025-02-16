@@ -21,7 +21,7 @@ impl Compiler {
     pub fn new(options: Arc<CompilerOptions>, plugins: Vec<BoxPlugin>) -> Self {
         Self { options, plugins }
     }
-    pub fn build(&mut self) {
+    pub async fn build(&mut self) {
         let plugin_driver = PluginDriver {
             plugins: self.plugins.clone(),
             plugin_context: Arc::new(PluginContext {
@@ -29,7 +29,7 @@ impl Compiler {
             })
         };
         let mut compilation = Compilation::new(self.options.clone(), Arc::new(plugin_driver));
-        let scanner_state = compilation.scan();
+        let scanner_state = compilation.scan().await;
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);
         compilation.diagnostics.extend(mem::take(&mut code_generation_state.diagnostics));

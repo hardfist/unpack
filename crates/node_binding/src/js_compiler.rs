@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use camino::Utf8PathBuf;
+use napi::{bindgen_prelude::spawn_blocking, tokio::runtime::Handle};
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
-use napi::tokio::task::block_in_place;
 use napi_derive::napi;
 use unpack::{compiler::{Compiler, CompilerOptions}, plugin::BoxPlugin};
 
@@ -10,7 +10,7 @@ use crate::js_plugin::JsPluginAdapter;
 
 #[napi]
 struct JsCompiler {
-    inner: Compiler
+    inner: Option<Compiler>
 }
 
 #[napi]
@@ -36,14 +36,22 @@ impl JsCompiler {
                 .map(|x| Arc::new(x) as BoxPlugin)
                 .collect();
         let compiler = Compiler::new(Arc::new(options), plugins);
-        Self { inner: compiler }
+        Self { inner: Some(compiler)}
     }
     #[napi]
     pub async unsafe fn build(&mut self) -> napi::Result<()>{
-        block_in_place(|| {
-            self.inner.build();
-        });
-        println!("build finished");
+        let mut compiler = self.inner.take().unwrap();
+        
+        // spawn a new thread to avoid blocking main thread and blok js function execution
+        let compiler = spawn_blocking(move || {
+            println!("start");
+            let rt = Handle::current();
+            rt.block_on(compiler.build());
+            println!("finished");
+            compiler
+        }).await.unwrap();
+        self.inner = Some(compiler);
         Ok(())
     }
+   
 }

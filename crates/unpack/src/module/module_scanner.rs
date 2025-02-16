@@ -7,7 +7,6 @@ use crate::plugin::PluginDriver;
 use crate::task::{BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
-use crossbeam_channel::{Receiver, Sender};
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 use tokio::runtime::Handle;
@@ -15,6 +14,7 @@ use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 
 use super::module_graph::ModuleGraph;
+use tokio::sync::mpsc::{UnboundedReceiver as Receiver, UnboundedSender as Sender};
 use crate::{compiler::CompilerOptions, dependency::EntryDependency};
 #[derive(Debug)]
 pub struct EntryData {
@@ -26,7 +26,6 @@ pub struct ModuleScanner {
     context: Utf8PathBuf,
     resolver_factory: Arc<ResolverFactory>,
     module_factory: Arc<NormalModuleFactory>,
-    recv: Arc<Receiver<Result<Task>>>,
     plugin_driver: Arc<PluginDriver>
 }
 struct FactorizeParams {}
@@ -34,7 +33,6 @@ impl ModuleScanner {
     pub fn new(
         options: Arc<CompilerOptions>,
         context: Utf8PathBuf,
-        recv: Receiver<Result<Task>>,
         plugins: Arc<PluginDriver>
     ) -> Self {
         let resolver_factory = Arc::new(ResolverFactory::new_with_base_option(
@@ -50,12 +48,11 @@ impl ModuleScanner {
             context,
             resolver_factory: resolver_factory.clone(),
             module_factory,
-            recv: Arc::new(recv),
             plugin_driver: plugins
         }
     }
     // add entries
-    pub fn add_entries(&self, state: &mut ScannerState) {
+    pub async fn add_entries(&self, state: &mut ScannerState, recv: &mut Receiver<Result<Task>>) {
         let entry_ids = self
             .options
             .entry
@@ -75,7 +72,7 @@ impl ModuleScanner {
             })
             .collect::<Vec<_>>();
 
-        self.build_loop(state, entry_ids);
+        self.build_loop(state, entry_ids,recv).await
     }
     pub fn handle_module_creation(
         &self,
@@ -139,13 +136,11 @@ impl ScannerState {
 }
 /// main loop task
 impl ModuleScanner {
-    pub fn build_loop(&self, state: &mut ScannerState, dependencies: Vec<BoxDependency>) {
+    pub async fn build_loop(&self, state: &mut ScannerState, dependencies: Vec<BoxDependency>, recv: &mut Receiver<Result<Task>>) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(state, dependencies, None, Some(self.context.clone()));
-        let runtime = tokio::runtime::Runtime::new().unwrap();
-        let _guard = runtime.enter();
         while state.get_remaining_result() > 0 {
-            let task = self.recv.recv().unwrap();
+            let task = recv.recv().await.unwrap();
             state.sub_remaining_result();
             match task {
                 Ok(task) => {
