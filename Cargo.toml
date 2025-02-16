@@ -39,3 +39,4 @@ strip     = true
 debug    = true
 inherits = "release"
 strip    = false
+
