@@ -1,5 +1,7 @@
 #![deny(clippy::all)]
 mod js_plugin;
+mod js_compilation;
+mod js_compiler;
 use camino::Utf8PathBuf;
 use js_plugin::JsPluginAdapter;
 use napi::bindgen_prelude::spawn_blocking;

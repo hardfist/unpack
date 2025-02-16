@@ -8,3 +8,7 @@ export interface JsPluginAdapter {
   onLoad?: (arg: string) => any
 }
 export declare function build(context: string, entry: string, plugins: Array<JsPluginAdapter>): Promise<void>
+export declare class JsCompiler {
+  constructor(context: string, entry: string, plugins: Array<JsPluginAdapter>)
+  build(): Promise<void>
+}
