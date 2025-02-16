@@ -1,7 +1,7 @@
 use std::sync::Arc;
-use crate::EntryItem;
-use crate::Utf8PathBuf;
-use crate::ResolveOptions;
+use camino::Utf8PathBuf;
+use unpack::compiler::EntryItem;
+use unpack::resolver::ResolveOptions;
 use napi::tokio::task::block_in_place;
 use napi_derive::napi;
 use unpack::{compiler::{Compiler, CompilerOptions}, plugin::BoxPlugin};
