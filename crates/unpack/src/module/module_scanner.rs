@@ -166,7 +166,7 @@ impl ModuleScanner {
                 let scanner = self.clone();
 
                 Handle::current().spawn(async {
-                    Self::handle_factorize(scanner, tx, factorize_task, original_module_context);
+                    Self::handle_factorize(scanner, tx, factorize_task, original_module_context).await;
                 });
             }
             Task::Build(task) => {
@@ -185,7 +185,7 @@ impl ModuleScanner {
             }
         }
     }
-    fn handle_factorize(
+    async fn handle_factorize(
         self,
         tx: Sender<Result<Task>>,
         task: FactorizeTask,
@@ -206,7 +206,7 @@ impl ModuleScanner {
             context,
             options: self.options.clone(),
             
-        }, self.plugin_driver.clone()) {
+        }, self.plugin_driver.clone()).await {
             Ok(factory_result) => {
                 let module = Box::new(factory_result.module);
                 tx.send(Ok(Task::Build(BuildTask {

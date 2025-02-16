@@ -20,7 +20,7 @@ pub struct LoadArgs {
 #[async_trait]
 pub trait Plugin: Send + Sync + Debug {
     fn name(&self) -> &'static str;
-    fn resolve(&self, _ctx: Arc<PluginContext>, _args: ResolveArgs) -> Result<Option<String>> {
+    async fn resolve(&self, _ctx: Arc<PluginContext>, _args: ResolveArgs) -> Result<Option<String>> {
         Ok(None)
     }
     async fn load(&self, _ctx: Arc<PluginContext>,_args: LoadArgs) -> Result<Option<Vec<u8>>>{
@@ -36,9 +36,9 @@ pub struct PluginDriver {
     pub plugin_context: Arc<PluginContext>
 }
 impl PluginDriver {
-    pub fn run_resolve_hook(&self,args:ResolveArgs)-> Result<Option<String>>{
+    pub async fn run_resolve_hook(&self,args:ResolveArgs)-> Result<Option<String>>{
         for plugin in &self.plugins {
-            let resolve = plugin.resolve(self.plugin_context.clone(), args.clone())?;
+            let resolve = plugin.resolve(self.plugin_context.clone(), args.clone()).await?;
             if resolve.is_some() {
                 return Ok(resolve)
             }else{

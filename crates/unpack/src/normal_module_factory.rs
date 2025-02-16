@@ -27,7 +27,7 @@ pub struct ModuleFactoryResult {
     pub module: NormalModule,
 }
 impl NormalModuleFactory {
-    pub fn create(
+    pub async fn create(
         &self,
         data: ModuleFactoryCreateData,
         plugin_driver: Arc<PluginDriver>,
@@ -38,7 +38,7 @@ impl NormalModuleFactory {
         let load_result = plugin_driver.run_resolve_hook(ResolveArgs {
             context: context.clone(),
             path: Utf8PathBuf::from_str(request).unwrap(),
-        })?;
+        }).await?;
         let resource_path = match load_result {
             Some(res) => Utf8PathBuf::from(res),
             None => {

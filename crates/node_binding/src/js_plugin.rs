@@ -3,10 +3,9 @@ use napi::{
     threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction},
     Either,
 };
+use napi::tokio::sync::mpsc::{unbounded_channel};
 use napi_derive::napi;
 use async_trait::async_trait;
-
-use std::sync::mpsc::channel;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
 use unpack::errors::miette::Result;
 use unpack::plugin::{LoadArgs, Plugin, PluginContext, ResolveArgs};
@@ -27,7 +26,7 @@ impl Plugin for JsPluginAdapter {
         "js_plugin_adapter"
     }
     async fn load(&self, _ctx: Arc<PluginContext>, args: LoadArgs) -> Result<Option<Vec<u8>>> {
-        let (send, recv) = channel();
+        let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.on_load else {
             return Ok(None);
         };
@@ -40,7 +39,7 @@ impl Plugin for JsPluginAdapter {
             },
         );
 
-        let result = recv.recv().unwrap();
+        let result = recv.recv().await.unwrap();
         let result = match result {
             Either::A(s) => s,
             Either::B(s) => {
@@ -51,8 +50,8 @@ impl Plugin for JsPluginAdapter {
         };
         Ok(result.map(|x| x.into()))
     }
-    fn resolve(&self, _ctx: Arc<PluginContext>, args: ResolveArgs) -> Result<Option<String>> {
-        let (send, recv) = channel();
+    async fn resolve(&self, _ctx: Arc<PluginContext>, args: ResolveArgs) -> Result<Option<String>> {
+        let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.on_resolve else {
             return Ok(None);
         };
@@ -65,7 +64,7 @@ impl Plugin for JsPluginAdapter {
             },
         );
 
-        let result = recv.recv().unwrap();
+        let result = recv.recv().await.unwrap();
         Ok(result)
     }
 }
