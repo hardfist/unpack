@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use camino::Utf8PathBuf;
+use napi::tokio;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
 use napi_derive::napi;
@@ -40,11 +41,11 @@ impl JsCompiler {
     #[napi]
     pub async unsafe fn build(&mut self) -> napi::Result<()>{
         let mut compiler = self.inner.take().unwrap();
-        let compiler = napi::tokio::spawn(async {
-            compiler.build().await;
-            compiler
-        }).await.unwrap();
-        self.inner = Some(compiler);
+        // let compiler = napi::tokio::spawn(async {
+        //     compiler.build().await;
+        //     compiler
+        // }).await.unwrap();
+       self.inner = Some(compiler);
         Ok(())
     }
    

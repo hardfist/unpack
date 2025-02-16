@@ -14,12 +14,14 @@
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",
     "typescript": "5.6.2",
-    "@types/node": "22.7.5"
+    "@types/node": "22.7.5",
+    "why-is-node-running": "3.2.2"
   },
   "engines": {
     "node": ">= 10"
   },
   "scripts": {
+    "debug": "why-is-node-running tests/build.js",
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:release-debug": "napi build --platform --profile release-debug",

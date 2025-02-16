@@ -10,11 +10,7 @@ async function main() {
         }
     }]);
     await compiler.build()
-    await compiler.build();
+    //await compiler.build();
     console.log('build finished');
 }
 main();
-
-// setInterval(() => {
-
-// }, 0).unref();
