@@ -19,7 +19,6 @@ pub struct AST {
     pub program: Program,
 }
 pub fn parse(content: String) -> Result<ParseResult> {
-    dbg!(&content);
     let cm = SourceMap::default();
     let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content);
 

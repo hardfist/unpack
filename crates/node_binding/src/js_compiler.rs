@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use camino::Utf8PathBuf;
-use napi::{bindgen_prelude::spawn_blocking, tokio::runtime::Handle};
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
 use napi_derive::napi;
@@ -45,7 +44,7 @@ impl JsCompiler {
             compiler.build().await;
             compiler
         }).await.unwrap();
-        //self.inner = Some(compiler);
+        self.inner = Some(compiler);
         Ok(())
     }
    

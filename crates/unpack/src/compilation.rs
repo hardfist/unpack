@@ -11,7 +11,7 @@ use crate::{
         ScannerState,
     }, plugin::PluginDriver, task::Task
 };
-use std::{sync::Arc, time::Instant};
+use std::sync::Arc;
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -44,14 +44,12 @@ impl Compilation {
     }
     /// similar with webpack's make phase, which will make module graph
     pub async fn scan(&mut self) -> ScannerState {
-        let start = Instant::now();
+        
         let (send, mut recv) = unbounded_channel::<Result<Task>>();
         let module_scanner =
             ModuleScanner::new(self.options.clone(), self.options.context.clone(), self.plugin_driver.clone());
         let mut scanner_state = ScannerState::new(send);
         module_scanner.add_entries(&mut scanner_state,&mut recv).await;
-        let elapsed = start.elapsed();
-        println!("elapsed: {:?}", elapsed);
         dbg!(&scanner_state.module_graph.modules.len());
         scanner_state
     }
