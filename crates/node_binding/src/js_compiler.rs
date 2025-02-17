@@ -1,5 +1,7 @@
 use camino::Utf8PathBuf;
+use napi::bindgen_prelude::Reference;
 use napi_derive::napi;
+use unpack::compilation::Compilation;
 use std::sync::Arc;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
@@ -8,11 +10,12 @@ use unpack::{
     plugin::BoxPlugin,
 };
 use napi::Env;
+use crate::js_compilation::JsCompilation;
 use crate::js_plugin::JsPluginAdapter;
 
 #[napi]
-struct JsCompiler {
-    inner: Option<Compiler>,
+pub struct JsCompiler {
+    inner: Option<Compiler>
 }
 
 #[napi]
