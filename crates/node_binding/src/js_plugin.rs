@@ -1,11 +1,11 @@
+use async_trait::async_trait;
+use napi::tokio::sync::mpsc::unbounded_channel;
 use napi::{
     bindgen_prelude::{Buffer, Promise},
     threadsafe_function::{ErrorStrategy::Fatal, ThreadsafeFunction},
     Either,
 };
-use napi::tokio::sync::mpsc::{unbounded_channel};
 use napi_derive::napi;
-use async_trait::async_trait;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
 use unpack::errors::miette::Result;
 use unpack::plugin::{LoadArgs, Plugin, PluginContext, ResolveArgs};
@@ -44,8 +44,8 @@ impl Plugin for JsPluginAdapter {
             Either::A(s) => s,
             Either::B(s) => {
                 (s.into_future()).await.unwrap()
-               // use pollster::block_on;
-               // block_on(s.into_future()).unwrap()
+                // use pollster::block_on;
+                // block_on(s.into_future()).unwrap()
             }
         };
         Ok(result.map(|x| x.into()))

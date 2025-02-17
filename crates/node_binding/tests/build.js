@@ -1,3 +1,4 @@
+
 const { JsCompiler } = require('..');
 const binding = require('..');
 const path = require('path');
@@ -10,7 +11,7 @@ async function main() {
         }
     }]);
     await compiler.build()
-    //await compiler.build();
+    await compiler.build();
     console.log('build finished');
 }
 main();

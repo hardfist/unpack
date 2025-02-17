@@ -1,22 +1,29 @@
-use std::sync::Arc;
 use camino::Utf8PathBuf;
-use napi::tokio;
+use napi_derive::napi;
+use std::sync::Arc;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
-use napi_derive::napi;
-use unpack::{compiler::{Compiler, CompilerOptions}, plugin::BoxPlugin};
-
+use unpack::{
+    compiler::{Compiler, CompilerOptions},
+    plugin::BoxPlugin,
+};
+use napi::Env;
 use crate::js_plugin::JsPluginAdapter;
 
 #[napi]
 struct JsCompiler {
-    inner: Option<Compiler>
+    inner: Option<Compiler>,
 }
 
 #[napi]
 impl JsCompiler {
     #[napi(constructor)]
-    pub fn new(context: String,entry: String, plugins: Vec<JsPluginAdapter>) -> Self {
+    pub fn new(
+        env: Env,
+        context: String,
+        entry: String,
+        mut plugins:Vec<JsPluginAdapter>,
+    ) -> Self {
         let options = CompilerOptions {
             context: Utf8PathBuf::from(context),
             entry: vec![EntryItem {
@@ -31,22 +38,34 @@ impl JsCompiler {
                 ..Default::default()
             },
         };
+        // unref napi handles to avoid hang problem
+        for plugin in plugins.iter_mut() {
+            if let Some(resolve) = &mut plugin.on_resolve {
+                resolve.unref(&env).unwrap();
+            }
+            if let Some(load) = &mut plugin.on_load {
+                load.unref(&env).unwrap();
+            }
+        }
+        
         let plugins = plugins
-                .into_iter()
-                .map(|x| Arc::new(x) as BoxPlugin)
-                .collect();
+            .into_iter()
+            .map(|x| Arc::new(x) as BoxPlugin)
+            .collect();
         let compiler = Compiler::new(Arc::new(options), plugins);
-        Self { inner: Some(compiler)}
+        Self {
+            inner: Some(compiler),
+        }
     }
     #[napi]
-    pub async unsafe fn build(&mut self) -> napi::Result<()>{
+    pub async unsafe fn build(&mut self) -> napi::Result<()> {
         let mut compiler = self.inner.take().unwrap();
-        // let compiler = napi::tokio::spawn(async {
-        //     compiler.build().await;
-        //     compiler
-        // }).await.unwrap();
-       self.inner = Some(compiler);
+        let compiler = napi::tokio::spawn(async {
+            compiler.build().await;
+            compiler
+        }).await.unwrap();
+        self.inner = Some(compiler);
+
         Ok(())
     }
-   
 }
