@@ -16,7 +16,7 @@ pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
     plugins: Vec<BoxPlugin>,
-    compilation: Compilation
+    compilation: Option<Compilation>
 }
 
 impl Compiler {
@@ -28,10 +28,10 @@ impl Compiler {
             })
         };
         let compilation = Compilation::new(options.clone(), Arc::new(plugin_driver));
-        Self { options, plugins ,compilation}
+        Self { options, plugins , compilation: Some(compilation)}
     }
     pub async fn build(&mut self) {
-        let compilation = &mut self.compilation;
+        let compilation = self.compilation.as_mut().unwrap();
         let scanner_state = compilation.scan().await;
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);
@@ -39,9 +39,9 @@ impl Compiler {
         let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
         
         self.emit_assets(asset_state);
-        
-        if !self.compilation.diagnostics.is_empty() {
-            for diag in &self.compilation.diagnostics {
+        let compilation = self.compilation.as_ref().unwrap();
+        if !compilation.diagnostics.is_empty() {
+            for diag in &compilation.diagnostics {
                 println!("{:?}", diag);
             }
         }

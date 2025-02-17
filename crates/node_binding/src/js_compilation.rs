@@ -18,4 +18,5 @@ impl JsCompilation {
     pub fn compiler(&self) -> WeakReference<JsCompiler>{
         self.compiler.clone()
     }
+    
 }
