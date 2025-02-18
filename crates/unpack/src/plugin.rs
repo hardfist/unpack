@@ -1,4 +1,4 @@
-use crate::compiler::CompilerOptions;
+use crate::{compilation::Compilation, compiler::CompilerOptions};
 use camino::Utf8PathBuf;
 use miette::Result;
 use std::{fmt::Debug, sync::Arc};
@@ -20,6 +20,9 @@ pub struct LoadArgs {
 #[async_trait]
 pub trait Plugin: Send + Sync + Debug {
     fn name(&self) -> &'static str;
+    fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: &mut Compilation) {
+        
+    }
     async fn resolve(&self, _ctx: Arc<PluginContext>, _args: ResolveArgs) -> Result<Option<String>> {
         Ok(None)
     }

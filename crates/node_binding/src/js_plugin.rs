@@ -6,9 +6,12 @@ use napi::{
     Either,
 };
 use napi_derive::napi;
+use unpack::compilation::Compilation;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
 use unpack::errors::miette::Result;
 use unpack::plugin::{LoadArgs, Plugin, PluginContext, ResolveArgs};
+
+use crate::js_compilation::JsCompilation;
 
 #[napi(object, object_to_js = false)]
 pub struct JsPluginAdapter {
@@ -24,6 +27,11 @@ impl Debug for JsPluginAdapter {
 impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {
         "js_plugin_adapter"
+    }
+    fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: &mut Compilation){
+        // let compilation = JsCompilation {
+        //     compilation:
+        // }
     }
     async fn load(&self, _ctx: Arc<PluginContext>, args: LoadArgs) -> Result<Option<Vec<u8>>> {
         let (send, mut recv) = unbounded_channel();
