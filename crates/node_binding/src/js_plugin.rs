@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use napi::bindgen_prelude::External;
 use napi::tokio::sync::mpsc::unbounded_channel;
 use napi::{
     bindgen_prelude::{Buffer, Promise},
@@ -6,17 +7,20 @@ use napi::{
     Either,
 };
 use napi_derive::napi;
-use unpack::compilation::Compilation;
+use std::cell::UnsafeCell;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
+use unpack::compilation::Compilation;
 use unpack::errors::miette::Result;
-use unpack::plugin::{LoadArgs, Plugin, PluginContext, ResolveArgs};
+use unpack::plugin::{CompilationCell, LoadArgs, Plugin, PluginContext, ResolveArgs};
 
 use crate::js_compilation::JsCompilation;
+
 
 #[napi(object, object_to_js = false)]
 pub struct JsPluginAdapter {
     pub on_resolve: Option<ThreadsafeFunction<String, Fatal>>,
     pub on_load: Option<ThreadsafeFunction<String, Fatal>>,
+    pub this_compilation: Option<ThreadsafeFunction<JsCompilation, Fatal>>,
 }
 impl Debug for JsPluginAdapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -28,10 +32,22 @@ impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {
         "js_plugin_adapter"
     }
-    fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: &mut Compilation){
-        // let compilation = JsCompilation {
-        //     compilation:
-        // }
+    async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: Arc<CompilationCell>) {
+        
+        let compilation = JsCompilation::from_compilation(External::new(compilation));
+        let (send, mut recv) = unbounded_channel();
+        let Some(callback) = &self.this_compilation else {
+            return ();
+        };
+        callback.call_with_return_value(
+            compilation,
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
+            move |ret:()| {
+                send.send(());
+                Ok(())
+            },
+        );
+        recv.recv().await.unwrap();
     }
     async fn load(&self, _ctx: Arc<PluginContext>, args: LoadArgs) -> Result<Option<Vec<u8>>> {
         let (send, mut recv) = unbounded_channel();

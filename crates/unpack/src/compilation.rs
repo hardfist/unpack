@@ -25,6 +25,7 @@ pub struct CodeGenerationState {
 pub struct ChunkAssetState {
     pub assets: FxHashMap<String, BoxSource>,
 }
+#[derive(Debug)]
 pub struct Compilation {
     #[allow(dead_code)]
     pub options: Arc<CompilerOptions>,

@@ -1,21 +1,20 @@
+use crate::js_plugin::JsPluginAdapter;
 use camino::Utf8PathBuf;
 use napi::bindgen_prelude::Reference;
+use napi::Env;
 use napi_derive::napi;
-use unpack::compilation::Compilation;
 use std::sync::Arc;
+use unpack::compilation::Compilation;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
 use unpack::{
     compiler::{Compiler, CompilerOptions},
     plugin::BoxPlugin,
 };
-use napi::Env;
-use crate::js_compilation::JsCompilation;
-use crate::js_plugin::JsPluginAdapter;
 
 #[napi]
 pub struct JsCompiler {
-    inner: Option<Compiler>
+    inner: Option<Compiler>,
 }
 
 #[napi]
@@ -25,7 +24,7 @@ impl JsCompiler {
         env: Env,
         context: String,
         entry: String,
-        mut plugins:Vec<JsPluginAdapter>,
+        mut plugins: Vec<JsPluginAdapter>,
     ) -> Self {
         let options = CompilerOptions {
             context: Utf8PathBuf::from(context),
@@ -49,8 +48,11 @@ impl JsCompiler {
             if let Some(load) = &mut plugin.on_load {
                 load.unref(&env).unwrap();
             }
+            if let Some(this_compilation) = &mut plugin.this_compilation {
+                this_compilation.unref(&env).unwrap();
+            }
         }
-        
+
         let plugins = plugins
             .into_iter()
             .map(|x| Arc::new(x) as BoxPlugin)
@@ -66,7 +68,9 @@ impl JsCompiler {
         let compiler = napi::tokio::spawn(async {
             compiler.build().await;
             compiler
-        }).await.unwrap();
+        })
+        .await
+        .unwrap();
         self.inner = Some(compiler);
 
         Ok(())

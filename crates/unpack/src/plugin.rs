@@ -1,7 +1,7 @@
 use crate::{compilation::Compilation, compiler::CompilerOptions};
 use camino::Utf8PathBuf;
 use miette::Result;
-use std::{fmt::Debug, sync::Arc};
+use std::{cell::UnsafeCell, fmt::Debug, sync::Arc};
 use async_trait::async_trait;
 #[derive(Clone,Debug)]
 pub struct PluginContext {
@@ -17,10 +17,34 @@ pub struct ResolveArgs {
 pub struct LoadArgs {
     pub path: Utf8PathBuf
 }
+
+pub struct CompilationCell(UnsafeCell<Compilation>);
+
+impl CompilationCell {
+    pub fn new(compilation: Compilation) -> Self {
+        Self(UnsafeCell::new(compilation))
+    }
+
+    // Safe methods to access the compilation
+    pub unsafe fn get(&self) -> * mut Compilation {
+       self.0.get()
+    }
+
+    pub unsafe fn get_mut(&mut self) -> &mut Compilation {
+        self.0.get_mut()
+    }
+}
+unsafe impl  Send for CompilationCell {
+    
+}
+unsafe impl  Sync for CompilationCell {
+    
+}
+
 #[async_trait]
-pub trait Plugin: Send + Sync + Debug {
+pub trait Plugin: Send + Sync +  Debug {
     fn name(&self) -> &'static str;
-    fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: &mut Compilation) {
+    async fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: Arc<CompilationCell>) {
         
     }
     async fn resolve(&self, _ctx: Arc<PluginContext>, _args: ResolveArgs) -> Result<Option<String>> {
@@ -60,5 +84,11 @@ impl PluginDriver {
             }
         }
         Ok(None)
+    }
+    pub async fn run_compilation_hook(&self, compilation: Arc<CompilationCell>) {
+        for plugin in &self.plugins {
+            plugin.this_compilation(self.plugin_context.clone(), compilation.clone()).await;
+            
+        }
     }
 }

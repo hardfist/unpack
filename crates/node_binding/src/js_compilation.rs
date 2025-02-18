@@ -1,24 +1,18 @@
-use std::{ptr::NonNull, sync::Arc};
+use std::{cell::UnsafeCell, ptr::NonNull, sync::Arc};
 
-use napi::{bindgen_prelude::WeakReference, Ref};
+use napi::bindgen_prelude::External;
 use napi_derive::napi;
-use crate::js_compiler::JsCompiler;
-
-
-struct Compilation {
-
-}
+use unpack::{compilation::Compilation, plugin::CompilationCell};
 
 #[napi]
 pub struct JsCompilation {
-    //pub compilation: Arc<Compilation>
-    // compiler: WeakReference<JsCompiler>
+    compilation: External<Arc<CompilationCell>>
 }
-#[napi]
+
 impl JsCompilation {
-    // #[napi(getter)]
-    // pub fn compiler(&self) -> WeakReference<JsCompiler>{
-    //     self.compiler.clone()
-    // }
-    
+    pub fn from_compilation(compilation: External<Arc<CompilationCell>>) -> Self{
+        Self {
+            compilation: compilation
+        }
+    }
 }
