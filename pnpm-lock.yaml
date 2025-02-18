@@ -23,6 +23,12 @@ importers:
         specifier: 3.2.2
         version: 3.2.2
 
+  packages/unpack:
+    devDependencies:
+      '@unpack-js/binding':
+        specifier: workspace:*
+        version: link:../../crates/node_binding
+
 packages:
 
   /@napi-rs/cli@2.18.4:
