@@ -1,10 +1,8 @@
 use crate::js_plugin::JsPluginAdapter;
 use camino::Utf8PathBuf;
-use napi::bindgen_prelude::Reference;
 use napi::Env;
 use napi_derive::napi;
 use std::sync::Arc;
-use unpack::compilation::Compilation;
 use unpack::compiler::EntryItem;
 use unpack::resolver::ResolveOptions;
 use unpack::{

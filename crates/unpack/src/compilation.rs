@@ -51,7 +51,6 @@ impl Compilation {
             ModuleScanner::new(self.options.clone(), self.options.context.clone(), self.plugin_driver.clone());
         let mut scanner_state = ScannerState::new(send);
         module_scanner.add_entries(&mut scanner_state,&mut recv).await;
-        dbg!(&scanner_state.module_graph.modules.len());
         scanner_state
     }
     /// similar with webpack's seal phase

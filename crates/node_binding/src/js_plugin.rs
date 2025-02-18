@@ -7,9 +7,7 @@ use napi::{
     Either,
 };
 use napi_derive::napi;
-use std::cell::UnsafeCell;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
-use unpack::compilation::Compilation;
 use unpack::errors::miette::Result;
 use unpack::plugin::{CompilationCell, LoadArgs, Plugin, PluginContext, ResolveArgs};
 
