@@ -1,9 +1,10 @@
 {
   "name": "@unpack-js/core",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node tests/build.js"
   },
   "keywords": [],
   "author": "",
