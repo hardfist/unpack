@@ -15,7 +15,7 @@ async function main() {
                     // console.log('resolve:', p)
                 },
                 thisCompilation(compilation) {
-                    registry.register(compilation, 'compilation');
+                    // registry.register(compilation, 'compilation');
                     //console.log('thisCompilation:', compilation)
                 }
             }
@@ -26,7 +26,6 @@ async function main() {
     await compiler.build()
     console.log('build2')
     await compiler.build();
-    console.log('build3')
     
     console.log('build finished');
 }
