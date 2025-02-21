@@ -12,9 +12,6 @@ export class Compiler {
         this.inner = new JsCompiler(options.context, options.entry, options.plugins)
     }
     async build(){
-
+        await this.inner.build();
     }
-}
-class Compilation {
-
 }

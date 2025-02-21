@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "target": "ESNext",
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
+        "esModuleInterop": true,
+        "allowJs": true,
+        "allowImportingTsExtensions": true,
+        "types": ["node"]
+    },
+    "include": ["src/**/*", "tests/**/*"]
+}

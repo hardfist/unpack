@@ -1,13 +1,13 @@
 
-import { Compiler } from '../src/index.ts'
+import { Compiler } from "../src/index.ts"
 import path from 'path';
-const context = import.meta.resolve(import.meta.dirname, './fixtures');
 const registry = new FinalizationRegistry((value) => {
     console.log(`${value} gc collected`);
 });
+console.log('dir:',import.meta.dirname)
 async function main() {
     const compiler = new Compiler({
-        context,
+        context: path.resolve(import.meta.dirname,'./fixtures'),
         entry: './src/index.mjs',
         plugins: [
             {
@@ -20,9 +20,13 @@ async function main() {
             }
         ]
     });
-    await compiler.build()
-    await compiler.build();
     registry.register(compiler, 'compiler');
+    console.log('build1');
+    await compiler.build()
+    console.log('build2')
+    await compiler.build();
+    console.log('build3')
+    
     console.log('build finished');
 }
 main().then(() => {
