@@ -11,7 +11,7 @@ use crate::{
         ScannerState,
     }, plugin::PluginDriver, task::Task
 };
-use std::sync::Arc;
+use std::sync::{atomic::{AtomicU32, Ordering}, Arc};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -25,22 +25,43 @@ pub struct CodeGenerationState {
 pub struct ChunkAssetState {
     pub assets: FxHashMap<String, BoxSource>,
 }
+
+static COMPILATION_ID: AtomicU32 = AtomicU32::new(0);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct CompilationId(pub u32);
+
+impl CompilationId {
+    pub fn new() -> Self {
+        Self(COMPILATION_ID.fetch_add(1, Ordering::SeqCst))
+    }
+}
+
 #[derive(Debug)]
 pub struct Compilation {
+    pub id: CompilationId,
     #[allow(dead_code)]
     pub options: Arc<CompilerOptions>,
     module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
     pub plugin_driver: Arc<PluginDriver>
 }
+impl Drop for Compilation {
+    fn drop(&mut self) {
+        println!("compilation:{} drop", self.id.0);
+    }
+}
 
 impl Compilation {
     pub fn new(options: Arc<CompilerOptions>, plugin_driver: Arc<PluginDriver>) -> Self {
+        let id = CompilationId::new();
+        println!("create compilation: {:?}", &id);
         Self {
             options,
             module_graph: Default::default(),
             diagnostics: Default::default(),
             plugin_driver,
+            id
         }
     }
     /// similar with webpack's make phase, which will make module graph

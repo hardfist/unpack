@@ -1,18 +1,29 @@
-use std::{cell::UnsafeCell, ptr::NonNull, sync::Arc};
+use std::sync::Arc;
 
-use napi::bindgen_prelude::External;
+use napi::bindgen_prelude::ObjectFinalize;
 use napi_derive::napi;
-use unpack::{compilation::Compilation, plugin::CompilationCell};
+use unpack::plugin::CompilationCell;
 
-#[napi]
+#[napi(custom_finalize)]
 pub struct JsCompilation {
-    compilation: External<Arc<CompilationCell>>
+    compilation:Arc<CompilationCell>,
+    id: u32
 }
 
 impl JsCompilation {
-    pub fn from_compilation(compilation: External<Arc<CompilationCell>>) -> Self{
+    pub fn from_compilation(compilation: Arc<CompilationCell>) -> Self{
+        let id = unsafe { &*compilation.get()}.id;
         Self {
-            compilation: compilation
+            compilation: compilation,
+            id: id.0
         }
     }
+}
+impl ObjectFinalize for JsCompilation {
+    fn finalize(self, mut env: napi::Env) -> napi::Result<()> {
+        println!("JsCompilation:{} finalize",self.id);
+        
+        Ok(())
+    }
+    
 }

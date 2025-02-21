@@ -4,8 +4,6 @@ use std::sync::Arc;
 
 pub use options::CompilerOptions;
 pub use options::EntryItem;
-use swc_core::common::plugin;
-use std::cell::UnsafeCell;
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
 use crate::plugin::BoxPlugin;
@@ -13,6 +11,11 @@ use crate::plugin::CompilationCell;
 use crate::plugin::PluginContext;
 use crate::plugin::PluginDriver;
 
+impl Drop for Compiler {
+    fn drop(&mut self) {
+        println!("native Compiler dropped");
+    }
+}
 pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,

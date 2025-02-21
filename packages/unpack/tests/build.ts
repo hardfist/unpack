@@ -15,6 +15,7 @@ async function main() {
                     // console.log('resolve:', p)
                 },
                 thisCompilation(compilation) {
+                    registry.register(compilation, 'compilation');
                     //console.log('thisCompilation:', compilation)
                 }
             }

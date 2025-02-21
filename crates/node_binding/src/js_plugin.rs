@@ -32,7 +32,7 @@ impl Plugin for JsPluginAdapter {
     }
     async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: Arc<CompilationCell>) {
         
-        let compilation = JsCompilation::from_compilation(External::new(compilation));
+        let compilation = JsCompilation::from_compilation(compilation);
         let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.this_compilation else {
             return ();

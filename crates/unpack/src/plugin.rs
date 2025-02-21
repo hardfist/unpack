@@ -17,7 +17,11 @@ pub struct ResolveArgs {
 pub struct LoadArgs {
     pub path: Utf8PathBuf
 }
-
+impl Drop for CompilationCell{
+    fn drop(&mut self) {
+        println!("compilation_cell dropped")
+    }
+}
 pub struct CompilationCell(UnsafeCell<Compilation>);
 
 impl CompilationCell {
