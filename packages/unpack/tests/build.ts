@@ -17,6 +17,10 @@ async function main() {
                 thisCompilation(compilation) {
                     // registry.register(compilation, 'compilation');
                     //console.log('thisCompilation:', compilation)
+                   setTimeout(() => {
+                    console.log('after 1s ---------\n\n\n');
+                     console.log('compilation:', compilation)
+                   },1000);
                 }
             }
         ]
