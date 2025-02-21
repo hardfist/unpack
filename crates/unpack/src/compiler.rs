@@ -20,7 +20,7 @@ pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
     plugins: Vec<BoxPlugin>,
-    compilation: Arc<CompilationCell>,
+    last_compilation: Option<Arc<CompilationCell>>,
     plugin_driver: Arc<PluginDriver>
 }
 
@@ -33,12 +33,14 @@ impl Compiler {
             })
         });
         
-        let compilation = Arc::new(CompilationCell::new(Compilation::new(options.clone(), plugin_driver.clone())));
-        Self { options, plugins , compilation: compilation,plugin_driver: plugin_driver.clone()}
+        
+        Self { options, plugins , last_compilation: None,plugin_driver: plugin_driver.clone()}
     }
     pub async fn build(&mut self) {
-        self.plugin_driver.run_compilation_hook(self.compilation.clone()).await;
-        let compilation = unsafe { &mut *self.compilation.get() };
+        let compilation = Arc::new(CompilationCell::new(Compilation::new(self.options.clone(), self.plugin_driver.clone())));
+        self.last_compilation = Some(compilation.clone());
+        self.plugin_driver.run_compilation_hook(compilation.clone()).await;
+        let compilation = unsafe { &mut *compilation.get() };
         let scanner_state = compilation.scan().await;
         let linker_state = compilation.link(scanner_state);
         let mut code_generation_state = compilation.code_generation(linker_state);
@@ -46,7 +48,7 @@ impl Compiler {
         let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
         
         self.emit_assets(asset_state);
-        let compilation: &Compilation = unsafe{&*self.compilation.get()};
+        let compilation: &Compilation = unsafe{&*self.last_compilation.as_ref().unwrap().get()};
         if !compilation.diagnostics.is_empty() {
             for diag in &compilation.diagnostics {
                 println!("{:?}", diag);
