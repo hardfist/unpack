@@ -42,7 +42,7 @@ pub struct Compilation {
     pub id: CompilationId,
     #[allow(dead_code)]
     pub options: Arc<CompilerOptions>,
-    module_graph: ModuleGraph,
+    pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
     pub plugin_driver: Arc<PluginDriver>
 }
@@ -72,6 +72,7 @@ impl Compilation {
             ModuleScanner::new(self.options.clone(), self.options.context.clone(), self.plugin_driver.clone());
         let mut scanner_state = ScannerState::new(send);
         module_scanner.add_entries(&mut scanner_state,&mut recv).await;
+        println!("scan finished with {} modules", scanner_state.module_graph.modules.len());
         scanner_state
     }
     /// similar with webpack's seal phase
@@ -80,6 +81,7 @@ impl Compilation {
         let mut linker_state = LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.build_chunk_graph(&mut linker_state);
+        
         linker_state
     }
     /// code generation
