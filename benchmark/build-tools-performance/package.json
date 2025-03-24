@@ -1,0 +1,12 @@
+{
+    "name": "build-tools-performance",
+    "dependencies": {
+        "@iconify-icons/material-symbols": "^1.2.58",
+        "@iconify/react": "^5.2.0",
+        "puppeteer": "^24.4.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-router-dom": "^7.3.0",
+        "tree-kill": "^1.2.2"
+    }
+}

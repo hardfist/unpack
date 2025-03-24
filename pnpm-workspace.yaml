@@ -1,3 +1,4 @@
 packages:
   - 'crates/node_binding'
   - 'packages/*'
+  - 'benchmark/build-tools-performance'

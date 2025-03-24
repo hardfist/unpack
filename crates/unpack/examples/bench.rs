@@ -11,8 +11,8 @@ fn main() {
     rt.block_on(async {
         let current_file = file!();
         dbg!(current_file);
-        let context = PathBuf::from(current_file)
-            .join("/Users/bytedance/project/build-tools-performance")
+        let context = PathBuf::from(current_file).parent().unwrap()
+            .join("../../../benchmark/build-tools-performance")
             .canonicalize()
             .unwrap();
         let compiler_options: CompilerOptions = CompilerOptions {
