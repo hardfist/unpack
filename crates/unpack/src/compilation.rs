@@ -80,7 +80,7 @@ impl Compilation {
         module_scanner.add_entries(&mut scanner_state).await;
         println!(
             "scan finished with {} modules",
-            scanner_state.module_graph.modules.len()
+            scanner_state._modules.len()
         );
         scanner_state
     }

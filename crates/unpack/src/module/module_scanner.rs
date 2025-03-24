@@ -105,7 +105,7 @@ impl ModuleScanner {
 
 #[derive(Debug)]
 pub struct ScannerState {
-    _modules: FxHashMap<String, ModuleId>,
+    pub _modules: FxHashMap<String, ModuleId>,
     pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
     pub entries: IndexMap<String, EntryData>,
