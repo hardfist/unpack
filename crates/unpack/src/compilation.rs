@@ -1,9 +1,7 @@
 use indexmap::IndexSet;
-use miette::Result;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
-use tokio::sync::mpsc::unbounded_channel;
 
 use crate::{
     chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState},
@@ -14,7 +12,6 @@ use crate::{
         ScannerState,
     },
     plugin::PluginDriver,
-    task::Task,
 };
 use std::sync::{
     atomic::{AtomicU32, Ordering},

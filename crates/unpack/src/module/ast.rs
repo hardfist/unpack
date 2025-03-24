@@ -20,7 +20,7 @@ pub struct AST {
 }
 pub fn parse(content: String) -> Result<ParseResult> {
     let cm = SourceMap::default();
-    let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content);
+    let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content.clone());
 
     let lexer = swc_core::ecma::parser::lexer::Lexer::new(
         Syntax::Es(EsSyntax {
@@ -52,7 +52,7 @@ pub fn parse(content: String) -> Result<ParseResult> {
                     LabeledSpan::new(Some(message), start, len)
                 })
                 .collect::<Vec<_>>();
-            return Err(miette!(labels = labels, "parse error"));
+            return Err(miette!(labels = labels, "parse error").with_source_code(content.clone()));
         }
     };
     // Analyze the AST for all import dependencies

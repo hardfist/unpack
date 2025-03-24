@@ -147,7 +147,7 @@ impl ModuleScanner {
                                self.handle_task(task, state);
                             },
                             Err(err) => {
-                                dbg!(err.to_string());
+                                state.add_diagnostic(err);
                             }
                         }
 
@@ -155,9 +155,8 @@ impl ModuleScanner {
                 }
                 task = self.working_tasks.join_next() => {
                     if let Some(handle) = task {
-                        if let Err(err) = handle {
+                        if let Err(_) = handle {
                             panic!("unexpected spawn error");
-
                         }
 
                     }else if self.todo_rx.is_empty(){
@@ -304,7 +303,7 @@ impl ModuleScanner {
                     .unwrap();
             }
             Err(err) => {
-                todo_tx.send(Err(err));
+                todo_tx.send(Err(err)).unwrap();
             }
         };
     }
