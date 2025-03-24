@@ -6,12 +6,20 @@ use rustc_hash::FxHashMap;
 use tokio::sync::mpsc::unbounded_channel;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, module::{
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState},
+    compiler::CompilerOptions,
+    errors::Diagnostics,
+    module::{
         CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
         ScannerState,
-    }, plugin::PluginDriver, task::Task
+    },
+    plugin::PluginDriver,
+    task::Task,
 };
-use std::sync::{atomic::{AtomicU32, Ordering}, Arc};
+use std::sync::{
+    atomic::{AtomicU32, Ordering},
+    Arc,
+};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -19,7 +27,7 @@ struct CodeGenerationResults {
 pub struct CodeGenerationState {
     chunk_graph: ChunkGraph,
     code_generation_results: CodeGenerationResults,
-    pub diagnostics: Diagnostics
+    pub diagnostics: Diagnostics,
 }
 #[derive(Debug, Clone)]
 pub struct ChunkAssetState {
@@ -44,7 +52,7 @@ pub struct Compilation {
     pub options: Arc<CompilerOptions>,
     pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
-    pub plugin_driver: Arc<PluginDriver>
+    pub plugin_driver: Arc<PluginDriver>,
 }
 impl Drop for Compilation {
     fn drop(&mut self) {
@@ -61,27 +69,32 @@ impl Compilation {
             module_graph: Default::default(),
             diagnostics: Default::default(),
             plugin_driver,
-            id
+            id,
         }
     }
     /// similar with webpack's make phase, which will make module graph
     pub async fn scan(&mut self) -> ScannerState {
-        
-        let (send, mut recv) = unbounded_channel::<Result<Task>>();
-        let module_scanner =
-            ModuleScanner::new(self.options.clone(), self.options.context.clone(), self.plugin_driver.clone());
-        let mut scanner_state = ScannerState::new(send);
-        module_scanner.add_entries(&mut scanner_state,&mut recv).await;
-        println!("scan finished with {} modules", scanner_state.module_graph.modules.len());
+        let mut module_scanner = ModuleScanner::new(
+            self.options.clone(),
+            self.options.context.clone(),
+            self.plugin_driver.clone(),
+        );
+        let mut scanner_state = ScannerState::new();
+        module_scanner.add_entries(&mut scanner_state).await;
+        println!(
+            "scan finished with {} modules",
+            scanner_state.module_graph.modules.len()
+        );
         scanner_state
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
     pub fn link(&mut self, scanner_state: ScannerState) -> LinkerState {
-        let mut linker_state = LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
+        let mut linker_state =
+            LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.build_chunk_graph(&mut linker_state);
-        
+
         linker_state
     }
     /// code generation
@@ -110,7 +123,7 @@ impl Compilation {
         CodeGenerationState {
             chunk_graph: linker_state.chunk_graph,
             code_generation_results,
-            diagnostics: linker_state.diagnostics
+            diagnostics: linker_state.diagnostics,
         }
     }
     // chunk asset

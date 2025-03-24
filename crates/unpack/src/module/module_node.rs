@@ -1,13 +1,13 @@
 use super::CodeGenerationContext;
 use super::NormalModule;
+use crate::compiler::CompilerOptions;
+use async_trait::async_trait;
 use camino::Utf8Path;
 use index_vec::define_index_type;
 use index_vec::IndexVec;
 use rspack_sources::BoxSource;
 use std::fmt::Debug;
 use std::sync::Arc;
-use async_trait::async_trait;
-use crate::compiler::CompilerOptions;
 
 use crate::dependency::BoxDependency;
 use crate::dependency::BoxDependencyTemplate;
@@ -22,7 +22,7 @@ pub struct BuildResult {
 }
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,
-    pub plugin_driver: Arc<PluginDriver>
+    pub plugin_driver: Arc<PluginDriver>,
 }
 #[derive(Debug)]
 pub struct CodeGenerationResult {

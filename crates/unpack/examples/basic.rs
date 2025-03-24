@@ -28,6 +28,6 @@ fn main() {
             ..Default::default()
         },
     };
-    let mut compiler = Compiler::new(Arc::new(compiler_options),vec![]);
+    let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
     compiler.build();
 }

@@ -187,7 +187,7 @@ impl LinkerState {
             entry_points: Default::default(),
             module_graph,
             queue: Default::default(),
-            diagnostics
+            diagnostics,
         }
     }
 }

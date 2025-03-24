@@ -2,7 +2,7 @@ use crate::{
     compiler::CompilerOptions,
     dependency::BoxDependency,
     module::NormalModule,
-    plugin::{ResolveArgs, PluginDriver},
+    plugin::{PluginDriver, ResolveArgs},
     resolver_factory::ResolverFactory,
 };
 use camino::Utf8PathBuf;
@@ -35,10 +35,12 @@ impl NormalModuleFactory {
         let dependency = data.module_dependency.as_module_dependency().unwrap();
         let context = data.context.clone();
         let request = dependency.request();
-        let load_result = plugin_driver.run_resolve_hook(ResolveArgs {
-            context: context.clone(),
-            path: Utf8PathBuf::from_str(request).unwrap(),
-        }).await?;
+        let load_result = plugin_driver
+            .run_resolve_hook(ResolveArgs {
+                context: context.clone(),
+                path: Utf8PathBuf::from_str(request).unwrap(),
+            })
+            .await?;
         let resource_path = match load_result {
             Some(res) => Utf8PathBuf::from(res),
             None => {
@@ -47,7 +49,7 @@ impl NormalModuleFactory {
                     .base_resolver
                     .resolve(&context, request)
                     .into_diagnostic()?;
-                
+
                 resolve_result.path
             }
         };

@@ -1,14 +1,14 @@
-use std::sync::Arc;
-use async_trait::async_trait;
 use crate::dependency::{
     AsyncDependenciesBlockId, BoxDependency, BoxDependencyTemplate, DependenciesBlock, DependencyId,
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use crate::plugin::LoadArgs;
+use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
+use std::sync::Arc;
 
 use super::ast::parse;
 use super::{BuildContext, BuildResult, Module};
@@ -62,12 +62,17 @@ impl Module for NormalModule {
     }
     async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
         let resource_path = self.resource_path.clone();
-        let content = build_context.plugin_driver.run_load_hook(LoadArgs {
-            path: resource_path.clone(),
-        }).await?;
+        let content = build_context
+            .plugin_driver
+            .run_load_hook(LoadArgs {
+                path: resource_path.clone(),
+            })
+            .await?;
         let content = match content {
             Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
-            None => tokio::fs::read_to_string(resource_path.clone()).await.into_diagnostic()?,
+            None => tokio::fs::read_to_string(resource_path.clone())
+                .await
+                .into_diagnostic()?,
         };
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;

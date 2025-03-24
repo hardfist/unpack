@@ -13,7 +13,6 @@ use unpack::plugin::{CompilationCell, LoadArgs, Plugin, PluginContext, ResolveAr
 
 use crate::js_compilation::JsCompilation;
 
-
 #[napi(object, object_to_js = false)]
 pub struct JsPluginAdapter {
     pub on_resolve: Option<ThreadsafeFunction<String, Fatal>>,
@@ -31,7 +30,6 @@ impl Plugin for JsPluginAdapter {
         "js_plugin_adapter"
     }
     async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: Arc<CompilationCell>) {
-        
         let compilation = JsCompilation::from_compilation(compilation);
         let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.this_compilation else {
@@ -40,7 +38,7 @@ impl Plugin for JsPluginAdapter {
         callback.call_with_return_value(
             compilation,
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret:()| {
+            move |ret: ()| {
                 send.send(());
                 Ok(())
             },
