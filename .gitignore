@@ -18,3 +18,9 @@ node_modules
 
 # trace
 *.trace
+
+# profile
+
+profile.json
+
+profile.json.gz
