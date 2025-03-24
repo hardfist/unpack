@@ -20,13 +20,15 @@ downcast-rs = { version = "1.2.1"}
 dashmap = { version = "6.0.1"}
 thiserror = { version = "1.0.63"}
 rspack_sources = { version = "0.3.0"}
-swc_core = { version = "0.106.4", features = ["__parser"]}
+swc_core = { version = "0.106.4", features = ["__parser", "__visit"]}
 rustc-hash = { version = "2.0.0"}
 indexmap = { version = "2.6.0"}
 rayon = { version = "1.10.0"}
 mimalloc = { version = "0.1.43"}
 crossbeam-channel = { version = "*"}
 async-std = { version = "1.13.0"}
+serde = { version = "1.0.219"}
+serde_json = { version = "1.0.140"}
 [profile.release]
 codegen-units = 1
 debug         = false

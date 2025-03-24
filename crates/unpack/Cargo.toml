@@ -25,3 +25,5 @@ oxc_parser = { version = "0.31.0"}
 oxc_span = { version = "0.31.0"}
 tokio = { version = "1.41.0", features = ["full"]}
 async-trait = { version = "0.1.83" }
+serde = { workspace = true }
+serde_json = { workspace = true }

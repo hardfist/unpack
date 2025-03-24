@@ -78,10 +78,14 @@ impl Compilation {
         );
         let mut scanner_state = ScannerState::new();
         module_scanner.add_entries(&mut scanner_state).await;
+        let mut modules: Vec<&String> = scanner_state._modules.keys().collect();
+        modules.sort_unstable();
+        // std::fs::write("stats.json",module);
         println!(
             "scan finished with {} modules",
             scanner_state._modules.len()
         );
+
         scanner_state
     }
     /// similar with webpack's seal phase

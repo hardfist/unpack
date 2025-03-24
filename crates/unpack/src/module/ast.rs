@@ -7,9 +7,10 @@ use crate::dependency::{
 use crate::errors::miette::{miette, Result};
 use miette::LabeledSpan;
 use swc_core::common::{FileName, SourceMap, Spanned};
-use swc_core::ecma::ast::Program;
+use swc_core::ecma::ast::{CallExpr, Callee, Expr, ImportDecl, Program};
 use swc_core::ecma::parser::{EsSyntax, Parser, StringInput, Syntax};
 use swc_core::ecma::utils::swc_ecma_ast;
+use swc_core::ecma::visit::{Visit, VisitWith};
 
 use super::ParseResult;
 
@@ -20,7 +21,10 @@ pub struct AST {
 }
 pub fn parse(content: String) -> Result<ParseResult> {
     let cm = SourceMap::default();
-    let fm = cm.new_source_file(Arc::new(FileName::Custom("input.js".into())), content.clone());
+    let fm = cm.new_source_file(
+        Arc::new(FileName::Custom("input.js".into())),
+        content.clone(),
+    );
 
     let lexer = swc_core::ecma::parser::lexer::Lexer::new(
         Syntax::Es(EsSyntax {
@@ -56,31 +60,64 @@ pub fn parse(content: String) -> Result<ParseResult> {
         }
     };
     // Analyze the AST for all import dependencies
-    let mut presentational_dependencies: Vec<BoxDependencyTemplate> = vec![];
-    let mut module_dependencies: Vec<BoxDependency> = vec![];
-    match &program {
-        swc_ecma_ast::Program::Module(module) => {
-            for item in &module.body {
-                if let swc_ecma_ast::ModuleItem::ModuleDecl(swc_ecma_ast::ModuleDecl::Import(
-                    import,
-                )) = item
-                {
-                    let request = import.src.value.clone();
-                    module_dependencies
-                        .push(Box::new(HarmonyImportSideEffectDependency { request }));
-                    presentational_dependencies.push(Box::new(ConstDependency::new(
-                        import.span.real_lo(),
-                        import.span.real_hi(),
-                        "".into(),
-                    )));
-                }
+
+    struct DependencyCollector {
+        module_dependencies: Vec<BoxDependency>,
+        presentational_dependencies: Vec<BoxDependencyTemplate>,
+    }
+
+    impl DependencyCollector {
+        fn new() -> Self {
+            Self {
+                module_dependencies: vec![],
+                presentational_dependencies: vec![],
             }
         }
-        swc_ecma_ast::Program::Script(_) => {}
-    };
-    //mem::forget(program);
+    }
+    impl Visit for DependencyCollector {
+        // Handle static imports
+        fn visit_import_decl(&mut self, import: &ImportDecl) {
+            let request = import.src.value.clone();
+
+            // Add standard import dependency
+            self.module_dependencies
+                .push(Box::new(HarmonyImportSideEffectDependency {
+                    request: request.clone(),
+                }));
+
+            // Add presentational dependency to remove the import later
+            self.presentational_dependencies
+                .push(Box::new(ConstDependency::new(
+                    import.span.real_lo(),
+                    import.span.real_hi(),
+                    "".into(),
+                )));
+        }
+
+        // Handle dynamic imports: import("./module")
+        fn visit_call_expr(&mut self, call: &CallExpr) {
+            // Check if this is a dynamic import
+            if let Callee::Import(_expr) = &call.callee {
+                // Try to extract the string literal for the import path
+                if let Some(arg) = call.args.first() {
+                    if let Expr::Lit(swc_ecma_ast::Lit::Str(str_lit)) = &*arg.expr {
+                        let request = str_lit.value.clone();
+                        // Add dynamic import dependency with different type
+                        self.module_dependencies
+                            .push(Box::new(HarmonyImportSideEffectDependency { request }));
+                    }
+                }
+            }
+
+            // Continue traversing inside the call expression
+            call.visit_children_with(self);
+        }
+    }
+
+    let mut collector = DependencyCollector::new();
+    program.visit_with(&mut collector);
     Ok(ParseResult {
-        module_dependencies,
-        presentational_dependencies,
+        module_dependencies: collector.module_dependencies,
+        presentational_dependencies: collector.presentational_dependencies,
     })
 }
