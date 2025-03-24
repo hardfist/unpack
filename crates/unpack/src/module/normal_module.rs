@@ -70,7 +70,7 @@ impl Module for NormalModule {
             .await?;
         let content = match content {
             Some(content) => String::from_utf8_lossy(content.as_ref()).to_string(),
-            None =>std::fs::read_to_string(resource_path.clone())
+            None =>tokio::fs::read_to_string(resource_path.clone()).await
                 .into_diagnostic()?,
         };
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
