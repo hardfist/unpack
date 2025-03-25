@@ -1,10 +1,19 @@
 use rspack_resolver::ResolveOptions;
-use std::{path::PathBuf, sync::Arc};
-use tokio::runtime::Builder;
+use tracing_chrome::{ ChromeLayerBuilder};
+use tracing_subscriber::layer::SubscriberExt;
+use std::{path::PathBuf, sync::Arc, time::Duration};
+use tokio::{runtime::Builder, time::sleep};
 use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
+use tracing_subscriber::util::SubscriberInitExt;
 fn main() {
+    
+    let (chrome_layer,_guard) = ChromeLayerBuilder::new().build();
+
+    tracing_subscriber::registry().with(chrome_layer).init();
+
     let rt = Builder::new_multi_thread()
         .enable_all()
+        .disable_lifo_slot()
         .max_blocking_threads(4)
         .build()
         .unwrap();
@@ -31,5 +40,6 @@ fn main() {
         };
         let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler.build().await;
+        sleep(Duration::from_secs(1000)).await;
     });
 }

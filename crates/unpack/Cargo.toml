@@ -27,3 +27,6 @@ tokio = { version = "1.41.0", features = ["full"]}
 async-trait = { version = "0.1.83" }
 serde = { workspace = true }
 serde_json = { workspace = true }
+console-subscriber = { version = "0.4.0" }
+tracing-subscriber = { version = "0.3.19"}
+tracing-chrome = { version = "*"}

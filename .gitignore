@@ -24,3 +24,5 @@ node_modules
 profile.json
 
 profile.json.gz
+
+trace-*.json
