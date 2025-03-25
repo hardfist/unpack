@@ -40,6 +40,5 @@ fn main() {
         };
         let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler.build().await;
-        sleep(Duration::from_secs(1000)).await;
     });
 }
