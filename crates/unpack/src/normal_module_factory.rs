@@ -8,6 +8,7 @@ use crate::{
 use camino::Utf8PathBuf;
 use miette::{IntoDiagnostic, Result};
 use std::{str::FromStr, sync::Arc};
+use tokio::task::spawn_blocking;
 
 #[derive(Debug)]
 pub struct NormalModuleFactory {
@@ -44,13 +45,18 @@ impl NormalModuleFactory {
         let resource_path = match load_result {
             Some(res) => Utf8PathBuf::from(res),
             None => {
-                let resolve_result = self
-                    .resolver_factory
-                    .base_resolver
-                    .resolve(&context, request)
-                    .into_diagnostic()?;
-
-                resolve_result.path
+                let resolver_factory = self.resolver_factory.clone();
+                let context = context.clone();
+                let request = request.to_string();
+                let result = spawn_blocking(move || {
+                    let resolve_result = resolver_factory
+                        .base_resolver
+                        .resolve(&context, &request);
+                    resolve_result
+                })
+                .await
+                .unwrap();
+                result.into_diagnostic()?.path
             }
         };
 

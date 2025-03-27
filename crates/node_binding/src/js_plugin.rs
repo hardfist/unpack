@@ -39,7 +39,7 @@ impl Plugin for JsPluginAdapter {
             compilation,
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
             move |ret: ()| {
-                send.send(());
+                let _ = send.send(());
                 Ok(())
             },
         );
