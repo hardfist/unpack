@@ -13,10 +13,13 @@ use crate::{
     },
     plugin::PluginDriver,
 };
-use std::{sync::{
-    atomic::{AtomicU32, Ordering},
-    Arc,
-}, time::Instant};
+use std::{
+    sync::{
+        atomic::{AtomicU32, Ordering},
+        Arc,
+    },
+    time::Instant,
+};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -82,7 +85,8 @@ impl Compilation {
         let elapsed = start.elapsed();
         println!(
             "scan finished with {} modules in {:?}",
-            scanner_state._modules.len(), elapsed
+            scanner_state._modules.len(),
+            elapsed
         );
 
         scanner_state

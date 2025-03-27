@@ -9,10 +9,10 @@ use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
-use tracing::instrument;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 use tokio::task::JoinSet;
+use tracing::instrument;
 
 use super::module_graph::ModuleGraph;
 use crate::{compiler::CompilerOptions, dependency::EntryDependency};
@@ -216,7 +216,7 @@ impl ModuleScanner {
             }
         }
     }
-    #[instrument("handle_factorize",skip_all)]
+    #[instrument("handle_factorize", skip_all)]
     async fn handle_factorize(
         tx: Sender<Result<Task>>,
         task: FactorizeTask,
@@ -260,7 +260,7 @@ impl ModuleScanner {
             }
         }
     }
-    #[instrument("handle_process_deps",skip_all)]
+    #[instrument("handle_process_deps", skip_all)]
     fn handle_process_deps(&self, state: &mut ScannerState, task: ProcessDepsTask) {
         let module = task.module;
         let original_module_context = module.get_context().map(|x| x.to_owned());
@@ -279,7 +279,7 @@ impl ModuleScanner {
             self.todo_tx.clone(),
         );
     }
-    #[instrument("handle_build",skip_all)]
+    #[instrument("handle_build", skip_all)]
     async fn handle_build(
         task: BuildTask,
         options: Arc<CompilerOptions>,
