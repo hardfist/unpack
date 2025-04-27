@@ -8,8 +8,10 @@ use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
 use crate::plugin::PluginContext;
 use crate::plugin::PluginDriver;
+use camino::Utf8Path;
 pub use options::CompilerOptions;
 pub use options::EntryItem;
+use rspack_sources::BoxSource;
 
 impl Drop for Compiler {
     fn drop(&mut self) {
@@ -58,7 +60,7 @@ impl Compiler {
             .extend(mem::take(&mut code_generation_state.diagnostics));
         let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
 
-        self.emit_assets(asset_state);
+        self.emit_assets(asset_state).await;
         let compilation: &Compilation = unsafe { &*self.last_compilation.as_ref().unwrap().get() };
         if !compilation.diagnostics.is_empty() {
             for diag in &compilation.diagnostics {
@@ -67,9 +69,13 @@ impl Compiler {
         }
         println!("Compilation finished");
     }
-    pub fn emit_assets(&self, asset_state: ChunkAssetState) {
-        for (_name, _source) in asset_state.assets {
-            // std::fs::write(name, source.buffer().as_ref());
+    pub async fn emit_assets(&self, asset_state: ChunkAssetState) {
+        for (filename, asset) in asset_state.assets {
+            self.emit_asset(&self.options.output_dir, &filename, asset).await;
         }
+    }
+    async fn emit_asset(&self, output_dir: &Utf8Path, filename: &str, asset:BoxSource ){
+        let full_path = output_dir.join(filename);
+        std::fs::write(full_path, asset.buffer().as_ref()).unwrap();
     }
 }

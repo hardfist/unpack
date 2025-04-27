@@ -11,4 +11,5 @@ pub struct CompilerOptions {
     pub context: Utf8PathBuf,
     pub entry: Vec<EntryItem>,
     pub resolve: ResolveOptions,
+    pub output_dir: Utf8PathBuf
 }

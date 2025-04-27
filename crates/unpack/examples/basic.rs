@@ -2,13 +2,15 @@ use rspack_resolver::ResolveOptions;
 use std::{path::PathBuf, sync::Arc};
 use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let current_file = file!();
     let context = PathBuf::from(current_file)
         .join("../fixtures")
         .canonicalize()
         .unwrap();
     let compiler_options: CompilerOptions = CompilerOptions {
+        output_dir: context.join("dist").try_into().expect("expect utf8 path"),
         context: context.try_into().expect("expect utf8 path"),
         entry: vec![
             EntryItem {
@@ -29,5 +31,5 @@ fn main() {
         },
     };
     let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
-    compiler.build();
+    compiler.build().await;
 }
