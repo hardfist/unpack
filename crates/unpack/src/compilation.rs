@@ -148,6 +148,7 @@ impl Compilation {
                 .get_chunk_modules(chunk_id);
             let chunk_source =
                 self.render_chunk_modules(code_generation_state, chunk_id, chunk_modules);
+            let chunk_name = format!("{}{}", chunk_name, ".js");
             assets.insert(chunk_name, chunk_source);
         }
         ChunkAssetState { assets }
