@@ -152,7 +152,7 @@ impl ChunkLinker {
         state: &mut LinkerState,
     ) -> IndexMap<ChunkGroupId, Vec<ModuleId>> {
         let mut entrypoint_module_map = IndexMap::default();
-        for (name, _entry_data) in &self.entries {
+        for (name, entry_data) in &self.entries {
             let chunk_id = state.chunk_graph.create_chunk(Some(name.clone()));
             let chunk_group_id = state
                 .chunk_graph
@@ -160,18 +160,18 @@ impl ChunkLinker {
             let chunk_group = state.chunk_graph.chunk_group_by_id_mut(chunk_group_id);
             chunk_group.set_entry_point_chunk(chunk_id);
             state.entry_points.insert(name.clone(), chunk_group_id);
-            // let module_ids = entry_data
-            //     .dependencies
-            //     .iter()
-            //     .map(|dep_id| state.module_graph.module_id_by_dependency_id(*dep_id))
-            //     .collect::<Vec<_>>();
-            let module_ids = vec![];
+            let module_ids = entry_data
+                .dependencies
+                .iter()
+                .map(|dep_id| state.module_graph.module_id_by_dependency_id(*dep_id))
+                .collect::<Vec<_>>();
             entrypoint_module_map.insert(chunk_group_id, module_ids);
         }
         entrypoint_module_map
     }
 }
 
+#[derive(Debug)]
 pub struct LinkerState {
     pub chunk_graph: ChunkGraph,
     pub module_graph: ModuleGraph,

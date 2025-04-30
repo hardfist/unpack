@@ -98,7 +98,6 @@ impl Compilation {
             LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.build_chunk_graph(&mut linker_state);
-
         linker_state
     }
     /// code generation

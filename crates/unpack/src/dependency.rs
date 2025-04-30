@@ -24,6 +24,7 @@ pub trait Dependency:
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }
+    fn id(&self) -> DependencyId;
 }
 
 clone_trait_object!(Dependency);

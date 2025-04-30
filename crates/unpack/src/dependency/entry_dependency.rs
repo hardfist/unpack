@@ -1,18 +1,30 @@
 use camino::Utf8PathBuf;
-use derive_new::new;
 
-use super::{module_dependency::ModuleDependency, AsDependencyTemplate, Dependency};
+use super::{module_dependency::ModuleDependency, AsDependencyTemplate, Dependency, DependencyId};
 
 // dependency for entry
-#[derive(new, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct EntryDependency {
     request: String,
     context: Utf8PathBuf,
+    pub(crate)id: DependencyId
+}
+impl EntryDependency {
+    pub fn new(request: String, context: Utf8PathBuf) -> Self {
+        Self {
+            request,
+            context,
+            id: DependencyId::new(),
+        }
+    }
 }
 
 impl Dependency for EntryDependency {
     fn get_context(&self) -> Option<&camino::Utf8Path> {
         Some(&self.context)
+    }
+    fn id(&self) -> DependencyId {
+        self.id
     }
 }
 

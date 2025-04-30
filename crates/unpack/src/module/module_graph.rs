@@ -15,7 +15,7 @@ use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
 
 #[derive(Debug, Default)]
 pub struct ModuleGraph {
-    pub dependencies: IndexVec<DependencyId, BoxDependency>,
+    pub dependencies: IndexMap<DependencyId, BoxDependency>,
     pub modules: IndexVec<ModuleId, BoxModule>,
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
     pub connections: IndexVec<ConnectionId, Connection>,

@@ -81,9 +81,7 @@ pub fn parse(content: String) -> Result<ParseResult> {
 
             // Add standard import dependency
             self.module_dependencies
-                .push(Box::new(HarmonyImportSideEffectDependency {
-                    request: request.clone(),
-                }));
+                .push(Box::new(HarmonyImportSideEffectDependency::new(request.clone())));
 
             // Add presentational dependency to remove the import later
             self.presentational_dependencies
@@ -104,7 +102,7 @@ pub fn parse(content: String) -> Result<ParseResult> {
                         let request = str_lit.value.clone();
                         // Add dynamic import dependency with different type
                         self.module_dependencies
-                            .push(Box::new(HarmonyImportSideEffectDependency { request }));
+                            .push(Box::new(HarmonyImportSideEffectDependency::new(request)));
                     }
                 }
             }

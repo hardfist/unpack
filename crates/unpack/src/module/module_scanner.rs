@@ -1,4 +1,4 @@
-use crate::dependency::BoxDependency;
+use crate::dependency::{BoxDependency, DependencyId};
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
@@ -22,6 +22,7 @@ use tokio::sync::mpsc::{
 #[derive(Debug)]
 pub struct EntryData {
     name: Option<String>,
+    pub(crate) dependencies: Vec< DependencyId>
 }
 #[derive(Debug)]
 pub struct ModuleScanner {
@@ -68,14 +69,17 @@ impl ModuleScanner {
             .entry
             .iter()
             .map(|entry| {
+                
                 let entry_dep: BoxDependency = Box::new(EntryDependency::new(
                     entry.import.clone(),
                     self.options.context.clone(),
+                    
                 ));
                 state.entries.insert(
                     entry.name.clone(),
                     EntryData {
                         name: Some(entry.name.clone()),
+                        dependencies: vec![entry_dep.id()]
                     },
                 );
                 entry_dep
