@@ -5,7 +5,7 @@ use super::{AsDependencyTemplate, Dependency, DependencyId, ModuleDependency};
 #[derive(Debug, Clone)]
 pub struct HarmonyImportSideEffectDependency {
     pub request: Atom,
-    pub id: DependencyId
+    pub id: DependencyId,
 }
 
 impl HarmonyImportSideEffectDependency {
@@ -26,6 +26,5 @@ impl ModuleDependency for HarmonyImportSideEffectDependency {
     fn request(&self) -> &str {
         &self.request
     }
-    
 }
 impl AsDependencyTemplate for HarmonyImportSideEffectDependency {}

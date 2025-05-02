@@ -7,7 +7,7 @@ use super::{module_dependency::ModuleDependency, AsDependencyTemplate, Dependenc
 pub struct EntryDependency {
     request: String,
     context: Utf8PathBuf,
-    pub(crate)id: DependencyId
+    pub(crate) id: DependencyId,
 }
 impl EntryDependency {
     pub fn new(request: String, context: Utf8PathBuf) -> Self {

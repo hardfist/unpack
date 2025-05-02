@@ -81,7 +81,9 @@ pub fn parse(content: String) -> Result<ParseResult> {
 
             // Add standard import dependency
             self.module_dependencies
-                .push(Box::new(HarmonyImportSideEffectDependency::new(request.clone())));
+                .push(Box::new(HarmonyImportSideEffectDependency::new(
+                    request.clone(),
+                )));
 
             // Add presentational dependency to remove the import later
             self.presentational_dependencies

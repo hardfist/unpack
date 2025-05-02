@@ -1,12 +1,10 @@
 use std::sync::atomic::AtomicU32;
 
-
 use crate::module::ModuleGraph;
 
 use super::BoxDependency;
 
 pub static DEPENDENCY_ID: AtomicU32 = AtomicU32::new(0);
-
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct DependencyId(u32);

@@ -19,7 +19,9 @@ pub fn parse2(source: String) -> Result<ParseResult> {
     for stmt in ret.program.body {
         if let Statement::ImportDeclaration(import) = stmt {
             let request = import.source.value.to_string();
-            module_dependencies.push(Box::new(HarmonyImportSideEffectDependency::new(request.into())));
+            module_dependencies.push(Box::new(HarmonyImportSideEffectDependency::new(
+                request.into(),
+            )));
             presentational_dependencies.push(Box::new(ConstDependency {
                 start: import.span.start,
                 end: import.span.end,

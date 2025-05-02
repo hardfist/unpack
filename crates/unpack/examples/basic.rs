@@ -1,9 +1,13 @@
 use rspack_resolver::ResolveOptions;
 use std::{path::PathBuf, sync::Arc};
-use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
+use unpack::{
+    compiler::{Compiler, CompilerOptions, EntryItem},
+    tracing::init_tracing,
+};
 
 #[tokio::main]
 async fn main() {
+    let guard = init_tracing();
     let current_file = file!();
     let context = PathBuf::from(current_file)
         .join("../fixtures")
@@ -30,6 +34,8 @@ async fn main() {
             ..Default::default()
         },
     };
+    tracing::debug!("compiler_options: {:?}", compiler_options);
     let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
     compiler.build().await;
+    drop(guard);
 }

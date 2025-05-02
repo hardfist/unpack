@@ -1,5 +1,4 @@
 use rspack_resolver::ResolveOptions;
-use tracing::level_filters::LevelFilter;
 use std::{
     path::PathBuf,
     sync::{
@@ -8,15 +7,19 @@ use std::{
     },
 };
 use tokio::runtime::Builder;
+use tracing::level_filters::LevelFilter;
 use tracing_chrome::ChromeLayerBuilder;
-use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
 use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
 fn main() {
     let _guard = match std::env::var("UNPACK_PROFILE") {
         Ok(filter) => {
             let (chrome_layer, guard) = ChromeLayerBuilder::new().build();
-            let env_filter = EnvFilter::builder().with_default_directive(LevelFilter::TRACE.into()).parse(filter).expect("invalid filter");
+            let env_filter = EnvFilter::builder()
+                .with_default_directive(LevelFilter::TRACE.into())
+                .parse(filter)
+                .expect("invalid filter");
             tracing_subscriber::registry()
                 .with(chrome_layer.with_filter(env_filter))
                 .init();

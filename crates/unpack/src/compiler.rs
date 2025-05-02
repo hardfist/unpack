@@ -54,9 +54,8 @@ impl Compiler {
         let compilation = unsafe { &mut *compilation.get() };
         let scanner_state = compilation.scan().await;
         let linker_state = compilation.link(scanner_state);
-        dbg!(&linker_state);
         let mut code_generation_state = compilation.code_generation(linker_state);
-        
+
         compilation
             .diagnostics
             .extend(mem::take(&mut code_generation_state.diagnostics));
@@ -73,10 +72,11 @@ impl Compiler {
     }
     pub async fn emit_assets(&self, asset_state: ChunkAssetState) {
         for (filename, asset) in asset_state.assets {
-            self.emit_asset(&self.options.output_dir, &filename, asset).await;
+            self.emit_asset(&self.options.output_dir, &filename, asset)
+                .await;
         }
     }
-    async fn emit_asset(&self, output_dir: &Utf8Path, filename: &str, asset:BoxSource ){
+    async fn emit_asset(&self, output_dir: &Utf8Path, filename: &str, asset: BoxSource) {
         let full_path = output_dir.join(filename);
         if !full_path.parent().unwrap().exists() {
             std::fs::create_dir_all(full_path.parent().unwrap()).unwrap();
