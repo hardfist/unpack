@@ -60,7 +60,7 @@ pub fn parse(content: String) -> Result<ParseResult> {
         }
     };
     // Analyze the AST for all import dependencies
-
+    #[derive(Debug)]
     struct DependencyCollector {
         module_dependencies: Vec<BoxDependency>,
         presentational_dependencies: Vec<BoxDependencyTemplate>,

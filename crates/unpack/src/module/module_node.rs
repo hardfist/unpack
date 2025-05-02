@@ -10,7 +10,6 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::dependency::BoxDependency;
-use crate::dependency::BoxDependencyTemplate;
 use crate::dependency::DependenciesBlock;
 use crate::errors::miette::Result;
 use crate::plugin::PluginDriver;
@@ -18,7 +17,6 @@ use crate::plugin::PluginDriver;
 #[derive(Debug)]
 pub struct BuildResult {
     pub module_dependencies: Vec<BoxDependency>,
-    pub presentational_dependencies: Vec<BoxDependencyTemplate>,
 }
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,

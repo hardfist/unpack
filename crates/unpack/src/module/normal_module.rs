@@ -78,9 +78,9 @@ impl Module for NormalModule {
         let parse_result = Self::parse(content)?;
 
         self.source = NormalModuleSource::Succeed(source.clone());
+        self.presentational_dependencies = parse_result.presentational_dependencies;
         Ok(BuildResult {
             module_dependencies: parse_result.module_dependencies,
-            presentational_dependencies: parse_result.presentational_dependencies,
         })
     }
 
