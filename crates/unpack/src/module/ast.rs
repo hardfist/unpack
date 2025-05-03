@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use crate::dependency::
-    DependencyCollector
-;
+use crate::dependency::DependencyCollector;
 use crate::errors::miette::{miette, Result};
 use miette::LabeledSpan;
 use swc_core::common::{FileName, SourceMap, Spanned};

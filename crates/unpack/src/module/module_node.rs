@@ -1,11 +1,13 @@
 use super::CodeGenerationContext;
 use super::NormalModule;
 use crate::compiler::CompilerOptions;
+use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
 use camino::Utf8Path;
 use index_vec::define_index_type;
 use index_vec::IndexVec;
 use rspack_sources::BoxSource;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -22,9 +24,22 @@ pub struct BuildContext {
     pub options: Arc<CompilerOptions>,
     pub plugin_driver: Arc<PluginDriver>,
 }
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SourceType {
+    JavaScript,
+    Css,
+    #[default]
+    Unknown,
+}
+#[derive(Debug, Default, Clone)]
 pub struct CodeGenerationResult {
-    pub source: BoxSource,
+    pub sources: HashMap<SourceType, BoxSource>,
+    pub runtime_requirements: RuntimeGlobals,
+}
+impl CodeGenerationResult {
+    pub fn add(&mut self, source_type: SourceType, source: BoxSource) {
+        self.sources.insert(source_type, source);
+    }
 }
 #[async_trait]
 pub trait Module: Debug + DependenciesBlock + Send + Sync {
@@ -37,6 +52,7 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync {
         &self,
         code_generation_context: CodeGenerationContext,
     ) -> Result<CodeGenerationResult>;
+    fn source_types(&self) -> &[SourceType];
 }
 
 pub type BoxModule = Box<dyn Module>;

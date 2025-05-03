@@ -3,7 +3,7 @@ use std::{fmt::Debug, hash::BuildHasherDefault};
 use dyn_clone::DynClone;
 use indexmap::IndexMap;
 use miette::Result;
-use rspack_sources::{BoxSource, ConcatSource,RawStringSource, SourceExt};
+use rspack_sources::{BoxSource, ConcatSource, RawStringSource, SourceExt};
 use rustc_hash::FxHasher;
 
 use crate::utils::ext::{DynHash, IntoAny};
@@ -43,7 +43,10 @@ impl InitFragmentKey {
         &self,
         fragments: Vec<Box<dyn InitFragment<C>>>,
     ) -> Box<dyn InitFragment<C>> {
-        fragments.into_iter().next().expect("shoud a least have one fragment")
+        fragments
+            .into_iter()
+            .next()
+            .expect("shoud a least have one fragment")
     }
 }
 pub trait InitFragment<C>: IntoAny + DynHash + DynClone + Debug + Sync + Send {
@@ -66,8 +69,11 @@ pub fn render_init_fragments<C: InitFragmentRenderContext>(
         }
         a.position().cmp(&b.position())
     });
-    let mut keyed_fragments: IndexMap<InitFragmentKey, Vec<Box<dyn InitFragment<C>>>, BuildHasherDefault<FxHasher>> =
-        IndexMap::default();
+    let mut keyed_fragments: IndexMap<
+        InitFragmentKey,
+        Vec<Box<dyn InitFragment<C>>>,
+        BuildHasherDefault<FxHasher>,
+    > = IndexMap::default();
     for fragment in fragments {
         let key = fragment.key();
         if let Some(value) = keyed_fragments.get_mut(key) {
@@ -86,13 +92,11 @@ pub fn render_init_fragments<C: InitFragmentRenderContext>(
         if let Some(end_content) = contents.end {
             end_contents.push(RawStringSource::from(end_content));
         }
-        
     }
     concat_source.add(source);
-        for content in end_contents.into_iter().rev(){
-            concat_source.add(content);
-        }
+    for content in end_contents.into_iter().rev() {
+        concat_source.add(content);
+    }
 
-        Ok(concat_source.boxed())
-
+    Ok(concat_source.boxed())
 }

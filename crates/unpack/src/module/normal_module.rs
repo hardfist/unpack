@@ -11,7 +11,7 @@ use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 use std::sync::Arc;
 
 use super::ast::parse;
-use super::{BuildContext, BuildResult, Module};
+use super::{BuildContext, BuildResult, Module, SourceType};
 use super::{CodeGenerationResult, ModuleGraph};
 #[derive(Debug)]
 pub struct NormalModule {
@@ -57,6 +57,9 @@ impl DependenciesBlock for NormalModule {
 }
 #[async_trait]
 impl Module for NormalModule {
+    fn source_types(&self) -> &[SourceType] {
+        &[SourceType::JavaScript]
+    }
     fn identifier(&self) -> &str {
         self.resource_path.as_str()
     }
@@ -91,21 +94,23 @@ impl Module for NormalModule {
         &self,
         code_generation_context: CodeGenerationContext,
     ) -> Result<CodeGenerationResult> {
-        let generate_result = match &self.source {
-            NormalModuleSource::Failed(_) => {
-                todo!("no implemented yet")
-            }
-            NormalModuleSource::Succeed(source) => {
-                self.generate(source.clone(), &code_generation_context)
-            }
-            NormalModuleSource::UnBuild => {
-                panic!("should have source")
-            }
-        };
+        let mut code_generation_result = CodeGenerationResult::default();
 
-        Ok(CodeGenerationResult {
-            source: generate_result?,
-        })
+        for source_type in self.source_types() {
+            let generate_result = match &self.source {
+                NormalModuleSource::Failed(_) => {
+                    todo!("no implemented yet")
+                }
+                NormalModuleSource::Succeed(source) => {
+                    self.generate(source.clone(), &code_generation_context)
+                }
+                NormalModuleSource::UnBuild => {
+                    panic!("should have source")
+                }
+            };
+            code_generation_result.add(*source_type, generate_result?);
+        }
+        Ok(code_generation_result)
     }
 }
 impl NormalModule {
