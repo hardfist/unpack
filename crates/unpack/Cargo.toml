@@ -19,10 +19,6 @@ rustc-hash = { workspace = true }
 rspack_sources = { workspace = true }
 rayon = { workspace = true }
 swc_core = { workspace = true, features = ["__parser", "common","__utils", "base", "ecma_quote"]}
-oxc_allocator = { version = "0.31.0"}
-oxc_ast = { version = "0.31.0"}
-oxc_parser = { version = "0.31.0"}
-oxc_span = { version = "0.31.0"}
 tokio = { version = "1.41.0", features = ["full"]}
 async-trait = { version = "0.1.83" }
 serde = { workspace = true }

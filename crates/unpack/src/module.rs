@@ -1,5 +1,4 @@
 mod ast;
-mod ast2;
 mod connection;
 mod module_graph;
 mod module_graph_module;

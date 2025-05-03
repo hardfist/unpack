@@ -3,12 +3,12 @@ use swc_core::atoms::Atom;
 use super::{AsDependencyTemplate, Dependency, DependencyId, ModuleDependency};
 
 #[derive(Debug, Clone)]
-pub struct HarmonyImportSideEffectDependency {
+pub struct EsmImportSideEffectDependency {
     pub request: Atom,
     pub id: DependencyId,
 }
 
-impl HarmonyImportSideEffectDependency {
+impl EsmImportSideEffectDependency {
     pub fn new(request: Atom) -> Self {
         Self {
             request,
@@ -17,14 +17,14 @@ impl HarmonyImportSideEffectDependency {
     }
 }
 
-impl Dependency for HarmonyImportSideEffectDependency {
+impl Dependency for EsmImportSideEffectDependency {
     fn id(&self) -> super::DependencyId {
         self.id
     }
 }
-impl ModuleDependency for HarmonyImportSideEffectDependency {
+impl ModuleDependency for EsmImportSideEffectDependency {
     fn request(&self) -> &str {
         &self.request
     }
 }
-impl AsDependencyTemplate for HarmonyImportSideEffectDependency {}
+impl AsDependencyTemplate for EsmImportSideEffectDependency {}
