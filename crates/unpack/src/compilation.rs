@@ -173,6 +173,8 @@ impl Compilation {
     ) -> BoxSource {
         state.code_generation_results.module_id_to_generation_result[&module_id]
             .sources
-            .get(&crate::module::SourceType::JavaScript).expect("get source").clone()
+            .get(&crate::module::SourceType::JavaScript)
+            .expect("get source")
+            .clone()
     }
 }

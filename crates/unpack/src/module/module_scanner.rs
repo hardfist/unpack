@@ -4,6 +4,7 @@ use crate::errors::Diagnostics;
 use crate::module::{BuildContext, ModuleId};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::plugin::PluginDriver;
+use crate::scheduler::COMPILER_ID;
 use crate::task::{BuildTask, FactorizeTask, ProcessDepsTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
@@ -183,10 +184,11 @@ impl ModuleScanner {
                     original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
                 let tx = self.todo_tx.clone();
                 self.working_tasks.spawn({
+                    let compiler_id = COMPILER_ID.get();
                     let options = self.options.clone();
                     let plugin_driver = self.plugin_driver.clone();
                     let module_factory = self.module_factory.clone();
-                    async move {
+                    COMPILER_ID.scope(compiler_id, async move {
                         ModuleScanner::handle_factorize(
                             tx,
                             factorize_task,
@@ -196,7 +198,7 @@ impl ModuleScanner {
                             module_factory,
                         )
                         .await;
-                    }
+                    })
                 });
             }
             Task::Build(task) => {
@@ -205,12 +207,14 @@ impl ModuleScanner {
                 };
 
                 let sender = self.todo_tx.clone();
+
                 self.working_tasks.spawn({
                     let options = self.options.clone();
                     let plugin_driver = self.plugin_driver.clone();
-                    async move {
+                    let compiler_id = COMPILER_ID.get();
+                    COMPILER_ID.scope(compiler_id, async move {
                         ModuleScanner::handle_build(task, options, plugin_driver, sender).await;
-                    }
+                    })
                 });
             }
             Task::ProcessDeps(task) => {

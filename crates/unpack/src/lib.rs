@@ -11,6 +11,7 @@ pub mod plugin;
 pub mod resolver;
 pub mod resolver_factory;
 pub mod runtime;
+pub mod scheduler;
 pub mod task;
 pub mod tracing;
 pub mod utils;

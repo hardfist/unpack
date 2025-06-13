@@ -1,5 +1,6 @@
 mod options;
 use std::mem;
+use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 
 use crate::compilation::ChunkAssetState;
@@ -8,10 +9,12 @@ use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
 use crate::plugin::PluginContext;
 use crate::plugin::PluginDriver;
+use crate::scheduler::COMPILER_ID;
 use camino::Utf8Path;
 pub use options::CompilerOptions;
 pub use options::EntryItem;
 use rspack_sources::BoxSource;
+static ID_GENERATOR: AtomicU32 = AtomicU32::new(0);
 
 impl Drop for Compiler {
     fn drop(&mut self) {
@@ -24,6 +27,7 @@ pub struct Compiler {
     plugins: Vec<BoxPlugin>,
     last_compilation: Option<Arc<CompilationCell>>,
     plugin_driver: Arc<PluginDriver>,
+    compiler_id: u32,
 }
 
 impl Compiler {
@@ -40,35 +44,42 @@ impl Compiler {
             plugins,
             last_compilation: None,
             plugin_driver: plugin_driver.clone(),
+            compiler_id: ID_GENERATOR.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
         }
     }
     pub async fn build(&mut self) {
-        let compilation = Arc::new(CompilationCell::new(Compilation::new(
-            self.options.clone(),
-            self.plugin_driver.clone(),
-        )));
-        self.last_compilation = Some(compilation.clone());
-        self.plugin_driver
-            .run_compilation_hook(compilation.clone())
+        COMPILER_ID
+            .scope(self.compiler_id, async {
+                println!("Compiler build started with ID: {}", self.compiler_id);
+                let compilation = Arc::new(CompilationCell::new(Compilation::new(
+                    self.options.clone(),
+                    self.plugin_driver.clone(),
+                )));
+                self.last_compilation = Some(compilation.clone());
+                self.plugin_driver
+                    .run_compilation_hook(compilation.clone())
+                    .await;
+                let compilation = unsafe { &mut *compilation.get() };
+                let scanner_state = compilation.scan().await;
+                let linker_state = compilation.link(scanner_state);
+                let mut code_generation_state = compilation.code_generation(linker_state);
+
+                compilation
+                    .diagnostics
+                    .extend(mem::take(&mut code_generation_state.diagnostics));
+                let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
+
+                self.emit_assets(asset_state).await;
+                let compilation: &Compilation =
+                    unsafe { &*self.last_compilation.as_ref().unwrap().get() };
+                if !compilation.diagnostics.is_empty() {
+                    for diag in &compilation.diagnostics {
+                        println!("{:?}", diag);
+                    }
+                }
+                println!("Compilation finished");
+            })
             .await;
-        let compilation = unsafe { &mut *compilation.get() };
-        let scanner_state = compilation.scan().await;
-        let linker_state = compilation.link(scanner_state);
-        let mut code_generation_state = compilation.code_generation(linker_state);
-
-        compilation
-            .diagnostics
-            .extend(mem::take(&mut code_generation_state.diagnostics));
-        let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
-
-        self.emit_assets(asset_state).await;
-        let compilation: &Compilation = unsafe { &*self.last_compilation.as_ref().unwrap().get() };
-        if !compilation.diagnostics.is_empty() {
-            for diag in &compilation.diagnostics {
-                println!("{:?}", diag);
-            }
-        }
-        println!("Compilation finished");
     }
     pub async fn emit_assets(&self, asset_state: ChunkAssetState) {
         for (filename, asset) in asset_state.assets {
