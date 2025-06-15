@@ -22,6 +22,7 @@ impl JsCompiler {
         env: Env,
         context: String,
         entry: String,
+        output_dir: String,
         mut plugins: Vec<JsPluginAdapter>,
     ) -> Self {
         let options = CompilerOptions {
@@ -37,6 +38,7 @@ impl JsCompiler {
                     .collect::<Vec<_>>(),
                 ..Default::default()
             },
+            output_dir: output_dir.into(),
         };
         // unref napi handles to avoid hang problem
         for plugin in plugins.iter_mut() {
