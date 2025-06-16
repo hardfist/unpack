@@ -4,7 +4,7 @@ use crate::dependency::{
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use crate::plugin::LoadArgs;
-use crate::scheduler::COMPILER_ID;
+use crate::scheduler::COMPILER_CONTEXT;
 use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
@@ -78,7 +78,7 @@ impl Module for NormalModule {
                 .await
                 .into_diagnostic()?,
         };
-        let compiler_id = COMPILER_ID.get();
+        let compiler_id = COMPILER_CONTEXT.get().get_compiler_id();
         println!("parse {} with compiler_id: {}", resource_path, compiler_id);
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;

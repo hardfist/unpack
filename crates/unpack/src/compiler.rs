@@ -9,12 +9,13 @@ use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
 use crate::plugin::PluginContext;
 use crate::plugin::PluginDriver;
-use crate::scheduler::COMPILER_ID;
+use crate::scheduler::CompilerContext;
+use crate::scheduler::COMPILER_CONTEXT;
 use camino::Utf8Path;
 pub use options::CompilerOptions;
 pub use options::EntryItem;
 use rspack_sources::BoxSource;
-static ID_GENERATOR: AtomicU32 = AtomicU32::new(0);
+
 
 impl Drop for Compiler {
     fn drop(&mut self) {
@@ -27,7 +28,7 @@ pub struct Compiler {
     plugins: Vec<BoxPlugin>,
     last_compilation: Option<Arc<CompilationCell>>,
     plugin_driver: Arc<PluginDriver>,
-    compiler_id: u32,
+    compiler_context: Arc<CompilerContext>
 }
 
 impl Compiler {
@@ -44,13 +45,13 @@ impl Compiler {
             plugins,
             last_compilation: None,
             plugin_driver: plugin_driver.clone(),
-            compiler_id: ID_GENERATOR.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
+            compiler_context: Arc::new(CompilerContext::new())
         }
     }
     pub async fn build(&mut self) {
-        COMPILER_ID
-            .scope(self.compiler_id, async {
-                println!("Compiler build started with ID: {}", self.compiler_id);
+        COMPILER_CONTEXT
+            .scope(self.compiler_context.clone(), async {
+                println!("Compiler build started with ID: {}", self.compiler_context.get_compiler_id());
                 let compilation = Arc::new(CompilationCell::new(Compilation::new(
                     self.options.clone(),
                     self.plugin_driver.clone(),
