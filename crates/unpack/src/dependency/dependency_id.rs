@@ -1,10 +1,9 @@
 use std::sync::atomic::AtomicU32;
 
-use crate::module::ModuleGraph;
+use crate::{module::ModuleGraph, scheduler::COMPILER_CONTEXT};
 
 use super::BoxDependency;
 
-pub static DEPENDENCY_ID: AtomicU32 = AtomicU32::new(0);
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct DependencyId(u32);
@@ -17,6 +16,7 @@ impl DependencyId {
 
 impl DependencyId {
     pub fn new() -> Self {
-        Self(DEPENDENCY_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
+        let dependency_id = COMPILER_CONTEXT.get().fetch_new_dependency_id();
+        Self(dependency_id)
     }
 }
