@@ -16,7 +16,6 @@ pub use options::CompilerOptions;
 pub use options::EntryItem;
 use rspack_sources::BoxSource;
 
-
 impl Drop for Compiler {
     fn drop(&mut self) {
         println!("native Compiler dropped");
@@ -28,7 +27,7 @@ pub struct Compiler {
     plugins: Vec<BoxPlugin>,
     last_compilation: Option<Arc<CompilationCell>>,
     plugin_driver: Arc<PluginDriver>,
-    compiler_context: Arc<CompilerContext>
+    compiler_context: Arc<CompilerContext>,
 }
 
 impl Compiler {
@@ -45,13 +44,16 @@ impl Compiler {
             plugins,
             last_compilation: None,
             plugin_driver: plugin_driver.clone(),
-            compiler_context: Arc::new(CompilerContext::new())
+            compiler_context: Arc::new(CompilerContext::new()),
         }
     }
     pub async fn build(&mut self) {
         COMPILER_CONTEXT
             .scope(self.compiler_context.clone(), async {
-                println!("Compiler build started with ID: {}", self.compiler_context.get_compiler_id());
+                println!(
+                    "Compiler build started with ID: {}",
+                    self.compiler_context.get_compiler_id()
+                );
                 let compilation = Arc::new(CompilationCell::new(Compilation::new(
                     self.options.clone(),
                     self.plugin_driver.clone(),

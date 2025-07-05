@@ -1,10 +1,13 @@
-use std::{future::Future, sync::{atomic::AtomicU32, Arc}};
+use std::{
+    future::Future,
+    sync::{atomic::AtomicU32, Arc},
+};
 
 use tokio::{task::JoinHandle, task_local};
 static COMPILER_ID_GENERATOR: AtomicU32 = AtomicU32::new(0);
 pub struct CompilerContext {
     compiler_id: u32,
-    dependency_id:AtomicU32
+    dependency_id: AtomicU32,
 }
 impl CompilerContext {
     pub fn new() -> Self {
@@ -17,7 +20,8 @@ impl CompilerContext {
         self.compiler_id
     }
     pub fn fetch_new_dependency_id(&self) -> u32 {
-        self.dependency_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst)
+        self.dependency_id
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst)
     }
 }
 

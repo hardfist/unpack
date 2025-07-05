@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use tokio::task_local;
 #[derive(Debug, Clone)]
@@ -45,8 +48,7 @@ fn fib(n: u64) -> u64 {
 async fn main() {
     println!("Hello, world!");
     CACHE.sync_scope(FibCache::new(), || {
-       let result = fib(50);
-       println!("Fibonacci of 10 is: {}", result);
+        let result = fib(50);
+        println!("Fibonacci of 10 is: {}", result);
     });
-    
 }

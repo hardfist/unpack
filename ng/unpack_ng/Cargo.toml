@@ -6,4 +6,15 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+anyhow = "1.0.98"
 turbo-tasks = { workspace = true}
+turbo-tasks-backend= { workspace = true }
+
+tokio = { workspace = true}
+
+[build-dependencies]
+turbo-tasks-build= { workspace = true }
+
+[[bin]]
+name = "unpack_ng"
+path = "src/main.rs"

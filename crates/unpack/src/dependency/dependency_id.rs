@@ -4,7 +4,6 @@ use crate::{module::ModuleGraph, scheduler::COMPILER_CONTEXT};
 
 use super::BoxDependency;
 
-
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct DependencyId(u32);
 
