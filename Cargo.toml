@@ -1,7 +1,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/*"
+    "crates/*",
+    "ng/*"
 ]
 [workspace.package]
 edition = "2024"
@@ -30,6 +31,8 @@ async-std = { version = "1.13.0"}
 serde = { version = "1.0.219"}
 serde_json = { version = "1.0.140"}
 tokio = { version = "*", features = ["full"] }
+turbo-tasks = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks", branch = "canary" }
+
 [profile.release]
 codegen-units = 1
 debug         = true
