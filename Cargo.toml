@@ -32,8 +32,10 @@ serde = { version = "1.0.219"}
 serde_json = { version = "1.0.140"}
 tokio = { version = "*", features = ["full"] }
 turbo-tasks = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks", branch = "canary" }
+turbo-tasks-fs = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-fs", branch = "canary" }
 turbo-tasks-backend = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-backend", branch = "canary" }
 turbo-tasks-build = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-build", branch = "canary" }
+turbo-rcstr = { git = "https://github.com/hardfist/next.js", package = "turbo-rcstr", branch = "canary" }
 
 [profile.release]
 codegen-units = 1
