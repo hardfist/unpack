@@ -35,7 +35,12 @@ turbo-tasks-fs = { git = "https://github.com/hardfist/next.js", package = "turbo
 turbo-tasks-backend = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-backend", branch = "canary" }
 turbo-tasks-build = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-build", branch = "canary" }
 turbo-rcstr = { git = "https://github.com/hardfist/next.js", package = "turbo-rcstr", branch = "canary" }
-
+salsa = { git = "https://github.com/salsa-rs/salsa.git", rev = "3713cd7eb30821c0c086591832dd6f59f2af7fe7", default-features = false, features = [
+    "compact_str",
+    "macros",
+    "salsa_unstable",
+    "inventory",
+] }
 [profile.release]
 codegen-units = 1
 debug         = true
