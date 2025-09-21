@@ -10,3 +10,4 @@ salsa = { workspace = true}
 notify-debouncer-mini = "0.4.1"
 crossbeam-channel = "0.5.15"
 anyhow = "1.0.100"
+dashmap = "6.1.0"

@@ -1,16 +1,7 @@
-use std::fs::File;
+use std::path::PathBuf;
 
-#[derive(Clone,Default)]
-pub struct Files {
-
-}
-impl Files {
-    pub fn new() -> Self {
-        Files {
-            
-        }
-    }
-    pub fn open(&self, path: &str) -> std::io::Result<File> {
-        File::open(path)
-    }
+#[salsa::input]
+pub struct SourceFile {
+    pub path: PathBuf,
+    pub content: String
 }
