@@ -1,5 +1,6 @@
 pub mod file;
 pub mod ast;
+pub mod module;
 use std::{path::PathBuf, sync::{Arc, Mutex}, time::Duration};
 use anyhow::{Result, Ok};
 use anyhow::Context;
@@ -7,13 +8,13 @@ use crossbeam_channel::Sender;
 use dashmap::DashMap;
 use notify_debouncer_mini::{new_debouncer, notify::RecommendedWatcher, DebounceEventResult, Debouncer};
 
-use crate::db::file::{SourceFile};
+use crate::db::file::{FileSource};
 
 #[salsa::db]
 #[derive(Clone)]
 pub struct RootDatabase {
     storage:salsa::Storage<Self>,
-    pub files: DashMap<PathBuf, SourceFile>,
+    pub files: DashMap<PathBuf, FileSource>,
     pub logs: Arc<Mutex<Vec<String>>>,
     file_watcher: Arc<Mutex<Debouncer<RecommendedWatcher>>>,
 }
@@ -29,7 +30,7 @@ impl RootDatabase {
             logs: Default::default()
         }
     }
-    pub fn add_entry(&self, path: PathBuf) -> Result<SourceFile> {
+    pub fn add_entry(&self, path: PathBuf) -> Result<FileSource> {
         
         let path = path.canonicalize().with_context(|| format!("Failed to canonicalize path: {path:?}"))?;
         
@@ -41,7 +42,7 @@ impl RootDatabase {
                 let content = std::fs::read_to_string(&path)?;
                 let watcher = &mut *self.file_watcher.lock().unwrap();
                 watcher.watcher().watch(&path, notify_debouncer_mini::notify::RecursiveMode::NonRecursive).unwrap();
-                let file = SourceFile::new(self, path.clone(), content);
+                let file = FileSource::new(self, path.clone(), content);
                 entry.insert(file);
                 file
             }

@@ -6,12 +6,11 @@ use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use crossbeam_channel::{unbounded, Sender};
 use salsa::Setter;
 
-use crate::db::file::SourceFile;
+use crate::db::file::FileSource;
 use crate::db::{Db, RootDatabase};
 
-pub fn bundle(db: &dyn Db,entry: SourceFile) -> String{
+pub fn bundle(db: &dyn Db,entry: FileSource) -> (){
     let content = entry.content(db);
-    content
 }
 // incremental dev mode
 pub fn dev(entry: PathBuf) -> anyhow::Result<()> {

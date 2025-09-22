@@ -20,7 +20,7 @@ downcast-rs = { version = "1.2.1"}
 dashmap = { version = "6.0.1"}
 thiserror = { version = "1.0.63"}
 rspack_sources = { version = "0.4.8"}
-swc_core = { version = "0.106.4", features = ["__parser", "__visit"]}
+swc_core = { version = "0.106.4", features = ["__parser", "__visit","common"]}
 rustc-hash = { version = "2.0.0"}
 indexmap = { version = "2.6.0"}
 rayon = { version = "1.10.0"}
@@ -35,7 +35,7 @@ turbo-tasks-fs = { git = "https://github.com/hardfist/next.js", package = "turbo
 turbo-tasks-backend = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-backend", branch = "canary" }
 turbo-tasks-build = { git = "https://github.com/hardfist/next.js", package = "turbo-tasks-build", branch = "canary" }
 turbo-rcstr = { git = "https://github.com/hardfist/next.js", package = "turbo-rcstr", branch = "canary" }
-salsa = { git = "https://github.com/salsa-rs/salsa.git", rev = "3713cd7eb30821c0c086591832dd6f59f2af7fe7", default-features = false, features = [
+salsa = { git = "https://github.com/salsa-rs/salsa.git", rev = "3713cd7eb30821c0c086591832dd6f59f2af7fe7", features = [
     "compact_str",
     "macros",
     "salsa_unstable",
