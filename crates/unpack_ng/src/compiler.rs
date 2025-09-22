@@ -4,13 +4,17 @@ use anyhow::Context;
 use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 use crossbeam_channel::{unbounded, Sender};
-use salsa::Setter;
-
+use salsa::{tracked, Setter};
+use crate::db::ast::parse;
 use crate::db::file::FileSource;
 use crate::db::{Db, RootDatabase};
 
+#[tracked]
 pub fn bundle(db: &dyn Db,entry: FileSource) -> (){
-    let content = entry.content(db);
+    let module = parse(db, entry).unwrap();
+    
+    dbg!(module, module.module_references(db));
+
 }
 // incremental dev mode
 pub fn dev(entry: PathBuf) -> anyhow::Result<()> {

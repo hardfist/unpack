@@ -4,7 +4,9 @@ use swc_core::{atoms::Atom, ecma::{
 }};
 
 use crate::db::Db;
-#[salsa::interned]
+
+#[salsa::interned(debug)]
+
 pub struct ModuleReference {
     pub request: Atom,
 }
