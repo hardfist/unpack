@@ -9,6 +9,7 @@ license = "MIT"
 repository = "https://github.com/hardfist/unpack"
 
 [workspace.dependencies]
+anyhow = { version = "1.0.100"}
 unpack = { path = "./crates/unpack"}
 derive-new = { version = "0.6.0"}
 index_vec = { version = "0.1.3"}
