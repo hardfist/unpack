@@ -15,7 +15,6 @@ async fn parse(source_file: ResolvedVc<FileSource>) -> Result<Vc<EcmascriptModul
 #[turbo_tasks::function]
 async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
    let entry = entry.to_resolved().await?;
-   vdbg!(entry.content().await?);
    let result = parse(*entry).await?;
    Ok(Vc::cell(()))
 }

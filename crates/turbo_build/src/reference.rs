@@ -9,4 +9,15 @@ pub trait ModuleReference: ValueToString {
     fn resolve_reference(self: Vc<Self>) ->Vc<dyn Module>;
 }
 
+#[turbo_tasks::value(transparent)]
+#[derive(Debug)]
 pub struct ModuleReferences(Vec<ResolvedVc<Box<dyn ModuleReference>>>);
+
+#[turbo_tasks::value_impl]
+impl ModuleReferences {
+    /// An empty list of [ModuleReference]s
+    #[turbo_tasks::function]
+    pub fn empty() -> Vc<Self> {
+        Vc::cell(Vec::new())
+    }
+}
