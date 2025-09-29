@@ -1,52 +1,17 @@
-#![feature(arbitrary_self_types_pointers)]
-use std::{env::current_dir, path::PathBuf};
+
+use std::env::current_dir;
+use turbo_build::{asset::Asset, file_source::FileSource, module::Module};
 use turbo_tasks::vdbg;
 use anyhow::{Result,Ok};
-use turbo_tasks_fs::{DiskFileSystem, FileContent, FileSystem, FileSystemEntryType, FileSystemPath};
-use turbo_tasks::{ResolvedVc, TaskInput, TurboTasks, Vc};
+use turbo_tasks_fs::{DiskFileSystem, FileSystem};
+use turbo_tasks::{ResolvedVc, TurboTasks, Vc};
 use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
-#[turbo_tasks::value]
-#[derive(Clone, Debug, Hash)]
-struct FileSource {
-    path: FileSystemPath
-}
-#[turbo_tasks::value_impl]
-impl FileSource {
-    #[turbo_tasks::function]
-    async fn content(&self) -> anyhow::Result<Vc<AssetContent>> {
-        let file_type = &*self.path.get_type().await?;
-        match file_type {
-            FileSystemEntryType::File => {
-                Ok(AssetContent::File(self.path.read().to_resolved().await?).cell())
-            }
-            FileSystemEntryType::NotFound => {
-                Ok(AssetContent::File(FileContent::NotFound.resolved_cell()).cell())
-            }
-            _ => Err(anyhow::anyhow!("Invalid file type {:?}", file_type)),
-        }
-    }
-}
 
-#[turbo_tasks::value]
-#[derive(Debug)]
-struct AssetContent {
-    content: ResolvedVc<FileContent>,
-}
-impl AssetContent {
-    fn File(content: ResolvedVc<FileContent>) -> Self {
-        AssetContent { content }
-    }
-}
-#[turbo_tasks::value]
-#[derive(Clone, Debug)]
-struct Module {
-    content: ResolvedVc<AssetContent>
-}
 #[turbo_tasks::function]
 async fn parse(source_file: ResolvedVc<FileSource>) -> Result<Vc<Module>> {
     let content = source_file.content().to_resolved().await?;
-    let module = Module { content };
-    Ok(module.cell())
+    let module = Module::new(*content);
+    Ok(module)
 }
 #[turbo_tasks::function]
 async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
@@ -68,9 +33,8 @@ pub async fn main_inner() -> anyhow::Result<()> {
         let root = current_dir().unwrap().join("./fixtures").canonicalize().unwrap().to_str().unwrap().to_string();
         let fs = DiskFileSystem::new("disk_fs".into(), root.into());
         let entry_path = fs.root().await?.join("input")?;
-        let entry_module = FileSource { path: entry_path }.cell();
+        let entry_module: Vc<FileSource> = FileSource::new(entry_path.clone());
         let content= entry_module.content().await?.content;
-        vdbg!(content.await?);
         let output = bundle(entry_module).await?;
         Ok::<Vc<()>>(Default::default())
     });
