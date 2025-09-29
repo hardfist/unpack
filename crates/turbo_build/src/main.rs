@@ -1,5 +1,6 @@
 #![feature(arbitrary_self_types_pointers)]
 use std::{env::current_dir, path::PathBuf};
+use turbo_tasks::vdbg;
 use anyhow::{Result,Ok};
 use turbo_tasks_fs::{DiskFileSystem, FileContent, FileSystem, FileSystemEntryType, FileSystemPath};
 use turbo_tasks::{ResolvedVc, TaskInput, TurboTasks, Vc};
@@ -27,6 +28,7 @@ impl FileSource {
 }
 
 #[turbo_tasks::value]
+#[derive(Debug)]
 struct AssetContent {
     content: ResolvedVc<FileContent>,
 }
@@ -49,6 +51,7 @@ async fn parse(source_file: ResolvedVc<FileSource>) -> Result<Vc<Module>> {
 #[turbo_tasks::function]
 async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
    let entry = entry.to_resolved().await?;
+   vdbg!(entry.content().await?);
    let result = parse(*entry).await?;
    Ok(Vc::cell(()))
 }
@@ -62,10 +65,12 @@ pub async fn main_inner() -> anyhow::Result<()> {
     ));
 
     let task = tt.spawn_root_task(|| async {
-        let root = current_dir().unwrap().join("/fixtures").to_str().unwrap().to_string();
+        let root = current_dir().unwrap().join("./fixtures").canonicalize().unwrap().to_str().unwrap().to_string();
         let fs = DiskFileSystem::new("disk_fs".into(), root.into());
         let entry_path = fs.root().await?.join("input")?;
         let entry_module = FileSource { path: entry_path }.cell();
+        let content= entry_module.content().await?.content;
+        vdbg!(content.await?);
         let output = bundle(entry_module).await?;
         Ok::<Vc<()>>(Default::default())
     });
