@@ -1,9 +1,11 @@
 
-use anyhow::{anyhow, Result};
-use turbo_tasks::{ResolvedVc, Vc};
+
+
+use anyhow::anyhow;
+use turbo_tasks::Vc;
 use turbo_tasks_fs::{FileContent, FileSystemEntryType, FileSystemPath};
 
-use crate::{asset::Asset, asset_content::AssetContent};
+use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, source::Source};
 
 
 
@@ -20,6 +22,13 @@ impl FileSource {
     }
 }
 #[turbo_tasks::value_impl]
+impl Source for FileSource {
+    #[turbo_tasks::function]
+    fn ident(&self) -> Vc<AssetIdent>{
+        AssetIdent::from_path(self.path.clone())
+    }
+}
+#[turbo_tasks::value_impl]
 impl Asset for FileSource {
   
     #[turbo_tasks::function]
@@ -27,10 +36,10 @@ impl Asset for FileSource {
         let file_type = &*self.path.get_type().await?;
         match file_type {
             FileSystemEntryType::File => {
-                Ok(AssetContent::file(self.path.read().to_resolved().await?))
+                Ok(AssetContent::new(self.path.read().to_resolved().await?))
             }
             FileSystemEntryType::NotFound => {
-                Ok(AssetContent::file(FileContent::NotFound.resolved_cell()))
+                Ok(AssetContent::new(FileContent::NotFound.resolved_cell()))
             }
             _ => Err(anyhow!("Invalid file type {:?}", file_type)),
         }
