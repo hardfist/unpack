@@ -1403,6 +1403,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb56e1aa765b4b4f3aadfab769793b7087bb03a4ea4920644a6d238e2df5b9ed"
 
 [[package]]
+name = "include_dir"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "923d117408f1e49d914f1a379a309cffe4f18c05cf4e3d12e613a15fc81bd0dd"
+dependencies = [
+ "include_dir_macros",
+]
+
+[[package]]
+name = "include_dir_macros"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cab85a7ed0bd5f0e76d93846e0147172bed2e2d3f859bcc33a8d9699cad1a75"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
 name = "index_vec"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1436,6 +1455,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8069d3ec154eb856955c1c0fbffefbf5f3c40a104ec912d4797314c1801abff"
 dependencies = [
  "bitflags 1.3.2",
+ "inotify-sys",
+ "libc",
+]
+
+[[package]]
+name = "inotify"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f37dccff2791ab604f9babef0ba14fbe0be30bd368dc541e2b08d07c8aa908f3"
+dependencies = [
+ "bitflags 2.9.1",
  "inotify-sys",
  "libc",
 ]
@@ -1521,7 +1551,7 @@ dependencies = [
  "portable-atomic",
  "portable-atomic-util",
  "serde",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1589,6 +1619,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonc-parser"
+version = "0.26.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d6d80e6d70e7911a29f3cf3f44f452df85d06f73572b494ca99a2cad3fcf8f4"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
 name = "kqueue"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1627,7 +1666,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.53.2",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -1816,6 +1855,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78bed444cc8a2160f01cbcf811ef18cac863ad68ae8ca62092e8db51d51c761c"
 dependencies = [
  "libc",
+ "log",
  "wasi 0.11.1+wasi-snapshot-preview1",
  "windows-sys 0.59.0",
 ]
@@ -1920,13 +1960,31 @@ dependencies = [
  "crossbeam-channel",
  "filetime",
  "fsevent-sys",
- "inotify",
+ "inotify 0.9.6",
  "kqueue",
  "libc",
  "log",
  "mio 0.8.11",
  "walkdir",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "notify"
+version = "8.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d3d07927151ff8575b7087f245456e549fea62edf0ec4e565a5ee50c8402bc3"
+dependencies = [
+ "bitflags 2.9.1",
+ "fsevent-sys",
+ "inotify 0.11.0",
+ "kqueue",
+ "libc",
+ "log",
+ "mio 1.0.4",
+ "notify-types",
+ "walkdir",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1937,8 +1995,14 @@ checksum = "5d40b221972a1fc5ef4d858a2f671fb34c75983eb385463dff3780eeff6a9d43"
 dependencies = [
  "crossbeam-channel",
  "log",
- "notify",
+ "notify 6.1.1",
 ]
+
+[[package]]
+name = "notify-types"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e0826a989adedc2a244799e823aece04662b66609d96af8dff7ac6df9a8925d"
 
 [[package]]
 name = "nu-ansi-term"
@@ -3003,7 +3067,7 @@ dependencies = [
  "dashmap 5.5.3",
  "either",
  "indexmap 2.9.0",
- "jsonc-parser",
+ "jsonc-parser 0.21.1",
  "lru",
  "once_cell",
  "parking_lot",
@@ -4441,6 +4505,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "turbo-tasks-fs"
+version = "0.1.0"
+source = "git+https://github.com/hardfist/next.js?branch=canary#323eebcee7f15d4c880654ed9cd3b46c49e80dc7"
+dependencies = [
+ "anyhow",
+ "auto-hash-map",
+ "bitflags 1.3.2",
+ "bytes",
+ "concurrent-queue",
+ "dashmap 6.1.0",
+ "dunce",
+ "futures",
+ "include_dir",
+ "indexmap 2.9.0",
+ "jsonc-parser 0.26.3",
+ "mime",
+ "notify 8.2.0",
+ "parking_lot",
+ "regex",
+ "rustc-hash 2.1.1",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_path_to_error",
+ "tokio",
+ "tracing",
+ "triomphe 0.1.12",
+ "turbo-rcstr",
+ "turbo-tasks",
+ "turbo-tasks-hash",
+ "turbo-unix-path",
+ "urlencoding",
+]
+
+[[package]]
 name = "turbo-tasks-hash"
 version = "0.1.0"
 source = "git+https://github.com/hardfist/next.js?branch=canary#323eebcee7f15d4c880654ed9cd3b46c49e80dc7"
@@ -4492,6 +4591,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "turbo-unix-path"
+version = "0.0.1"
+source = "git+https://github.com/hardfist/next.js?branch=canary#323eebcee7f15d4c880654ed9cd3b46c49e80dc7"
+
+[[package]]
 name = "turbo_build"
 version = "0.1.0"
 dependencies = [
@@ -4499,6 +4603,7 @@ dependencies = [
  "tokio",
  "turbo-tasks",
  "turbo-tasks-backend",
+ "turbo-tasks-fs",
 ]
 
 [[package]]
@@ -4653,6 +4758,12 @@ dependencies = [
  "idna",
  "percent-encoding",
 ]
+
+[[package]]
+name = "urlencoding"
+version = "2.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "utf8_iter"
@@ -4839,7 +4950,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.60.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

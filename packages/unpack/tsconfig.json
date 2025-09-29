@@ -7,6 +7,7 @@
         "esModuleInterop": true,
         "allowJs": true,
         "allowImportingTsExtensions": true,
+        "lib": ["ESNext"],
         "types": ["node"]
     },
     "include": ["src/**/*", "tests/**/*"]

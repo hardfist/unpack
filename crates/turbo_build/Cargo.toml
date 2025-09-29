@@ -8,6 +8,7 @@ repository.workspace = true
 [dependencies]
 
 turbo-tasks = { workspace = true}
+turbo-tasks-fs = { workspace = true }
 turbo-tasks-backend= { workspace = true }
 anyhow = { workspace = true}
 tokio = { workspace = true}

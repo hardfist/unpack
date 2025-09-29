@@ -1,13 +1,18 @@
 
 import { Compiler } from "../src/index.ts"
-import path from 'path';
-const registry = new FinalizationRegistry((value) => {
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const registry = new FinalizationRegistry<string>((value) => {
     console.log(`${value} gc collected`);
 });
-console.log('dir:',import.meta.dirname)
+console.log('dir:', __dirname)
 async function main() {
     const compiler = new Compiler({
-        context: path.resolve(import.meta.dirname,'./fixtures'),
+        context: path.resolve(__dirname,'./fixtures'),
         entry: './src/index.mjs',
         plugins: [
             {
@@ -34,7 +39,8 @@ async function main() {
     console.log('build finished');
 }
 main().then(() => {
-    if (global.gc) {
-        global.gc();
+    const g: any = globalThis as any;
+    if (g.gc) {
+        g.gc();
     }
 })
