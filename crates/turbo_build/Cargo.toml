@@ -12,6 +12,9 @@ turbo-tasks-fs = { workspace = true }
 turbo-tasks-backend= { workspace = true }
 anyhow = { workspace = true}
 tokio = { workspace = true}
+petgraph ={ workspace = true}
+rustc-hash = { workspace = true }
+serde = { workspace = true , features = ["derive"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = [
