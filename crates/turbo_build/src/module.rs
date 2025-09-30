@@ -1,9 +1,9 @@
 use std::io::Read;
 
 use turbo_tasks::{ResolvedVc, TaskInput, Vc};
-use turbo_tasks_fs::rope::Rope;
+use turbo_tasks_fs::{rope::Rope, FileSystemPath};
 use anyhow::{Context, Result};
-use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, reference::{ModuleReference, ModuleReferences}, source::Source};
+use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, reference::{EsmAssetReference, ModuleReference, ModuleReferences}, source::Source};
 
 #[turbo_tasks::value_trait]
 pub trait Module: Asset {
@@ -27,6 +27,10 @@ impl EcmascriptModuleAsset {
         EcmascriptModuleAsset {
             source
         }.cell()
+    }
+    #[turbo_tasks::function]
+    pub fn origin_path(&self) -> Vc<FileSystemPath> {
+        self.source.ident().path()
     }
 }
 
@@ -70,6 +74,7 @@ impl EcmascriptModuleAsset {
         let module_content_options = self.module_content_options();
         EcmascriptModuleContent::new(module_content_options)
     }
+    
 }
 
 
@@ -81,9 +86,20 @@ pub async fn analyze_ecmascript_module(
     let file_content = source.content().await?.content.await?;
     let file = file_content.as_content().expect("failed to read content");
     let content = file.content().to_str()?;
-    dbg!(content);
+    let requests: Vec<&str> = content.split("\n").collect();
     
-    let references: Vec<ResolvedVc<Box<dyn ModuleReference>>> = vec![];
+    
+    let mut references: Vec<ResolvedVc<Box<dyn ModuleReference>>> = vec![];
+    for request in requests {
+        if request.trim().is_empty() {
+            continue;
+        }
+        let origin_path = module.origin_path();
+
+        let reference: Vc<Box<dyn ModuleReference>> =Vc::upcast(EsmAssetReference::new(origin_path,request.to_string()));
+        
+        references.push(reference.to_resolved().await?);
+    }
     Ok(AnalyzeEcmascriptModuleResult {
         references
     }.cell())

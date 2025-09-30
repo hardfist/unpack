@@ -1,6 +1,8 @@
+use turbo_rcstr::RcStr;
 use turbo_tasks::{FxIndexSet, ReadRef, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc};
+use turbo_tasks_fs::FileSystemPath;
 
-use crate::{chunk::chunk_reference::{ChunkableModuleReference, ChunkingType}, module::{Module, Modules}, module_graph::ExportUsage};
+use crate::{chunk::chunk_reference::{ChunkableModuleReference, ChunkingType}, file_source::FileSource, module::{EcmascriptModuleAsset, Module, Modules}, module_graph::ExportUsage};
 use anyhow::Result;
 
 #[turbo_tasks::value_trait]
@@ -56,4 +58,42 @@ pub async fn primary_chunkable_referenced_modules(
         Ok(None)
     }).try_flat_join().await?;
     Ok(Vc::cell(modules))
+}
+
+
+#[turbo_tasks::value(shared)]
+#[derive(Hash, Debug)]
+pub struct EsmAssetReference {
+    pub origin: ResolvedVc<FileSystemPath>,
+    pub request: String,
+}
+impl ValueToString for EsmAssetReference {
+    fn to_string(self:turbo_tasks::Vc<Self>) -> Vc<RcStr>where Self:Sized {
+        todo!()
+    }
+}
+#[turbo_tasks::value_impl]
+impl EsmAssetReference {
+    #[turbo_tasks::function]
+    pub fn new(origin: ResolvedVc<FileSystemPath>, request:String)->Vc<Self> {
+        Self {
+            origin,
+            request
+        }.cell()
+    }
+}
+
+#[turbo_tasks::value_impl]
+impl ModuleReference for EsmAssetReference {
+    #[turbo_tasks::function]
+    async fn resolve_reference(&self) -> Result<Vc<ModuleResolveResult>>{
+        let request = self.request.clone();
+        let origin = self.origin;
+        let full_path = origin.await?.join(&request)?;
+        let source = Vc::upcast( FileSource::new(full_path));
+        let module = ResolvedVc::upcast(EcmascriptModuleAsset::new(source).to_resolved().await?);
+        Ok(ModuleResolveResult {
+            modules: vec![module]
+        }.cell())
+    }
 }

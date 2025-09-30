@@ -4623,6 +4623,7 @@ dependencies = [
  "rustc-hash 2.1.1",
  "serde",
  "tokio",
+ "turbo-rcstr",
  "turbo-tasks",
  "turbo-tasks-backend",
  "turbo-tasks-fs",
