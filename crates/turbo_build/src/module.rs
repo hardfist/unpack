@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use turbo_tasks::{ResolvedVc, TaskInput, Vc};
+use turbo_tasks::{vdbg, ResolvedVc, TaskInput, Vc};
 use turbo_tasks_fs::{rope::Rope, FileSystemPath};
 use anyhow::{Context, Result};
 use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, reference::{EsmAssetReference, ModuleReference, ModuleReferences}, source::Source};
@@ -84,6 +84,7 @@ pub async fn analyze_ecmascript_module(
 ) -> Result<Vc<AnalyzeEcmascriptModuleResult>>{
     let source = module.await?.source;
     let file_content = source.content().await?.content.await?;
+    
     let file = file_content.as_content().expect("failed to read content");
     let content = file.content().to_str()?;
     let requests: Vec<&str> = content.split("\n").collect();

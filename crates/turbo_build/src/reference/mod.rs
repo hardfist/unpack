@@ -89,8 +89,7 @@ impl ModuleReference for EsmAssetReference {
     async fn resolve_reference(&self) -> Result<Vc<ModuleResolveResult>>{
         let request = self.request.clone();
         let origin = self.origin;
-        let full_path = origin.await?.join(&request)?;
-        vdbg!(&full_path);
+        let full_path = origin.await?.parent().join(&request)?;
         let source = Vc::upcast( FileSource::new(full_path));
         let module = ResolvedVc::upcast(EcmascriptModuleAsset::new(source).to_resolved().await?);
         Ok(ModuleResolveResult {
