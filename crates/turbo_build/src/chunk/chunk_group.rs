@@ -7,3 +7,11 @@ pub enum ChunkGroupEntry {
     Entry(Vec<ResolvedVc<Box<dyn Module>>>),
     Async(ResolvedVc<Box<dyn Module>>),
 }
+impl ChunkGroupEntry {
+    pub fn entries(&self) -> Vec<ResolvedVc<Box<dyn Module>>> {
+        match self {
+            ChunkGroupEntry::Entry(modules) => modules.clone(),
+            ChunkGroupEntry::Async(module) => vec![module.clone()],
+        }
+    }
+}

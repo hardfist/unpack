@@ -153,3 +153,6 @@ impl EcmascriptModuleAnalyzable for EcmascriptModuleAsset {
     }
     
 }
+
+#[turbo_tasks::value(transparent)]
+pub struct Modules(Vec<ResolvedVc<Box<dyn Module>>>);

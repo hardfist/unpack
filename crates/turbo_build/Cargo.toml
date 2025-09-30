@@ -12,7 +12,7 @@ turbo-tasks-fs = { workspace = true }
 turbo-tasks-backend= { workspace = true }
 anyhow = { workspace = true}
 tokio = { workspace = true}
-petgraph ={ workspace = true}
+petgraph ={ workspace = true, features = ["serde-1"] }
 rustc-hash = { workspace = true }
 serde = { workspace = true , features = ["derive"] }
 
