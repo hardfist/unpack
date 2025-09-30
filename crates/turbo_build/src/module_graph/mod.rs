@@ -1,10 +1,15 @@
 pub mod trace_di_graph;
-use crate::{chunk::chunk_group::ChunkGroupEntry, module::Module, module_graph::trace_di_graph::TracedDiGraph, reference::{primary_chunkable_referenced_modules, ModuleReference}};
+use crate::{
+    chunk::chunk_group::ChunkGroupEntry,
+    module::Module,
+    module_graph::trace_di_graph::TracedDiGraph,
+    reference::{ModuleReference, primary_chunkable_referenced_modules},
+};
 use anyhow::Result;
 use petgraph::{adj::NodeIndex, graph::DiGraph};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
-use turbo_tasks::{trace::TraceRawVcs, NonLocalValue, ResolvedVc, Vc};
+use turbo_tasks::{NonLocalValue, ResolvedVc, Vc, trace::TraceRawVcs};
 
 #[turbo_tasks::value(shared)]
 pub struct ModuleGraph {
@@ -24,13 +29,12 @@ impl ModuleGraph {
     }
 }
 
-
 #[turbo_tasks::value(cell = "new", eq = "manual", into = "new")]
 #[derive(Debug, Clone)]
 pub struct SingleModuleGraph {
     modules: FxHashMap<ResolvedVc<Box<dyn Module>>, NodeIndex>,
     entries: GraphEntriesT,
-    graph: TracedDiGraph<SingleModuleGraphNode, RefData>
+    graph: TracedDiGraph<SingleModuleGraphNode, RefData>,
 }
 pub type GraphEntriesT = Vec<ChunkGroupEntry>;
 
@@ -64,7 +68,6 @@ pub enum SingleModuleGraphBuilderNode {
 }
 impl SingleModuleGraph {
     async fn new_inner(entries: &GraphEntriesT) -> Result<Vc<Self>> {
- 
         let mut graph: DiGraph<SingleModuleGraphNode, RefData> = DiGraph::new();
         let mut edges: Vec<_> = entries
             .iter()
@@ -76,8 +79,7 @@ impl SingleModuleGraph {
             })
             .collect();
         let mut visited_nodes: FxHashSet<SingleModuleGraphBuilderNode> = FxHashSet::default();
-        while let Some(edge) = edges.first() {
-            
+        while let Some(edge) = edges.pop() {
             if visited_nodes.contains(&edge.to) {
                 continue;
             }
@@ -87,20 +89,18 @@ impl SingleModuleGraph {
                     let module_graph_node = SingleModuleGraphNode::Module(module_graph_module_node);
                     graph.add_node(module_graph_node);
                     visited_nodes.insert(edge.to.clone());
-                    for reference in module.references().await? {
-                        let resolved_module = primary_chunkable_referenced_modules(*module);
-                        for (_,_, referenced_modules) in
-                            &*resolved_module.await?
-                        {
-                            for referenced_module in &*referenced_modules {
-                                let referenced_node =
-                                    SingleModuleGraphBuilderNode::Module { module: *referenced_module };
-                                if !visited_nodes.contains(&referenced_node) {
-                                    edges.push(SingleModuleGraphBuilderEdge { to: referenced_node });
-                                }
+                    let resolved_module = primary_chunkable_referenced_modules(*module);
+                    for (_, _, referenced_modules) in &*resolved_module.await? {
+                        for referenced_module in &*referenced_modules {
+                            let referenced_node = SingleModuleGraphBuilderNode::Module {
+                                module: *referenced_module,
+                            };
+                            if !visited_nodes.contains(&referenced_node) {
+                                edges.push(SingleModuleGraphBuilderEdge {
+                                    to: referenced_node,
+                                });
                             }
                         }
-                     
                     }
                 }
             };
@@ -109,7 +109,7 @@ impl SingleModuleGraph {
         let single_module_graph = SingleModuleGraph {
             modules: FxHashMap::default(),
             entries: entries.clone(),
-            graph: TracedDiGraph::new(graph)
+            graph: TracedDiGraph::new(graph),
         };
 
         Ok(single_module_graph.cell())

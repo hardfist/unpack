@@ -1,5 +1,5 @@
 
-use std::env::current_dir;
+use std::{env::current_dir, path::{Path, PathBuf}};
 use turbo_build::{asset::Asset, chunk::chunk_group::ChunkGroupEntry, file_source::FileSource, module::{EcmascriptModuleAsset, Module}, module_graph::ModuleGraph};
 use anyhow::Ok;
 use turbo_tasks_fs::{DiskFileSystem, FileSystem};
@@ -25,7 +25,8 @@ pub async fn main_inner() -> anyhow::Result<()> {
     ));
 
     let task = tt.spawn_root_task(|| async {
-        let root = current_dir().unwrap().join("./fixtures").canonicalize().unwrap().to_str().unwrap().to_string();
+
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("./fixtures").canonicalize().unwrap().to_str().unwrap().to_string();
         let fs = DiskFileSystem::new("disk_fs".into(), root.into());
         let entry_path = fs.root().await?.join("input")?;
         let entry_module: Vc<FileSource> = FileSource::new(entry_path.clone());
