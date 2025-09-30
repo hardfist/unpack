@@ -3,7 +3,7 @@ use std::{env::current_dir, path::{Path, PathBuf}};
 use turbo_build::{asset::Asset, chunk::chunk_group::ChunkGroupEntry, file_source::FileSource, module::{EcmascriptModuleAsset, Module}, module_graph::ModuleGraph};
 use anyhow::Ok;
 use turbo_tasks_fs::{DiskFileSystem, FileSystem};
-use turbo_tasks::{ResolvedVc, TurboTasks, Vc};
+use turbo_tasks::{vdbg, ResolvedVc, TurboTasks, Vc};
 use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
 
 #[turbo_tasks::function]
@@ -13,6 +13,7 @@ async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
    let module = ResolvedVc::upcast::<Box<dyn Module>>(module);
    let graph_entries = Vc::cell(vec![ChunkGroupEntry::Entry(vec![module])]);
    let module_graph = ModuleGraph::from_entries(graph_entries).await?;
+   vdbg!(module_graph);
    Ok(Vc::cell(()))
 }
 pub async fn main_inner() -> anyhow::Result<()> {

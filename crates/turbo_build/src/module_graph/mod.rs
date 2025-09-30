@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use turbo_tasks::{NonLocalValue, ResolvedVc, Vc, trace::TraceRawVcs};
 
 #[turbo_tasks::value(shared)]
+#[derive(Debug)]
 pub struct ModuleGraph {
     pub graphs: Vec<ResolvedVc<SingleModuleGraph>>,
 }

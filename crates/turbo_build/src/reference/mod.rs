@@ -1,9 +1,9 @@
 use turbo_rcstr::RcStr;
-use turbo_tasks::{FxIndexSet, ReadRef, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc};
+use turbo_tasks::{value_impl, vdbg, FxIndexSet, ReadRef, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 
-use crate::{chunk::chunk_reference::{ChunkableModuleReference, ChunkingType}, file_source::FileSource, module::{EcmascriptModuleAsset, Module, Modules}, module_graph::ExportUsage};
-use anyhow::Result;
+use crate::{chunk::chunk_reference::{ChunkableModuleReference, ChunkingType, ChunkingTypeOption}, file_source::FileSource, module::{EcmascriptModuleAsset, Module, Modules}, module_graph::ExportUsage};
+use anyhow::{Result,Ok};
 
 #[turbo_tasks::value_trait]
 pub trait ModuleReference: ValueToString {
@@ -90,10 +90,19 @@ impl ModuleReference for EsmAssetReference {
         let request = self.request.clone();
         let origin = self.origin;
         let full_path = origin.await?.join(&request)?;
+        vdbg!(&full_path);
         let source = Vc::upcast( FileSource::new(full_path));
         let module = ResolvedVc::upcast(EcmascriptModuleAsset::new(source).to_resolved().await?);
         Ok(ModuleResolveResult {
             modules: vec![module]
         }.cell())
+    }
+}
+#[value_impl]
+impl ChunkableModuleReference for EsmAssetReference {
+    #[turbo_tasks::function]
+    fn chunking_type(self:turbo_tasks::Vc<Self>) -> Result<Vc<ChunkingTypeOption>> {
+        let chunk_type: Vc<ChunkingTypeOption> = Vc::cell(Some(ChunkingType::Parallel));
+        Ok(chunk_type)
     }
 }
