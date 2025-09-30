@@ -6,3 +6,4 @@ pub mod module;
 pub mod reference;
 pub mod ident;
 pub mod source;
+pub mod chunk;

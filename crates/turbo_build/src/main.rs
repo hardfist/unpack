@@ -1,21 +1,15 @@
 
 use std::env::current_dir;
-use turbo_build::{asset::Asset, file_source::FileSource, module::EcmascriptModule};
-use turbo_tasks::vdbg;
-use anyhow::{Result,Ok};
+use turbo_build::{asset::Asset, file_source::FileSource, module::EcmascriptModuleAsset};
+use anyhow::Ok;
 use turbo_tasks_fs::{DiskFileSystem, FileSystem};
 use turbo_tasks::{ResolvedVc, TurboTasks, Vc};
 use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
 
 #[turbo_tasks::function]
-async fn parse(source_file: ResolvedVc<FileSource>) -> Result<Vc<EcmascriptModule>> {
-    let module = EcmascriptModule::new(*ResolvedVc::upcast(source_file));
-    Ok(module)
-}
-#[turbo_tasks::function]
 async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
    let entry = entry.to_resolved().await?;
-   let result = parse(*entry).await?;
+   let module = EcmascriptModuleAsset::new(*ResolvedVc::upcast(entry)).to_resolved().await?;
    Ok(Vc::cell(()))
 }
 pub async fn main_inner() -> anyhow::Result<()> {

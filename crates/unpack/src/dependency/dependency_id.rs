@@ -1,4 +1,3 @@
-use std::sync::atomic::AtomicU32;
 
 use crate::{module::ModuleGraph, scheduler::COMPILER_CONTEXT};
 

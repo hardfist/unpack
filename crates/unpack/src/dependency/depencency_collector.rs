@@ -2,7 +2,6 @@ use swc_core::ecma::{
     ast::{CallExpr, Callee, Decl, Expr, Ident, ImportDecl},
     visit::{swc_ecma_ast, Visit, VisitWith},
 };
-use tracing_subscriber::field::delimited::Delimited;
 
 use super::{
     BoxDependency, BoxDependencyTemplate, ConstDependency, EsmExportSpecifierDependency,

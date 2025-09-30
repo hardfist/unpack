@@ -1,57 +1,57 @@
 use std::io::Read;
 
-use turbo_tasks::{value_impl, ResolvedVc, TaskInput, Vc};
+use turbo_tasks::{ResolvedVc, TaskInput, Vc};
 use turbo_tasks_fs::rope::Rope;
 use anyhow::{Context, Result};
-use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, reference::{self, ModuleReference, ModuleReferences}, source::Source};
+use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, reference::{ModuleReference, ModuleReferences}, source::Source};
 
 #[turbo_tasks::value_trait]
 pub trait Module: Asset {
     #[turbo_tasks::function]
     fn ident(&self) -> Vc<AssetIdent>;
     #[turbo_tasks::function]
-    fn references(self: Vc<Self>) -> Vc<ModuleReferences>;
+    fn references(self: Vc<Self>) -> Result<Vc<ModuleReferences>>;
 }
 
 #[turbo_tasks::value]
 #[derive(Clone, Debug)]
-pub struct EcmascriptModule {
+pub struct EcmascriptModuleAsset {
     pub source: ResolvedVc<Box<dyn Source>>,
 }
 
 
 #[turbo_tasks::value_impl]
-impl EcmascriptModule {
+impl EcmascriptModuleAsset {
     #[turbo_tasks::function]
-    pub fn new(source: ResolvedVc<Box<dyn Source>>) -> Vc<EcmascriptModule> {
-        EcmascriptModule {
+    pub fn new(source: ResolvedVc<Box<dyn Source>>) -> Vc<EcmascriptModuleAsset> {
+        EcmascriptModuleAsset {
             source
         }.cell()
     }
 }
-impl Module for EcmascriptModule {
-    fn ident(self:turbo_tasks::Vc<Self>) -> Vc<AssetIdent>where Self:Sized {
+
+#[turbo_tasks::value_impl]
+impl Module for EcmascriptModuleAsset {
+    #[turbo_tasks::function]
+    fn ident(self:turbo_tasks::Vc<Self>) -> Vc<AssetIdent> {
         todo!()
     }
-
-    fn references(self:turbo_tasks::Vc<Self>) -> Vc<ModuleReferences>where Self:Sized {
-        todo!()
+    #[turbo_tasks::function]
+    fn references(self:Vc<Self>) -> Result<Vc<ModuleReferences>>{
+        Ok(self.analyze().references())
     }
 }
 #[turbo_tasks::value_impl]
-impl Asset for EcmascriptModule {
+impl Asset for EcmascriptModuleAsset {
     #[turbo_tasks::function]
     fn content(&self) -> Vc<AssetContent>{
         self.source.content()
     }
 }
 #[turbo_tasks::value_impl]
-impl EcmascriptModule {
-    #[turbo_tasks::function]
-    async fn references(self: ResolvedVc<Self>) -> Result<Vc<ModuleReferences>> {
-        let analyze_result = analyze_ecmascript_module(*self).await?;
-        Ok(Vc::cell(analyze_result.references.clone()))
-    }   
+impl EcmascriptModuleAsset {
+ 
+    // build_module
     #[turbo_tasks::function]
     async fn module_content_options(self: ResolvedVc<Self>)-> Result<Vc<EcmascriptModuleOptions>>{
        
@@ -62,8 +62,9 @@ impl EcmascriptModule {
         )
     }
 }
-impl EcmascriptModule {
-    fn module_content(
+impl EcmascriptModuleAsset {
+    // codegen
+    pub fn module_content(
         self: Vc<Self>,
     ) -> Vc<EcmascriptModuleContent> {
         let module_content_options = self.module_content_options();
@@ -71,9 +72,10 @@ impl EcmascriptModule {
     }
 }
 
+
 #[turbo_tasks::function]
 pub async fn analyze_ecmascript_module(
-    module: ResolvedVc<EcmascriptModule>
+    module: ResolvedVc<EcmascriptModuleAsset>
 ) -> Result<Vc<AnalyzeEcmascriptModuleResult>>{
     let source = module.await?.source;
     let file_content = source.content().await?.content.await?;
@@ -92,8 +94,12 @@ pub async fn analyze_ecmascript_module(
 pub struct AnalyzeEcmascriptModuleResult {
     pub references: Vec<ResolvedVc<Box<dyn ModuleReference>>>
 }
+#[turbo_tasks::value_impl]
 impl AnalyzeEcmascriptModuleResult {
-
+    #[turbo_tasks::function]
+    pub async fn references(&self) -> Result<Vc<ModuleReferences>> {
+        Ok(Vc::cell(self.references.iter().copied().collect()))
+    }
 }
 
 #[turbo_tasks::value(shared)]
@@ -117,5 +123,33 @@ pub struct EcmascriptModuleOptions{
     references: ResolvedVc<ModuleReferences>
 }
 
+///  --------------------- Analyzable --------------------
+#[turbo_tasks::value_trait]
+pub trait EcmascriptModuleAnalyzable: Module + Asset {
+    // analyze references
+    #[turbo_tasks::function]
+    fn analyze(self: Vc<Self>) -> Vc<AnalyzeEcmascriptModuleResult>;
+    // build_module
+    #[turbo_tasks::function]
+    async fn module_content_options(self: ResolvedVc<Self>) -> Result<Vc<EcmascriptModuleOptions>>;
+}
 
-
+#[turbo_tasks::value_impl]
+impl EcmascriptModuleAnalyzable for EcmascriptModuleAsset {
+    // analyze references
+    #[turbo_tasks::function]
+    fn analyze(self: Vc<Self>) -> Vc<AnalyzeEcmascriptModuleResult>{
+        analyze_ecmascript_module(self)
+    }
+     // build_module
+    #[turbo_tasks::function]
+    async fn module_content_options(self: ResolvedVc<Self>)-> Result<Vc<EcmascriptModuleOptions>>{
+       
+        Ok(
+            EcmascriptModuleOptions {
+               references: self.references().to_resolved().await?
+            }.cell()
+        )
+    }
+    
+}

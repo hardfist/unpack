@@ -1,6 +1,5 @@
 mod options;
 use std::mem;
-use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 
 use crate::compilation::ChunkAssetState;

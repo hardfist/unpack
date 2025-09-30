@@ -20,7 +20,7 @@ impl JsCompilation {
     }
 }
 impl ObjectFinalize for JsCompilation {
-    fn finalize(self, mut env: napi::Env) -> napi::Result<()> {
+    fn finalize(self, env: napi::Env) -> napi::Result<()> {
         println!("JsCompilation:{} finalize", self.id);
 
         Ok(())

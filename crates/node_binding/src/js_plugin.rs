@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use napi::bindgen_prelude::External;
 use napi::tokio::sync::mpsc::unbounded_channel;
 use napi::{
     bindgen_prelude::{Buffer, Promise},

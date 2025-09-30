@@ -1,13 +1,10 @@
 pub mod collector;
-use anyhow::Result;
 use miette::LabeledSpan;
-use std::path::PathBuf;
 use std::sync::Arc;
-use swc_core::atoms::Atom;
 use swc_core::common::{FileName, SourceMap, Spanned};
 use swc_core::ecma::ast::Program;
 use swc_core::ecma::parser::{EsSyntax, Parser, StringInput, Syntax};
-use swc_core::ecma::visit::{Visit, VisitWith};
+use swc_core::ecma::visit::VisitWith;
 
 use crate::db::Db;
 use crate::db::ast::collector::DependencyCollector;

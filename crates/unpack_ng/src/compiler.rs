@@ -1,9 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::Context;
-use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
-use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
-use crossbeam_channel::{unbounded, Sender};
+use crossbeam_channel::unbounded;
 use salsa::{tracked, Setter};
 use crate::db::ast::parse;
 use crate::db::file::FileSource;

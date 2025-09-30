@@ -6,7 +6,7 @@ use miette::LabeledSpan;
 use swc_core::common::{FileName, SourceMap, Spanned};
 use swc_core::ecma::ast::Program;
 use swc_core::ecma::parser::{EsSyntax, Parser, StringInput, Syntax};
-use swc_core::ecma::visit::{Visit, VisitWith};
+use swc_core::ecma::visit::VisitWith;
 
 use super::ParseResult;
 
