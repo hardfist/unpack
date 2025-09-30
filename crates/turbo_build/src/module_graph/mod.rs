@@ -76,7 +76,7 @@ impl SingleModuleGraph {
             })
             .collect();
         let mut visited_nodes: FxHashSet<SingleModuleGraphBuilderNode> = FxHashSet::default();
-        while let Some(edge) = edges.iter().next() {
+        while let Some(edge) = edges.first() {
             
             if visited_nodes.contains(&edge.to) {
                 continue;

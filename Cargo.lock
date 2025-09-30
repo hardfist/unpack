@@ -833,6 +833,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
+name = "fixedbitset"
+version = "0.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
+
+[[package]]
 name = "flate2"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1666,7 +1672,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.53.2",
 ]
 
 [[package]]
@@ -2145,8 +2151,21 @@ version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4c5cc86750666a3ed20bdaf5ca2a0344f9c67674cae0515bec2da16fbaa47db"
 dependencies = [
- "fixedbitset",
+ "fixedbitset 0.4.2",
  "indexmap 2.9.0",
+]
+
+[[package]]
+name = "petgraph"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54acf3a685220b533e437e264e4d932cfbdc4cc7ec0cd232ed73c08d03b8a7ca"
+dependencies = [
+ "fixedbitset 0.5.7",
+ "hashbrown 0.15.4",
+ "indexmap 2.9.0",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]
@@ -3787,7 +3806,7 @@ dependencies = [
  "dashmap 5.5.3",
  "indexmap 2.9.0",
  "once_cell",
- "petgraph",
+ "petgraph 0.6.5",
  "rustc-hash 1.1.0",
  "serde_json",
  "swc_atoms",
@@ -3946,7 +3965,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f5910e7aeb1e0125ad27be9346cc266d1c75b68b6dc57ca37921136f4758416"
 dependencies = [
  "indexmap 2.9.0",
- "petgraph",
+ "petgraph 0.6.5",
  "rustc-hash 1.1.0",
  "swc_common",
 ]
@@ -4600,6 +4619,9 @@ name = "turbo_build"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "petgraph 0.8.2",
+ "rustc-hash 2.1.1",
+ "serde",
  "tokio",
  "turbo-tasks",
  "turbo-tasks-backend",
@@ -4950,7 +4972,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

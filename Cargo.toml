@@ -44,6 +44,8 @@ salsa = { git = "https://github.com/salsa-rs/salsa.git", rev = "3713cd7eb30821c0
     "accumulator"
 ] }
 salsa-macros = { git = "https://github.com/salsa-rs/salsa.git", rev = "3713cd7eb30821c0c086591832dd6f59f2af7fe7"}
+petgraph= { version = "0.8.2"}
+rustc_hash = { version = "2.1.1"}
 
 [profile.release]
 codegen-units = 1
