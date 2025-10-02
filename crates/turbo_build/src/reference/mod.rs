@@ -104,4 +104,5 @@ impl ChunkableModuleReference for EsmAssetReference {
         let chunk_type: Vc<ChunkingTypeOption> = Vc::cell(Some(ChunkingType::Parallel));
         Ok(chunk_type)
     }
+
 }

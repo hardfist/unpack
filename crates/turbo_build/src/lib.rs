@@ -8,3 +8,4 @@ pub mod ident;
 pub mod source;
 pub mod chunk;
 pub mod module_graph;
+pub mod output;

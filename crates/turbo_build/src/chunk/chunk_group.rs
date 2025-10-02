@@ -15,3 +15,9 @@ impl ChunkGroupEntry {
         }
     }
 }
+
+#[derive(Debug, Clone,TaskInput,TraceRawVcs,Hash,PartialEq,Eq,serde::Serialize,serde::Deserialize,NonLocalValue)]
+pub enum ChunkGroup {
+    Entry(Vec<ResolvedVc<Box<dyn Module>>>),
+    Async(ResolvedVc<Box<dyn Module>>),
+}

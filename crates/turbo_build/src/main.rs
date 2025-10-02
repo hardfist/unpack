@@ -1,6 +1,6 @@
 
 use std::{env::current_dir, path::{Path, PathBuf}};
-use turbo_build::{asset::Asset, chunk::chunk_group::ChunkGroupEntry, file_source::FileSource, module::{EcmascriptModuleAsset, Module}, module_graph::ModuleGraph};
+use turbo_build::{asset::Asset, chunk::{ browser_context::BrowserChunkingContext, chunk_context::ChunkingContextExt as _, chunk_group::{ChunkGroup, ChunkGroupEntry}}, file_source::FileSource, ident::AssetIdent, module::{EcmascriptModuleAsset, Module}, module_graph::ModuleGraph, source::Source};
 use anyhow::Ok;
 use turbo_tasks_fs::{DiskFileSystem, FileSystem};
 use turbo_tasks::{vdbg, ResolvedVc, TurboTasks, Vc};
@@ -12,8 +12,12 @@ async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
    let module = EcmascriptModuleAsset::new(*ResolvedVc::upcast(entry)).to_resolved().await?;
    let module = ResolvedVc::upcast::<Box<dyn Module>>(module);
    let graph_entries = Vc::cell(vec![ChunkGroupEntry::Entry(vec![module])]);
-   let module_graph = ModuleGraph::from_entries(graph_entries).await?;
-   vdbg!(module_graph);
+   let module_graph = ModuleGraph::from_entries(graph_entries);
+   let browser_context = BrowserChunkingContext::builder().name("main".into()).build();
+   let ident = entry.ident();
+   let chunk_group = ChunkGroup::Entry(vec![module]);
+   let result = browser_context.evaluated_chunk_group_assets(
+    ident, chunk_group, module_graph);
    Ok(Vc::cell(()))
 }
 pub async fn main_inner() -> anyhow::Result<()> {
