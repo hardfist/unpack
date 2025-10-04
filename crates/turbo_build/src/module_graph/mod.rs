@@ -134,6 +134,16 @@ impl SingleModuleGraph {
     }
 }
 
+impl SingleModuleGraph {
+    pub fn graph(&self) -> &TracedDiGraph<SingleModuleGraphNode, RefData> {
+        &self.graph
+    }
+
+    pub fn entries(&self) -> &GraphEntriesT {
+        &self.entries
+    }
+}
+
 #[turbo_tasks::value]
 #[derive(Debug, Clone, Default, Hash)]
 pub enum ExportUsage {
