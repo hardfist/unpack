@@ -4632,22 +4632,6 @@ version = "0.0.1"
 source = "git+https://github.com/hardfist/next.js?branch=canary#323eebcee7f15d4c880654ed9cd3b46c49e80dc7"
 
 [[package]]
-name = "turbo_build"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "petgraph 0.8.2",
- "roaring",
- "rustc-hash 2.1.1",
- "serde",
- "tokio",
- "turbo-rcstr",
- "turbo-tasks",
- "turbo-tasks-backend",
- "turbo-tasks-fs",
-]
-
-[[package]]
 name = "twox-hash"
 version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4747,20 +4731,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "unpack_ng"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "crossbeam-channel",
- "dashmap 6.1.0",
- "miette",
- "notify-debouncer-mini",
- "rspack_resolver",
- "salsa",
- "swc_core",
-]
-
-[[package]]
 name = "unpack_node_binding"
 version = "0.0.0"
 dependencies = [
@@ -4774,10 +4744,33 @@ dependencies = [
 ]
 
 [[package]]
-name = "unpack_tasks"
+name = "unpack_salsa"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "crossbeam-channel",
+ "dashmap 6.1.0",
+ "miette",
+ "notify-debouncer-mini",
+ "rspack_resolver",
+ "salsa",
+ "swc_core",
+]
+
+[[package]]
+name = "unpack_turbo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "petgraph 0.8.2",
+ "roaring",
+ "rustc-hash 2.1.1",
+ "serde",
  "tokio",
+ "turbo-rcstr",
+ "turbo-tasks",
+ "turbo-tasks-backend",
+ "turbo-tasks-fs",
 ]
 
 [[package]]
