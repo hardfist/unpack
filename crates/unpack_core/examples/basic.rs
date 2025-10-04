@@ -1,6 +1,6 @@
 use rspack_resolver::ResolveOptions;
 use std::{path::PathBuf, sync::Arc};
-use unpack::{
+use unpack_core::{
     compiler::{Compiler, CompilerOptions, EntryItem},
     tracing::init_tracing,
 };

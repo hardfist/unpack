@@ -4701,7 +4701,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a1a07cc7db3810833284e8d372ccdc6da29741639ecc70c9ec107df0fa6154c"
 
 [[package]]
-name = "unpack"
+name = "unpack_core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -4740,7 +4740,7 @@ dependencies = [
  "napi-build",
  "napi-derive",
  "pollster",
- "unpack",
+ "unpack_core",
 ]
 
 [[package]]

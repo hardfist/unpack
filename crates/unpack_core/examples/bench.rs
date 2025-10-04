@@ -11,7 +11,7 @@ use tracing::level_filters::LevelFilter;
 use tracing_chrome::ChromeLayerBuilder;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
-use unpack::compiler::{Compiler, CompilerOptions, EntryItem};
+use unpack_core::compiler::{Compiler, CompilerOptions, EntryItem};
 fn main() {
     let _guard = match std::env::var("UNPACK_PROFILE") {
         Ok(filter) => {
