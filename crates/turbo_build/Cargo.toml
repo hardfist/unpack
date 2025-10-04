@@ -16,7 +16,7 @@ tokio = { workspace = true}
 petgraph ={ workspace = true, features = ["serde-1"] }
 rustc-hash = { workspace = true }
 serde = { workspace = true , features = ["derive"] }
-
+roaring = { workspace = true, features = ["serde"] }
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = [
   'cfg(rust_analyzer)'
