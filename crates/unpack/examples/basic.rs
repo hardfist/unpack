@@ -10,11 +10,10 @@ async fn main() {
     let guard = init_tracing();
 
     fn create_compiler(dist: String) -> Compiler {
-        let current_file = file!();
-        let context = PathBuf::from(current_file)
-            .join("../fixtures")
-            .canonicalize()
-            .unwrap();
+        let root =  env!("CARGO_MANIFEST_DIR");
+        let context = PathBuf::from(root)
+            .join("./examples/fixtures");
+        let context = context.canonicalize().expect("expect canonicalize success");
         let compiler_options: CompilerOptions = CompilerOptions {
             output_dir: context.join(dist).try_into().expect("expect utf8 path"),
             context: context.try_into().expect("expect utf8 path"),
