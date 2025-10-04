@@ -1,7 +1,7 @@
 use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, Upcast, Vc};
 use anyhow::Result;
-use crate::{chunk::chunk_group::ChunkGroup, ident::AssetIdent, module_graph::ModuleGraph, output::{OutputAssets, OutputAssetsWithReferenced}};
+use crate::{chunk::{availability_info::AvailabilityInfo, chunk_group::ChunkGroup}, ident::AssetIdent, module_graph::ModuleGraph, output::{OutputAssets, OutputAssetsWithReferenced}};
 
 
 
@@ -16,6 +16,14 @@ pub trait ChunkingContext {
         chunk_group: ChunkGroup,
         module_graph: Vc<ModuleGraph>,
     ) -> Vc<ChunkGroupResult>;
+    //  #[turbo_tasks::function]
+    // fn chunk_group(
+    //     self: Vc<Self>,
+    //     ident: Vc<AssetIdent>,
+    //     chunk_group: ChunkGroup,
+    //     module_graph: Vc<ModuleGraph>,
+    //     availability_info: AvailabilityInfo,
+    // ) -> Vc<ChunkGroupResult>;
 }
 pub trait ChunkingContextExt {
     fn evaluated_chunk_group_assets(

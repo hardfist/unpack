@@ -1,21 +1,33 @@
 pub mod trace_di_graph;
 use crate::{
-    chunk::chunk_group::ChunkGroupEntry,
+    chunk::{availability_info::{ModuleBatch, RoaringBitmapWrapper}, chunk_group::ChunkGroupEntry, chunk_group_info::{compute_chunk_group_info, ChunkGroupInfo}},
     module::Module,
     module_graph::trace_di_graph::TracedDiGraph,
-    reference::{ModuleReference, primary_chunkable_referenced_modules},
+    reference::{primary_chunkable_referenced_modules, ModuleReference},
 };
 use anyhow::Result;
 use petgraph::{adj::NodeIndex, graph::DiGraph};
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
-use turbo_tasks::{NonLocalValue, ResolvedVc, Vc, trace::TraceRawVcs};
+use turbo_tasks::{trace::TraceRawVcs, NonLocalValue, ReadRef, ResolvedVc, TaskInput, TryJoinIterExt as _, Vc};
 
 #[turbo_tasks::value(shared)]
 #[derive(Debug)]
 pub struct ModuleGraph {
     pub graphs: Vec<ResolvedVc<SingleModuleGraph>>,
 }
+impl ModuleGraph {
+     pub async fn read_graphs(self: Vc<ModuleGraph>) -> Result<ModuleGraphRef> {
+        Ok(ModuleGraphRef {
+            graphs: self.await?.graphs.iter().try_join().await?,
+        })
+    }
+}
+
+pub struct ModuleGraphRef {
+    pub graphs: Vec<ReadRef<SingleModuleGraph>>,
+}
+
 #[turbo_tasks::value_impl]
 impl ModuleGraph {
     #[turbo_tasks::function]
@@ -28,7 +40,12 @@ impl ModuleGraph {
         };
         Ok(module_graph.cell())
     }
+    #[turbo_tasks::function]
+    pub async fn chunk_group_info(self: Vc<Self>) -> Result<Vc<ChunkGroupInfo>> {
+        compute_chunk_group_info(&self.read_graphs().await?).await
+    }
 }
+
 
 #[turbo_tasks::value(cell = "new", eq = "manual", into = "new")]
 #[derive(Debug, Clone)]
@@ -126,4 +143,30 @@ pub enum ExportUsage {
     All,
     /// Only side effects are used.
     Evaluation,
+}
+
+
+#[turbo_tasks::value]
+pub struct ModuleBatchGroup {
+    pub items: Vec<ModuleOrBatch>,
+    pub chunk_groups: RoaringBitmapWrapper,
+}
+
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    Hash,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    TraceRawVcs,
+    NonLocalValue,
+    TaskInput,
+)]
+pub enum ModuleOrBatch {
+    Module(ResolvedVc<Box<dyn Module>>),
+    Batch(ResolvedVc<ModuleBatch>),
+    None(usize),
 }
