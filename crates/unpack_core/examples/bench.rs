@@ -11,7 +11,7 @@ use tracing::level_filters::LevelFilter;
 use tracing_chrome::ChromeLayerBuilder;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
-use unpack_core::compiler::{Compiler, CompilerOptions, EntryItem};
+use unpack_core::{compiler::{Compiler, CompilerOptions, EntryItem}, memory_manager::{self, MemoryManager}};
 fn main() {
     let _guard = match std::env::var("UNPACK_PROFILE") {
         Ok(filter) => {
@@ -40,19 +40,18 @@ fn main() {
         .build()
         .unwrap();
     rt.block_on(async {
-        let current_file = file!();
-        dbg!(current_file);
-        let context = PathBuf::from(current_file)
+        let root =  env!("CARGO_MANIFEST_DIR");
+        let context = PathBuf::from(root)
             .parent()
             .unwrap()
-            .join("../../../benchmark/build-tools-performance")
+            .join("./fixtures/react-10k")
             .canonicalize()
             .unwrap();
         let compiler_options: CompilerOptions = CompilerOptions {
             context: context.try_into().expect("expect utf8 path"),
             entry: vec![EntryItem {
                 name: "main".to_string(),
-                import: "./src/medium/index.jsx".to_string(),
+                import: "./src/index.jsx".to_string(),
             }],
             resolve: ResolveOptions {
                 extensions: vec![".js", ".ts", ".mjs", ".jsx"]
@@ -63,7 +62,8 @@ fn main() {
             },
             output_dir: context.join(dist).try_into().expect("expect utf8 path"),
         };
+        let  memory_manager = MemoryManager::default();
         let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
-        compiler.build().await;
+        compiler.build(&mut memory_manager).await;
     });
 }
