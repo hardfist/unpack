@@ -4,7 +4,6 @@ use crate::dependency::{
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
 use crate::plugin::LoadArgs;
-use crate::scheduler::COMPILER_CONTEXT;
 use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};

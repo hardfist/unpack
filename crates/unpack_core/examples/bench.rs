@@ -41,7 +41,6 @@ fn main() {
         .unwrap();
     rt.block_on(async {
         let root =  env!("CARGO_MANIFEST_DIR");
-        dbg!(root);
         let context = PathBuf::from(root)
             .parent()
             .unwrap()

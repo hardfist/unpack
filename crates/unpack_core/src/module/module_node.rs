@@ -1,14 +1,12 @@
 use super::CodeGenerationContext;
-use super::NormalModule;
 use crate::compiler::CompilerOptions;
 use crate::memory_manager::arena::Idx;
 use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
 use camino::Utf8Path;
-use index_vec::define_index_type;
-use index_vec::IndexVec;
+
 use rspack_sources::BoxSource;
-use swc_core::ecma::utils::Type::Bool;
+
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;

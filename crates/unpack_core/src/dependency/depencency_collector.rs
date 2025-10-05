@@ -51,8 +51,8 @@ impl DependencyCollector {
         F: FnOnce(&mut Self, &Ident) + Copy,
     {
         match decl {
-            Decl::Class(c) => {}
-            Decl::Fn(f) => {}
+            Decl::Class(_c) => {}
+            Decl::Fn(_f) => {}
             Decl::Var(var) => {
                 for decl in &var.decls {
                     self.enter_pattern(&decl.name, on_ident);

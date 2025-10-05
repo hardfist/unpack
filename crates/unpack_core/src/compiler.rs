@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
-use crate::memory_manager;
 use crate::memory_manager::MemoryManager;
 use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
@@ -55,7 +54,6 @@ impl Compiler {
                     "Compiler build started with ID: {}",
                     self.compiler_context.get_compiler_id()
                 );
-                let module_manager = MemoryManager::new();
                 let compilation = Arc::new(CompilationCell::new(Compilation::new(
                     self.options.clone(),
                     self.plugin_driver.clone()

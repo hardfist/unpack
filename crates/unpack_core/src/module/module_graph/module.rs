@@ -1,4 +1,4 @@
-use crate::module::{BoxModule, ModuleId};
+use crate::module::ModuleId;
 
 use super::ModuleGraph;
 impl ModuleGraph {

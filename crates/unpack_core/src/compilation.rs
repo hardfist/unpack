@@ -5,7 +5,7 @@ use rustc_hash::FxHashMap;
 
 use crate::{
     chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
-        self, CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
+        CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
     }, plugin::PluginDriver
 };
 use std::{
