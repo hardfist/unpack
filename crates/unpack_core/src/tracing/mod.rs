@@ -4,7 +4,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing_subscriber::{EnvFilter, Layer};
 pub fn init_tracing() -> Option<FlushGuard> {
     let env = std::env::var("UNPACK_LOG").unwrap_or("".to_string());
-    if env == "" {
+    if env.is_empty() {
         return None;
     }
     let (chrome_layer, guard) = ChromeLayerBuilder::new()

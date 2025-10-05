@@ -9,7 +9,7 @@ use super::{
 };
 
 // Analyze the AST for all import dependencies
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct DependencyCollector {
     pub module_dependencies: Vec<BoxDependency>,
     pub presentational_dependencies: Vec<BoxDependencyTemplate>,
@@ -26,19 +26,14 @@ impl DependencyCollector {
                 on_ident(self, ident);
             }
             swc_ecma_ast::Pat::Array(array) => {
-                for elem in &array.elems {
-                    if let Some(elem) = elem {
-                        self.enter_pattern(&elem, on_ident);
-                    }
+                for elem in array.elems.iter().flatten() {
+                    self.enter_pattern(elem, on_ident);
                 }
             }
             swc_ecma_ast::Pat::Object(obj) => {
                 for prop in &obj.props {
-                    match prop {
-                        swc_ecma_ast::ObjectPatProp::KeyValue(key_value) => {
-                            self.enter_pattern(&key_value.value, on_ident);
-                        }
-                        _ => {}
+                    if let swc_ecma_ast::ObjectPatProp::KeyValue(key_value) = prop {
+                        self.enter_pattern(&key_value.value, on_ident);
                     }
                 }
             }
@@ -65,10 +60,7 @@ impl DependencyCollector {
 
 impl DependencyCollector {
     pub fn new() -> Self {
-        Self {
-            module_dependencies: vec![],
-            presentational_dependencies: vec![],
-        }
+        Self::default()
     }
 }
 impl Visit for DependencyCollector {

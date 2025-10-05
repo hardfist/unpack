@@ -71,7 +71,7 @@ impl ChunkLinker {
         while !linker_result.queue.is_empty() {
             self.process_queue(&mut linker_result);
         }
-        return linker_result;
+        linker_result
     }
     fn process_queue(&self, state: &mut LinkerResult) {
         while let Some(action) = state.queue.pop_front() {

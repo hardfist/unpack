@@ -65,7 +65,8 @@ impl Compiler {
                 let compilation = unsafe { &mut *compilation.get() };
                 let scanner_result = compilation.scan(memory_manager).await;
                 let linker_result = compilation.link(scanner_result);
-                let mut code_generation_state = compilation.code_generation(linker_result,memory_manager);
+                let mut code_generation_state =
+                    compilation.code_generation(linker_result, memory_manager);
 
                 compilation
                     .diagnostics
@@ -77,7 +78,7 @@ impl Compiler {
                     unsafe { &*self.last_compilation.as_ref().unwrap().get() };
                 if !compilation.diagnostics.is_empty() {
                     for diag in &compilation.diagnostics {
-                        println!("{:?}", diag);
+                        println!("{diag:?}");
                     }
                 }
                 println!("Compilation finished");

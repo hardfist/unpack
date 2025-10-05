@@ -25,6 +25,12 @@ impl CompilerContext {
     }
 }
 
+impl Default for CompilerContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 task_local! {
     pub static COMPILER_CONTEXT: Arc<CompilerContext>;
 }

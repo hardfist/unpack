@@ -66,3 +66,4 @@ strip    = false
 [workspace.lints]
 
 [workspace.lints.clippy]
+new_without_default = "allow"

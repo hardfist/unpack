@@ -88,8 +88,9 @@ impl ModuleScanner {
             })
             .collect::<Vec<_>>();
 
-        self.build_loop(&mut scanner_result, entry_ids,memory_manager).await;
-        return scanner_result;
+        self.build_loop(&mut scanner_result, entry_ids, memory_manager)
+            .await;
+        scanner_result
     }
     pub fn handle_module_creation(
         &self,
@@ -127,6 +128,12 @@ impl ScannerResult {
 }
 impl ScannerResult {
     pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl Default for ScannerResult {
+    fn default() -> Self {
         Self {
             _modules: Default::default(),
             module_graph: Default::default(),
@@ -138,7 +145,12 @@ impl ScannerResult {
 }
 /// main loop task
 impl ModuleScanner {
-    pub async fn build_loop(&mut self, state: &mut ScannerResult, dependencies: Vec<BoxDependency>,memory_manager: &mut MemoryManager) {
+    pub async fn build_loop(
+        &mut self,
+        state: &mut ScannerResult,
+        dependencies: Vec<BoxDependency>,
+        memory_manager: &mut MemoryManager,
+    ) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(
             dependencies,
@@ -163,11 +175,11 @@ impl ModuleScanner {
                 }
                 task = self.working_tasks.join_next() => {
                     if let Some(handle) = task {
-                        if let Err(_) = handle {
+                        if handle.is_err() {
                             panic!("unexpected spawn error");
                         }
 
-                    }else if self.todo_rx.is_empty(){
+                    } else if self.todo_rx.is_empty() {
                         // if todo_task and working_task both empty which mean we can safely exit
 
                         break;

@@ -8,7 +8,7 @@ pub struct DependencyId(u32);
 
 impl DependencyId {
     pub fn get_dependency<'a>(&self, mg: &'a ModuleGraph) -> &'a BoxDependency {
-        &mg.dependencies.get(self).expect("get dependency failed")
+        mg.dependencies.get(self).expect("get dependency failed")
     }
 }
 

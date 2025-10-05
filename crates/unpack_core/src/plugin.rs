@@ -30,10 +30,16 @@ impl CompilationCell {
     }
 
     // Safe methods to access the compilation
+    /// # Safety
+    /// The caller must ensure no aliases exist that could be mutated
+    /// concurrently while the returned pointer is in use.
     pub unsafe fn get(&self) -> *mut Compilation {
         self.0.get()
     }
 
+    /// # Safety
+    /// The caller must guarantee exclusive access to the underlying
+    /// `Compilation` for the duration of the mutable borrow.
     pub unsafe fn get_mut(&mut self) -> &mut Compilation {
         self.0.get_mut()
     }

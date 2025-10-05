@@ -40,6 +40,12 @@ impl CompilationId {
     }
 }
 
+impl Default for CompilationId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug)]
 pub struct Compilation {
     pub id: CompilationId,
@@ -68,16 +74,15 @@ impl Compilation {
         }
     }
     /// similar with webpack's make phase, which will make module graph
-    pub async fn scan<'a>(&self,memory_manager: &'a mut MemoryManager) -> ScannerResult {
+    pub async fn scan(&self, memory_manager: &mut MemoryManager) -> ScannerResult {
         let start = Instant::now();
         let mut module_scanner = ModuleScanner::new(
             self.options.clone(),
             self.options.context.clone(),
             self.plugin_driver.clone(),
         );
-        
         let scanner_result = module_scanner.from_entries(memory_manager).await;
-        
+
         let elapsed = start.elapsed();
         println!(
             "scan finished with {} modules in {:?}",
@@ -93,7 +98,11 @@ impl Compilation {
         linker.build_chunk_graph(scanner_result.module_graph)
     }
     /// code generation
-    pub fn code_generation(&self, linker_state: LinkerResult,memory_manager: &mut MemoryManager) -> CodeGenerationState {
+    pub fn code_generation(
+        &self,
+        linker_state: LinkerResult,
+        memory_manager: &mut MemoryManager,
+    ) -> CodeGenerationState {
         let mut code_generation_results = CodeGenerationResults::default();
         let results = linker_state
             .module_graph
