@@ -61,3 +61,8 @@ strip     = false
 debug    = true
 inherits = "release"
 strip    = false
+
+
+[workspace.lints]
+
+[workspace.lints.clippy]

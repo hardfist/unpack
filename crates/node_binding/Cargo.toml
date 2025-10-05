@@ -20,3 +20,6 @@ napi-build = "2.1.4"
 [features]
 
 used_linker = []
+
+[lints]
+workspace = true
