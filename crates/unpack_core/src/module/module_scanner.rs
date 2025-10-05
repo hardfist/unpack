@@ -64,7 +64,7 @@ impl ModuleScanner {
         }
     }
     // add entries
-    pub async fn add_entries(&mut self, state: &mut ScannerState) {
+    pub async fn add_entries(&mut self, state: &mut ScannerResult) {
         let entry_ids = self
             .options
             .entry
@@ -108,7 +108,7 @@ impl ModuleScanner {
 }
 
 #[derive(Debug)]
-pub struct ScannerState {
+pub struct ScannerResult {
     pub _modules: FxHashMap<String, ModuleId>,
     pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
@@ -116,12 +116,12 @@ pub struct ScannerState {
     // means job which doesn't have result yet
     pub remaining: AtomicU32,
 }
-impl ScannerState {
+impl ScannerResult {
     fn add_diagnostic(&mut self, diag: Report) {
         self.diagnostics.push(diag);
     }
 }
-impl ScannerState {
+impl ScannerResult {
     pub fn new() -> Self {
         Self {
             _modules: Default::default(),
@@ -134,7 +134,7 @@ impl ScannerState {
 }
 /// main loop task
 impl ModuleScanner {
-    pub async fn build_loop(&mut self, state: &mut ScannerState, dependencies: Vec<BoxDependency>) {
+    pub async fn build_loop(&mut self, state: &mut ScannerResult, dependencies: Vec<BoxDependency>) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(
             dependencies,
@@ -174,7 +174,7 @@ impl ModuleScanner {
         }
     }
 
-    fn handle_task(&mut self, task: Task, state: &mut ScannerState) {
+    fn handle_task(&mut self, task: Task, state: &mut ScannerResult) {
         match task {
             Task::Factorize(factorize_task) => {
                 let original_module = factorize_task
@@ -267,7 +267,7 @@ impl ModuleScanner {
         }
     }
     #[instrument("handle_process_deps", skip_all)]
-    fn handle_process_deps(&self, state: &mut ScannerState, task: ProcessDepsTask) {
+    fn handle_process_deps(&self, state: &mut ScannerResult, task: ProcessDepsTask) {
         let module = task.module;
         let original_module_context = module.get_context().map(|x| x.to_owned());
         let identifier = module.identifier().to_string();

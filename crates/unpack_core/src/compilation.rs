@@ -9,7 +9,7 @@ use crate::{
     errors::Diagnostics,
     module::{
         CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
-        ScannerState,
+        ScannerResult,
     },
     plugin::PluginDriver,
 };
@@ -73,14 +73,14 @@ impl Compilation {
         }
     }
     /// similar with webpack's make phase, which will make module graph
-    pub async fn scan(&mut self) -> ScannerState {
+    pub async fn scan(&mut self) -> ScannerResult {
         let start = Instant::now();
         let mut module_scanner = ModuleScanner::new(
             self.options.clone(),
             self.options.context.clone(),
             self.plugin_driver.clone(),
         );
-        let mut scanner_state = ScannerState::new();
+        let mut scanner_state = ScannerResult::new();
         module_scanner.add_entries(&mut scanner_state).await;
         let elapsed = start.elapsed();
         println!(
@@ -93,7 +93,7 @@ impl Compilation {
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&mut self, scanner_state: ScannerState) -> LinkerState {
+    pub fn link(&mut self, scanner_state: ScannerResult) -> LinkerState {
         let mut linker_state =
             LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
