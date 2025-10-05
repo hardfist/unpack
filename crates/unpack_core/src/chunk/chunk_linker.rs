@@ -51,7 +51,7 @@ impl ChunkLinker {
             entries,
         }
     }
-    pub fn build_chunk_graph(&self, state: &mut LinkerState) {
+    pub fn build_chunk_graph(&self, state: &mut LinkerResult) {
         let entrypoints_and_modules = self.prepare_input_entrypoints_and_modules(state);
         for (chunk_group_id, module_ids) in entrypoints_and_modules {
             let chunk_group = state.chunk_graph.chunk_group_by_id(chunk_group_id);
@@ -71,12 +71,12 @@ impl ChunkLinker {
             self.process_queue(state);
         }
     }
-    fn process_queue(&self, state: &mut LinkerState) {
+    fn process_queue(&self, state: &mut LinkerResult) {
         while let Some(action) = state.queue.pop_front() {
             self.handle_queue_action(state, action);
         }
     }
-    fn handle_queue_action(&self, state: &mut LinkerState, action: QueueAction) {
+    fn handle_queue_action(&self, state: &mut LinkerResult, action: QueueAction) {
         match action {
             QueueAction::AddAndEnterEntryModule(action) => {
                 self.add_and_enter_entry_module(state, action);
@@ -90,15 +90,15 @@ impl ChunkLinker {
             }
         }
     }
-    fn leave_module(&self, _state: &mut LinkerState, _action: LeaveModule) {}
+    fn leave_module(&self, _state: &mut LinkerResult, _action: LeaveModule) {}
     fn add_and_enter_entry_module(
         &self,
-        _state: &mut LinkerState,
+        _state: &mut LinkerResult,
         _action: AddAndEnterEntryModule,
     ) {
         todo!("add entry module");
     }
-    fn add_and_enter_module(&self, state: &mut LinkerState, action: AddAndEnterModule) {
+    fn add_and_enter_module(&self, state: &mut LinkerResult, action: AddAndEnterModule) {
         let AddAndEnterModule {
             chunk_id,
             module_id,
@@ -117,7 +117,7 @@ impl ChunkLinker {
             },
         );
     }
-    fn enter_module(&self, state: &mut LinkerState, action: EnterModule) {
+    fn enter_module(&self, state: &mut LinkerResult, action: EnterModule) {
         state.queue.push_back(QueueAction::LeaveModule(LeaveModule {
             module_id: action.module_id,
         }));
@@ -133,7 +133,7 @@ impl ChunkLinker {
     /**
      * FIXME: add asyncDependenciesBlock handle in the future
      */
-    fn process_block(&self, state: &mut LinkerState, action: ProcessBlock) {
+    fn process_block(&self, state: &mut LinkerResult, action: ProcessBlock) {
         let module_id = action.module_id;
         let connection_ids = state.module_graph.get_outgoing_connections(module_id);
         for connection_id in connection_ids {
@@ -149,7 +149,7 @@ impl ChunkLinker {
     }
     pub fn prepare_input_entrypoints_and_modules(
         &self,
-        state: &mut LinkerState,
+        state: &mut LinkerResult,
     ) -> IndexMap<ChunkGroupId, Vec<ModuleId>> {
         let mut entrypoint_module_map = IndexMap::default();
         for (name, entry_data) in &self.entries {
@@ -172,7 +172,7 @@ impl ChunkLinker {
 }
 
 #[derive(Debug)]
-pub struct LinkerState {
+pub struct LinkerResult {
     pub chunk_graph: ChunkGraph,
     pub module_graph: ModuleGraph,
     pub entry_points: IndexMap<String, ChunkGroupId>,
@@ -180,7 +180,7 @@ pub struct LinkerState {
     queue: VecDeque<QueueAction>,
 }
 
-impl LinkerState {
+impl LinkerResult {
     pub fn new(module_graph: ModuleGraph, diagnostics: Diagnostics) -> Self {
         Self {
             chunk_graph: ChunkGraph::default(),

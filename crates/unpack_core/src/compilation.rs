@@ -4,7 +4,7 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
         self, CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
     }, plugin::PluginDriver
 };
@@ -75,28 +75,28 @@ impl Compilation {
             self.options.context.clone(),
             self.plugin_driver.clone(),
         );
-        let mut scanner_state = ScannerResult::new(memory_manager);
-        module_scanner.add_entries(&mut scanner_state,memory_manager).await;
+        
+        let scanner_result = module_scanner.from_entries(memory_manager).await;
         
         let elapsed = start.elapsed();
         println!(
             "scan finished with {} modules in {:?}",
-            scanner_state._modules.len(),
+            scanner_result._modules.len(),
             elapsed
         );
-        scanner_state
+        scanner_result
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&self, scanner_state: ScannerResult) -> LinkerState {
+    pub fn link(&self, scanner_state: ScannerResult) -> LinkerResult {
         let mut linker_state =
-            LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
+            LinkerResult::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
         linker.build_chunk_graph(&mut linker_state);
         linker_state
     }
     /// code generation
-    pub fn code_generation(&self, linker_state: LinkerState,memory_manager: &mut MemoryManager) -> CodeGenerationState {
+    pub fn code_generation(&self, linker_state: LinkerResult,memory_manager: &mut MemoryManager) -> CodeGenerationState {
         let mut code_generation_results = CodeGenerationResults::default();
         let results = linker_state
             .module_graph

@@ -12,6 +12,7 @@ use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
+use std::iter::Scan;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 use tokio::task::JoinSet;
@@ -66,7 +67,8 @@ impl ModuleScanner {
         }
     }
     // add entries
-    pub async fn add_entries(&mut self, state: & mut ScannerResult, memory_manager: &mut MemoryManager) {
+    pub async fn from_entries(&mut self, memory_manager: &mut MemoryManager) -> ScannerResult {
+        let mut scanner_result = ScannerResult::new();
         let entry_ids = self
             .options
             .entry
@@ -76,7 +78,7 @@ impl ModuleScanner {
                     entry.import.clone(),
                     self.options.context.clone(),
                 ));
-                state.entries.insert(
+                scanner_result.entries.insert(
                     entry.name.clone(),
                     EntryData {
                         name: Some(entry.name.clone()),
@@ -87,7 +89,8 @@ impl ModuleScanner {
             })
             .collect::<Vec<_>>();
 
-        self.build_loop(state, entry_ids,memory_manager).await;
+        self.build_loop(&mut scanner_result, entry_ids,memory_manager).await;
+        return scanner_result;
     }
     pub fn handle_module_creation(
         &self,
@@ -124,7 +127,7 @@ impl ScannerResult {
     }
 }
 impl ScannerResult {
-    pub fn new(memory_manager: &mut MemoryManager) -> Self {
+    pub fn new() -> Self {
         Self {
             _modules: Default::default(),
             module_graph: Default::default(),
