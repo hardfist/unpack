@@ -51,15 +51,16 @@ impl ChunkLinker {
             entries,
         }
     }
-    pub fn build_chunk_graph(&self, state: &mut LinkerResult) {
-        let entrypoints_and_modules = self.prepare_input_entrypoints_and_modules(state);
+    pub fn build_chunk_graph(&self,module_graph: ModuleGraph) -> LinkerResult {
+        let mut linker_result = LinkerResult::new(module_graph, vec![]);
+        let entrypoints_and_modules = self.prepare_input_entrypoints_and_modules(&mut linker_result);
         for (chunk_group_id, module_ids) in entrypoints_and_modules {
-            let chunk_group = state.chunk_graph.chunk_group_by_id(chunk_group_id);
+            let chunk_group = linker_result.chunk_graph.chunk_group_by_id(chunk_group_id);
             let entry_point_chunk_id = chunk_group
                 .get_entry_point_chunk()
                 .expect("should get entry_chunk");
             for module_id in module_ids {
-                state
+                linker_result
                     .queue
                     .push_back(QueueAction::AddAndEnterModule(AddAndEnterModule {
                         module_id,
@@ -67,9 +68,10 @@ impl ChunkLinker {
                     }))
             }
         }
-        while !state.queue.is_empty() {
-            self.process_queue(state);
+        while !linker_result.queue.is_empty() {
+            self.process_queue(&mut linker_result);
         }
+        return linker_result;
     }
     fn process_queue(&self, state: &mut LinkerResult) {
         while let Some(action) = state.queue.pop_front() {

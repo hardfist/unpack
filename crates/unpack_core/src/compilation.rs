@@ -88,12 +88,9 @@ impl Compilation {
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&self, scanner_state: ScannerResult) -> LinkerResult {
-        let mut linker_state =
-            LinkerResult::new(scanner_state.module_graph, scanner_state.diagnostics);
-        let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
-        linker.build_chunk_graph(&mut linker_state);
-        linker_state
+    pub fn link(&self, scanner_result: ScannerResult) -> LinkerResult {
+        let linker = ChunkLinker::new(self.options.clone(), scanner_result.entries);
+        linker.build_chunk_graph(scanner_result.module_graph)
     }
     /// code generation
     pub fn code_generation(&self, linker_state: LinkerResult,memory_manager: &mut MemoryManager) -> CodeGenerationState {
