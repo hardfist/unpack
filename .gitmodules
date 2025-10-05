@@ -1,3 +1,6 @@
 [submodule "benchmark/performance-compare-ng"]
 	path = benchmark/performance-compare-ng
 	url = https://github.com/hardfist/performance-compare-ng
+[submodule "build-tools-performance"]
+	path = build-tools-performance
+	url = https://github.com/rspack-contrib/build-tools-performance

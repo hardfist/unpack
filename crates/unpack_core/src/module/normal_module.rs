@@ -78,8 +78,6 @@ impl Module for NormalModule {
                 .await
                 .into_diagnostic()?,
         };
-        let compiler_id = COMPILER_CONTEXT.get().get_compiler_id();
-        println!("parse {} with compiler_id: {}", resource_path, compiler_id);
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;
 

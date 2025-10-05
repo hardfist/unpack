@@ -41,14 +41,15 @@ fn main() {
         .unwrap();
     rt.block_on(async {
         let root =  env!("CARGO_MANIFEST_DIR");
+        dbg!(root);
         let context = PathBuf::from(root)
             .parent()
             .unwrap()
-            .join("./fixtures/react-10k")
+            .join("../../build-tools-performance/cases/react-10k")
             .canonicalize()
             .unwrap();
         let compiler_options: CompilerOptions = CompilerOptions {
-            context: context.try_into().expect("expect utf8 path"),
+            context: context.clone().try_into().expect("expect utf8 path"),
             entry: vec![EntryItem {
                 name: "main".to_string(),
                 import: "./src/index.jsx".to_string(),
@@ -60,9 +61,9 @@ fn main() {
                     .collect::<Vec<_>>(),
                 ..Default::default()
             },
-            output_dir: context.join(dist).try_into().expect("expect utf8 path"),
+            output_dir: context.join("dist").try_into().expect("expect utf8 path"),
         };
-        let  memory_manager = MemoryManager::default();
+        let mut memory_manager = MemoryManager::default();
         let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler.build(&mut memory_manager).await;
     });
