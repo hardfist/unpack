@@ -12,7 +12,7 @@ async fn main() {
     fn create_compiler(dist: String) -> Compiler {
         let root =  env!("CARGO_MANIFEST_DIR");
         let context = PathBuf::from(root)
-            .join("./examples/fixtures");
+            .join("./examples/fixtures/basic");
         let context = context.canonicalize().expect("expect canonicalize success");
         let compiler_options: CompilerOptions = CompilerOptions {
             output_dir: context.join(dist).try_into().expect("expect utf8 path"),
@@ -39,10 +39,7 @@ async fn main() {
         let compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler
     }
-    let mut compiler_1 = create_compiler("dist1".to_string());
-    let mut compiler_2 = create_compiler("dist2".to_string());
-    let p1 = compiler_1.build();
-    let p2 = compiler_2.build();
-    let _ = tokio::join!(p1, p2);
+    create_compiler("dist".to_string()).build().await;
+   
     drop(guard);
 }

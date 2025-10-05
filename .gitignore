@@ -25,3 +25,7 @@ profile.json
 profile.json.gz
 
 trace-*.json
+
+# dist
+
+dist/

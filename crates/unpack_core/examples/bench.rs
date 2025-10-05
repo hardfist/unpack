@@ -61,6 +61,7 @@ fn main() {
                     .collect::<Vec<_>>(),
                 ..Default::default()
             },
+            output_dir: context.join(dist).try_into().expect("expect utf8 path"),
         };
         let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler.build().await;
