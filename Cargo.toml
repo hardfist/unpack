@@ -28,6 +28,7 @@ rayon = { version = "1.10.0"}
 mimalloc = { version = "0.1.43"}
 crossbeam-channel = { version = "*"}
 async-std = { version = "1.13.0"}
+slotmap = { version = "1.0.6"}
 serde = { version = "1.0.219"}
 serde_json = { version = "1.0.140"}
 tokio = { version = "*", features = ["full"] }

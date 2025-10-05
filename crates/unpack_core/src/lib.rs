@@ -16,3 +16,4 @@ pub mod task;
 pub mod tracing;
 pub mod utils;
 pub mod vc;
+pub mod memory_manager;
