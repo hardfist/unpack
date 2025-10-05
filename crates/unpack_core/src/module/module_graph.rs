@@ -3,18 +3,16 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
 mod connection;
-mod dependency;
 mod module;
 mod module_graph_module;
 use crate::{
-    dependency::{BoxDependency, DependencyId}, memory_manager::arena::Idx, module::{BoxModule, ModuleId}
+    dependency::DependencyId, memory_manager::arena::Idx, module::{BoxModule, ModuleId}
 };
 
 use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
 
 #[derive(Debug, Default)]
 pub struct ModuleGraph {
-    pub dependencies: IndexMap<DependencyId, BoxDependency>,
     pub modules: Vec<ModuleId>,
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
     pub connections: IndexVec<ConnectionId, Connection>,

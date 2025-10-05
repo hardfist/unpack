@@ -113,7 +113,7 @@ impl Compilation {
                 let module = memory_manager.module_by_id(module_id);
                 let codegen_result = module.code_generation(CodeGenerationContext {
                     module_graph: &linker_state.module_graph,
-                });
+                }, memory_manager);
                 (module_id, codegen_result)
             })
             .collect::<Vec<_>>();

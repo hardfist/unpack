@@ -289,7 +289,7 @@ impl ModuleScanner {
         let identifier = module.identifier().to_string();
         let module_id = memory_manager.alloc_module(module);
         state.module_graph.add_module(module_id);
-        let dependency_id = state.module_graph.add_dependency(task.module_dependency);
+        let dependency_id = memory_manager.alloc_dependency(task.module_dependency);
         state._modules.insert(identifier.to_string(), module_id);
         // update origin -> self
         state

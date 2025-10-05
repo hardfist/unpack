@@ -1,6 +1,7 @@
 use super::CodeGenerationContext;
 use crate::compiler::CompilerOptions;
 use crate::memory_manager::arena::Idx;
+use crate::memory_manager::MemoryManager;
 use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
 use camino::Utf8Path;
@@ -51,6 +52,7 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync {
     fn code_generation(
         &self,
         code_generation_context: CodeGenerationContext,
+        memory_manager: &MemoryManager
     ) -> Result<CodeGenerationResult>;
     fn source_types(&self) -> &[SourceType];
 }

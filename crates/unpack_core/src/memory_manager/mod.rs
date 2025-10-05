@@ -1,16 +1,20 @@
-use crate::{memory_manager::arena::{Arena, Idx}, module::BoxModule};
+use indexmap::IndexMap;
+
+use crate::{dependency::{ BoxDependency, DependencyId}, memory_manager::arena::{Arena, Idx}, module::BoxModule};
 
 pub mod arena;
 
 #[derive(Default,Debug)]
 pub struct MemoryManager {
-    pub modules: Arena<BoxModule>
+    modules: Arena<BoxModule>,
+    pub dependencies: IndexMap<DependencyId,BoxDependency>
 }
 
 impl MemoryManager {
     pub fn new() -> Self {
         Self {
             modules: Default::default(),
+            dependencies: Default::default()
         }
     }
     pub fn alloc_module(&mut self, module: BoxModule) -> Idx<BoxModule> {
@@ -18,5 +22,19 @@ impl MemoryManager {
     }
     pub fn module_by_id(&self, id: Idx<BoxModule>) -> &BoxModule {
         &self.modules[id]
+    }
+    pub fn alloc_dependency(&mut self, dep: BoxDependency) -> DependencyId {
+        let dep_id = dep.id();
+        self.dependencies.insert(dep_id, dep);
+        dep_id
+    }
+    // get dependency by id
+    pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
+        self.dependencies.get(&id).expect("get dependency failed")
+    }
+    pub fn dependency_by_id_mut(&mut self, id: DependencyId) -> &mut BoxDependency {
+        self.dependencies
+            .get_mut(&id)
+            .expect("get depependency failed")
     }
 }
