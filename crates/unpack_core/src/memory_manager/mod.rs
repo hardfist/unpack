@@ -16,4 +16,7 @@ impl MemoryManager {
     pub fn alloc_module(&mut self, module: BoxModule) -> Idx<BoxModule> {
         self.modules.insert(module)
     }
+    pub fn module_by_id(&self, id: Idx<BoxModule>) -> &BoxModule {
+        &self.modules[id]
+    }
 }

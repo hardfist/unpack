@@ -1,8 +1,7 @@
 use rspack_resolver::ResolveOptions;
-use std::{path::PathBuf, sync::Arc};
+use std::{mem, path::PathBuf, sync::Arc};
 use unpack_core::{
-    compiler::{Compiler, CompilerOptions, EntryItem},
-    tracing::init_tracing,
+    compiler::{Compiler, CompilerOptions, EntryItem}, memory_manager::{self, MemoryManager}, tracing::init_tracing
 };
 
 #[tokio::main]
@@ -39,7 +38,8 @@ async fn main() {
         let compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler
     }
-    create_compiler("dist".to_string()).build().await;
+    let mut memory_manager = MemoryManager::new();
+    create_compiler("dist".to_string()).build(&mut memory_manager).await;
    
     drop(guard);
 }

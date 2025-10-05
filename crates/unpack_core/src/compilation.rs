@@ -4,14 +4,9 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState},
-    compiler::CompilerOptions,
-    errors::Diagnostics,
-    module::{
-        CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
-        ScannerResult,
-    },
-    plugin::PluginDriver,
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerState}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
+        self, CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
+    }, plugin::PluginDriver
 };
 use std::{
     sync::{
@@ -73,27 +68,27 @@ impl Compilation {
         }
     }
     /// similar with webpack's make phase, which will make module graph
-    pub async fn scan(&mut self) -> ScannerResult {
+    pub async fn scan<'a>(&self,memory_manager: &'a mut MemoryManager) -> ScannerResult {
         let start = Instant::now();
         let mut module_scanner = ModuleScanner::new(
             self.options.clone(),
             self.options.context.clone(),
             self.plugin_driver.clone(),
         );
-        let mut scanner_state = ScannerResult::new();
-        module_scanner.add_entries(&mut scanner_state).await;
+        let mut scanner_state = ScannerResult::new(memory_manager);
+        module_scanner.add_entries(&mut scanner_state,memory_manager).await;
+        
         let elapsed = start.elapsed();
         println!(
             "scan finished with {} modules in {:?}",
             scanner_state._modules.len(),
             elapsed
         );
-
         scanner_state
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&mut self, scanner_state: ScannerResult) -> LinkerState {
+    pub fn link(&self, scanner_state: ScannerResult) -> LinkerState {
         let mut linker_state =
             LinkerState::new(scanner_state.module_graph, scanner_state.diagnostics);
         let linker = ChunkLinker::new(self.options.clone(), scanner_state.entries);
@@ -101,16 +96,15 @@ impl Compilation {
         linker_state
     }
     /// code generation
-    pub fn code_generation(&self, linker_state: LinkerState) -> CodeGenerationState {
+    pub fn code_generation(&self, linker_state: LinkerState,memory_manager: &mut MemoryManager) -> CodeGenerationState {
         let mut code_generation_results = CodeGenerationResults::default();
         let results = linker_state
             .module_graph
             .modules
-            .indices()
-            .collect::<Vec<_>>()
+            .clone()
             .into_par_iter()
             .map(|module_id| {
-                let module = linker_state.module_graph.module_by_id(module_id);
+                let module = memory_manager.module_by_id(module_id);
                 let codegen_result = module.code_generation(CodeGenerationContext {
                     module_graph: &linker_state.module_graph,
                 });

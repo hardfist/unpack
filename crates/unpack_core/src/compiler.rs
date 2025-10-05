@@ -4,6 +4,8 @@ use std::sync::Arc;
 
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
+use crate::memory_manager;
+use crate::memory_manager::MemoryManager;
 use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
 use crate::plugin::PluginContext;
@@ -46,25 +48,26 @@ impl Compiler {
             compiler_context: Arc::new(CompilerContext::new()),
         }
     }
-    pub async fn build(&mut self) {
+    pub async fn build(&mut self, memory_manager: &mut MemoryManager) {
         COMPILER_CONTEXT
             .scope(self.compiler_context.clone(), async {
                 println!(
                     "Compiler build started with ID: {}",
                     self.compiler_context.get_compiler_id()
                 );
+                let module_manager = MemoryManager::new();
                 let compilation = Arc::new(CompilationCell::new(Compilation::new(
                     self.options.clone(),
-                    self.plugin_driver.clone(),
+                    self.plugin_driver.clone()
                 )));
                 self.last_compilation = Some(compilation.clone());
                 self.plugin_driver
                     .run_compilation_hook(compilation.clone())
                     .await;
                 let compilation = unsafe { &mut *compilation.get() };
-                let scanner_state = compilation.scan().await;
+                let scanner_state = compilation.scan(memory_manager).await;
                 let linker_state = compilation.link(scanner_state);
-                let mut code_generation_state = compilation.code_generation(linker_state);
+                let mut code_generation_state = compilation.code_generation(linker_state,memory_manager);
 
                 compilation
                     .diagnostics

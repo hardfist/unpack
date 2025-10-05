@@ -1,7 +1,9 @@
 use crate::dependency::{BoxDependency, DependencyId};
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
-use crate::module::{BuildContext, ModuleId};
+use crate::memory_manager::arena::Idx;
+use crate::memory_manager::{self, MemoryManager};
+use crate::module::{BoxModule, BuildContext, ModuleId};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::plugin::PluginDriver;
 use crate::scheduler::COMPILER_CONTEXT;
@@ -64,7 +66,7 @@ impl ModuleScanner {
         }
     }
     // add entries
-    pub async fn add_entries(&mut self, state: &mut ScannerResult) {
+    pub async fn add_entries(&mut self, state: & mut ScannerResult, memory_manager: &mut MemoryManager) {
         let entry_ids = self
             .options
             .entry
@@ -85,7 +87,7 @@ impl ModuleScanner {
             })
             .collect::<Vec<_>>();
 
-        self.build_loop(state, entry_ids).await
+        self.build_loop(state, entry_ids,memory_manager).await;
     }
     pub fn handle_module_creation(
         &self,
@@ -109,7 +111,7 @@ impl ModuleScanner {
 
 #[derive(Debug)]
 pub struct ScannerResult {
-    pub _modules: FxHashMap<String, ModuleId>,
+    pub _modules: FxHashMap<String, Idx<BoxModule>>,
     pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
     pub entries: IndexMap<String, EntryData>,
@@ -122,7 +124,7 @@ impl ScannerResult {
     }
 }
 impl ScannerResult {
-    pub fn new() -> Self {
+    pub fn new(memory_manager: &mut MemoryManager) -> Self {
         Self {
             _modules: Default::default(),
             module_graph: Default::default(),
@@ -134,7 +136,7 @@ impl ScannerResult {
 }
 /// main loop task
 impl ModuleScanner {
-    pub async fn build_loop(&mut self, state: &mut ScannerResult, dependencies: Vec<BoxDependency>) {
+    pub async fn build_loop(&mut self, state: &mut ScannerResult, dependencies: Vec<BoxDependency>,memory_manager: &mut MemoryManager) {
         // kick off entry dependencies to task_queue
         self.handle_module_creation(
             dependencies,
@@ -148,7 +150,7 @@ impl ModuleScanner {
                     if let Some(task) = task {
                         match task {
                             Ok(task) =>{
-                               self.handle_task(task, state);
+                               self.handle_task(task, state,memory_manager);
                             },
                             Err(err) => {
                                 state.add_diagnostic(err);
@@ -174,12 +176,12 @@ impl ModuleScanner {
         }
     }
 
-    fn handle_task(&mut self, task: Task, state: &mut ScannerResult) {
+    fn handle_task(&mut self, task: Task, state: &mut ScannerResult, memory_manager: &mut MemoryManager) {
         match task {
             Task::Factorize(factorize_task) => {
                 let original_module = factorize_task
                     .origin_module_id
-                    .map(|x| state.module_graph.module_by_id(x));
+                    .map(|x| memory_manager.module_by_id(x));
                 let original_module_context =
                     original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
                 let tx = self.todo_tx.clone();
@@ -218,7 +220,7 @@ impl ModuleScanner {
                 });
             }
             Task::ProcessDeps(task) => {
-                self.handle_process_deps(state, task);
+                self.handle_process_deps(state, task,memory_manager);
             }
         }
     }
@@ -267,11 +269,11 @@ impl ModuleScanner {
         }
     }
     #[instrument("handle_process_deps", skip_all)]
-    fn handle_process_deps(&self, state: &mut ScannerResult, task: ProcessDepsTask) {
+    fn handle_process_deps(&self, state: &mut ScannerResult, task: ProcessDepsTask, memory_manager: &mut MemoryManager) {
         let module = task.module;
         let original_module_context = module.get_context().map(|x| x.to_owned());
         let identifier = module.identifier().to_string();
-        let module_id = state.module_graph.add_module(module);
+        let module_id = memory_manager.alloc_module(module);
         let dependency_id = state.module_graph.add_dependency(task.module_dependency);
         state._modules.insert(identifier.to_string(), module_id);
         // update origin -> self
