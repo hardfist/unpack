@@ -64,9 +64,9 @@ impl Compiler {
                     .await;
                 let compilation = unsafe { &mut *compilation.get() };
                 let scanner_result = compilation.scan(memory_manager).await;
-                let linker_result = compilation.link(scanner_result);
+                let linker_result = compilation.link(scanner_result.entries,scanner_result.module_graph);
                 let mut code_generation_state =
-                    compilation.code_generation(linker_result, memory_manager);
+                    compilation.code_generation(linker_result, memory_manager, &scanner_result.collect_modules);
 
                 compilation
                     .diagnostics

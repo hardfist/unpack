@@ -3,7 +3,6 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
 mod connection;
-mod module;
 mod module_graph_module;
 use crate::{
     dependency::DependencyId,
@@ -15,7 +14,6 @@ use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
 
 #[derive(Debug, Default)]
 pub struct ModuleGraph {
-    pub modules: Vec<ModuleId>,
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
     pub connections: IndexVec<ConnectionId, Connection>,
     pub dependency_to_connection: IndexMap<DependencyId, ConnectionId>,

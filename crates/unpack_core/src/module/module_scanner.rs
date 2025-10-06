@@ -1,4 +1,4 @@
-use crate::dependency::{BoxDependency, DependencyId, ModuleDependency};
+use crate::dependency::{BoxDependency, DependencyId};
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::memory_manager::arena::Idx;
@@ -114,6 +114,7 @@ impl ModuleScanner {
 #[derive(Debug)]
 pub struct ScannerResult {
     pub _modules: FxHashMap<String, Idx<BoxModule>>,
+    pub collect_modules: Vec<ModuleId>,
     pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
     pub entries: IndexMap<String, EntryData>,
@@ -135,6 +136,7 @@ impl Default for ScannerResult {
     fn default() -> Self {
         Self {
             _modules: Default::default(),
+            collect_modules: Default::default(),
             module_graph: Default::default(),
             diagnostics: Default::default(),
             entries: Default::default(),
@@ -300,7 +302,8 @@ impl ModuleScanner {
         let original_module_context = module.get_context().map(|x| x.to_owned());
         let identifier = module.identifier().to_string();
         let module_id = memory_manager.alloc_module(module);
-        state.module_graph.add_module(module_id);
+        
+        state.collect_modules.push(module_id);
         let dependency_id = memory_manager.alloc_dependency(task.module_dependency);
         state._modules.insert(identifier.to_string(), module_id);
         // update origin -> self

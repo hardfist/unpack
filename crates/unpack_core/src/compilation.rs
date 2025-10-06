@@ -1,18 +1,12 @@
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult},
-    compiler::CompilerOptions,
-    errors::Diagnostics,
-    memory_manager::MemoryManager,
-    module::{
-        CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
-        ScannerResult,
-    },
-    plugin::PluginDriver,
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
+        CodeGenerationContext, CodeGenerationResult, EntryData, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
+    }, plugin::PluginDriver
 };
 use std::{
     sync::{
@@ -99,24 +93,22 @@ impl Compilation {
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&self, scanner_result: ScannerResult) -> LinkerResult {
-        let linker = ChunkLinker::new(self.options.clone(), scanner_result.entries);
-        linker.build_chunk_graph(scanner_result.module_graph)
+    pub fn link(&self, entries: IndexMap<String,EntryData>, module_graph: ModuleGraph) -> LinkerResult {
+        let linker = ChunkLinker::new(self.options.clone(), entries);
+        linker.build_chunk_graph(module_graph)
     }
     /// code generation
     pub fn code_generation(
         &self,
         linker_state: LinkerResult,
-        memory_manager: &mut MemoryManager,
+        memory_manager: & MemoryManager,
+        collect_modules: &Vec<ModuleId>,
     ) -> CodeGenerationState {
         let mut code_generation_results = CodeGenerationResults::default();
-        let results = linker_state
-            .module_graph
-            .modules
-            .clone()
+        let results = collect_modules
             .into_par_iter()
             .map(|module_id| {
-                let module = memory_manager.module_by_id(module_id);
+                let module = memory_manager.module_by_id(*module_id);
                 let codegen_result = module.code_generation(
                     CodeGenerationContext {
                         module_graph: &linker_state.module_graph,
@@ -130,7 +122,7 @@ impl Compilation {
             // FIXME: fixed codegeneration diagnostics later
             code_generation_results
                 .module_id_to_generation_result
-                .insert(id, result.expect("codegeneration failed"));
+                .insert(*id, result.expect("codegeneration failed"));
         }
         CodeGenerationState {
             chunk_graph: linker_state.chunk_graph,
