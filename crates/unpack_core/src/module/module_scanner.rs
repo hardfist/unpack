@@ -100,15 +100,13 @@ impl ModuleScanner {
         context: Option<Utf8PathBuf>,
         todo_tx: Sender<Result<Task>>,
     ) {
-        dependencies.into_iter().for_each(|dep| {
-            todo_tx
-                .send(Ok(Task::Factorize(FactorizeTask {
-                    dependencies: vec![dep],
-                    origin_module_id,
-                    origin_module_context: context.clone(),
-                })))
-                .unwrap();
-        });
+        todo_tx
+            .send(Ok(Task::Factorize(FactorizeTask {
+                dependencies,
+                origin_module_id,
+                origin_module_context: context.clone(),
+            })))
+            .unwrap();
     }
     pub fn resolve_module() {}
 }
@@ -153,13 +151,15 @@ impl ModuleScanner {
         dependencies: Vec<BoxDependency>,
         memory_manager: &mut MemoryManager,
     ) {
-        // kick off entry dependencies to task_queue
-        self.handle_module_creation(
-            dependencies,
-            None,
-            Some(self.context.clone()),
-            self.todo_tx.clone(),
-        );
+        dependencies.into_iter().for_each(|dep| {
+            // kick off entry dependencies to task_queue
+            self.handle_module_creation(
+                vec![dep],
+                None,
+                Some(self.context.clone()),
+                self.todo_tx.clone(),
+            );
+        });
         loop {
             tokio::select! {
                 task = self.todo_rx.recv() => {

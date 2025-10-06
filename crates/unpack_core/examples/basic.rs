@@ -1,8 +1,8 @@
 use rspack_resolver::ResolveOptions;
-use std::{mem, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 use unpack_core::{
     compiler::{Compiler, CompilerOptions, EntryItem},
-    memory_manager::{self, MemoryManager},
+    memory_manager::MemoryManager,
     tracing::init_tracing,
 };
 

@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf};
 
-use unpack_ng::{compiler::dev, db};
+use unpack_salsa::compiler::dev;
 
 
 fn main() -> anyhow::Result<()> {
