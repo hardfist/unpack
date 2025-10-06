@@ -102,7 +102,7 @@ impl ModuleScanner {
         dependencies.into_iter().for_each(|dep| {
             todo_tx
                 .send(Ok(Task::Factorize(FactorizeTask {
-                    module_dependency: dep,
+                    dependencies: vec![dep],
                     origin_module_id,
                     origin_module_context: context.clone(),
                 })))
@@ -248,7 +248,7 @@ impl ModuleScanner {
         plugin_driver: Arc<PluginDriver>,
         module_factory: Arc<NormalModuleFactory>,
     ) {
-        let module_dependency = task.module_dependency.clone();
+        let module_dependency = task.dependencies[0].clone();
 
         let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
@@ -274,7 +274,7 @@ impl ModuleScanner {
                 tx.send(Ok(Task::Build(BuildTask {
                     origin_module_id: task.origin_module_id,
                     module,
-                    module_dependency: task.module_dependency.clone(),
+                    dependencies: task.dependencies.clone(),
                 })))
                 .unwrap();
             }
@@ -311,7 +311,7 @@ impl ModuleScanner {
         todo_tx: Sender<Result<Task>>,
     ) {
         let mut module = task.module;
-        let module_dependency = task.module_dependency;
+        let module_dependency = task.dependencies[0].clone();
 
         match module
             .build(BuildContext {

@@ -1,3 +1,3 @@
-import { secret } from "./lib"; 
+import { lib } from "./lib"; 
 
-console.log('secret',secret);
+console.log('lib',lib);

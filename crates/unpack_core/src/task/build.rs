@@ -7,5 +7,5 @@ use crate::{
 pub struct BuildTask {
     pub origin_module_id: Option<ModuleId>,
     pub module: BoxModule,
-    pub module_dependency: BoxDependency,
+    pub dependencies: Vec<BoxDependency>,
 }
