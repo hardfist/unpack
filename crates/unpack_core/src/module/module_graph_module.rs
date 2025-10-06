@@ -1,4 +1,5 @@
-use index_vec::define_index_type;
+
+use crate::memory_manager::arena::Idx;
 
 use super::ConnectionId;
 
@@ -27,6 +28,4 @@ impl ModuleGraphModule {
         self.outgoing_connections.push(connection_id)
     }
 }
-define_index_type! {
-    pub struct ModuleGraphModuleId = u32;
-}
+pub type ModuleGraphModuleId = Idx<ModuleGraphModule>;

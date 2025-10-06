@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::{Arena, Idx},
-    module::{BoxModule, Connection, ConnectionId, ModuleGraphModule},
+    module::{BoxModule, Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId},
 };
 
 pub mod arena;
@@ -50,5 +50,17 @@ impl MemoryManager {
     }
     pub fn connection_by_id(&self, connection_id: ConnectionId) -> &Connection {
         &self.connections[connection_id]
+    }
+    pub fn add_module_graph_module(&mut self, mgm: ModuleGraphModule) -> ModuleGraphModuleId {
+        self.module_graph_modules.insert(mgm)
+    }
+    pub fn module_graph_module_by_id_mut(
+        &mut self,
+        mgm_id: ModuleGraphModuleId,
+    ) -> &mut ModuleGraphModule {
+        &mut self.module_graph_modules[mgm_id]
+    }
+    pub fn module_graph_module_by_id(&self, mgm_id: ModuleGraphModuleId) -> &ModuleGraphModule {
+        &self.module_graph_modules[mgm_id]
     }
 }
