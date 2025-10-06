@@ -2,8 +2,6 @@
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
-mod connection;
-mod module_graph_module;
 use crate::{
     dependency::DependencyId, memory_manager::MemoryManager, module::ModuleId
 };
