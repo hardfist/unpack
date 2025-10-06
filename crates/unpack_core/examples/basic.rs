@@ -1,7 +1,9 @@
 use rspack_resolver::ResolveOptions;
 use std::{mem, path::PathBuf, sync::Arc};
 use unpack_core::{
-    compiler::{Compiler, CompilerOptions, EntryItem}, memory_manager::{self, MemoryManager}, tracing::init_tracing
+    compiler::{Compiler, CompilerOptions, EntryItem},
+    memory_manager::{self, MemoryManager},
+    tracing::init_tracing,
 };
 
 #[tokio::main]
@@ -9,9 +11,8 @@ async fn main() {
     let guard = init_tracing();
 
     fn create_compiler(dist: String) -> Compiler {
-        let root =  env!("CARGO_MANIFEST_DIR");
-        let context = PathBuf::from(root)
-            .join("./examples/fixtures/basic");
+        let root = env!("CARGO_MANIFEST_DIR");
+        let context = PathBuf::from(root).join("./examples/fixtures/basic");
         let context = context.canonicalize().expect("expect canonicalize success");
         let compiler_options: CompilerOptions = CompilerOptions {
             output_dir: context.join(dist).try_into().expect("expect utf8 path"),
@@ -39,7 +40,9 @@ async fn main() {
         compiler
     }
     let mut memory_manager = MemoryManager::new();
-    create_compiler("dist".to_string()).build(&mut memory_manager).await;
-   
+    create_compiler("dist".to_string())
+        .build(&mut memory_manager)
+        .await;
+
     drop(guard);
 }

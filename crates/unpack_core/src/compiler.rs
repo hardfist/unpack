@@ -56,7 +56,7 @@ impl Compiler {
                 );
                 let compilation = Arc::new(CompilationCell::new(Compilation::new(
                     self.options.clone(),
-                    self.plugin_driver.clone()
+                    self.plugin_driver.clone(),
                 )));
                 self.last_compilation = Some(compilation.clone());
                 self.plugin_driver

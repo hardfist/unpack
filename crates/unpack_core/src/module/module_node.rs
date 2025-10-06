@@ -52,7 +52,7 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync {
     fn code_generation(
         &self,
         code_generation_context: CodeGenerationContext,
-        memory_manager: &MemoryManager
+        memory_manager: &MemoryManager,
     ) -> Result<CodeGenerationResult>;
     fn source_types(&self) -> &[SourceType];
 }

@@ -4,9 +4,15 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
-        CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
-    }, plugin::PluginDriver
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult},
+    compiler::CompilerOptions,
+    errors::Diagnostics,
+    memory_manager::MemoryManager,
+    module::{
+        CodeGenerationContext, CodeGenerationResult, ModuleGraph, ModuleId, ModuleScanner,
+        ScannerResult,
+    },
+    plugin::PluginDriver,
 };
 use std::{
     sync::{
@@ -111,9 +117,12 @@ impl Compilation {
             .into_par_iter()
             .map(|module_id| {
                 let module = memory_manager.module_by_id(module_id);
-                let codegen_result = module.code_generation(CodeGenerationContext {
-                    module_graph: &linker_state.module_graph,
-                }, memory_manager);
+                let codegen_result = module.code_generation(
+                    CodeGenerationContext {
+                        module_graph: &linker_state.module_graph,
+                    },
+                    memory_manager,
+                );
                 (module_id, codegen_result)
             })
             .collect::<Vec<_>>();

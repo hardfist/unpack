@@ -1,17 +1,18 @@
-use crate::dependency::{BoxDependency, DependencyId};
+use crate::dependency::{BoxDependency, DependencyId, ModuleDependency};
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::memory_manager::arena::Idx;
-use crate::memory_manager::{ MemoryManager};
+use crate::memory_manager::MemoryManager;
 use crate::module::{BoxModule, BuildContext, ModuleId};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::plugin::PluginDriver;
 use crate::scheduler::COMPILER_CONTEXT;
-use crate::task::{BuildTask, FactorizeTask, AddModuleTask};
+use crate::task::{AddModuleTask, BuildTask, FactorizeTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
+use std::collections::HashMap;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 use tokio::task::JoinSet;
@@ -191,7 +192,12 @@ impl ModuleScanner {
         }
     }
 
-    fn handle_task(&mut self, task: Task, state: &mut ScannerResult, memory_manager: &mut MemoryManager) {
+    fn handle_task(
+        &mut self,
+        task: Task,
+        state: &mut ScannerResult,
+        memory_manager: &mut MemoryManager,
+    ) {
         match task {
             Task::Factorize(factorize_task) => {
                 let original_module = factorize_task
@@ -235,7 +241,7 @@ impl ModuleScanner {
                 });
             }
             Task::AddModule(task) => {
-                self.handle_add_module(state, task,memory_manager);
+                self.handle_add_module_and_dependencies(state, task, memory_manager);
             }
         }
     }
@@ -283,8 +289,13 @@ impl ModuleScanner {
             }
         }
     }
-    #[instrument("handle_module_add", skip_all)]
-    fn handle_add_module(&self, state: &mut ScannerResult, task: AddModuleTask, memory_manager: &mut MemoryManager) {
+    #[instrument("handle_add_module_and_dependencies", skip_all)]
+    fn handle_add_module_and_dependencies(
+        &self,
+        state: &mut ScannerResult,
+        task: AddModuleTask,
+        memory_manager: &mut MemoryManager,
+    ) {
         let module = task.module;
         let original_module_context = module.get_context().map(|x| x.to_owned());
         let identifier = module.identifier().to_string();
@@ -296,12 +307,20 @@ impl ModuleScanner {
         state
             .module_graph
             .set_resolved_module(task.origin_module_id, dependency_id, module_id);
-        self.handle_module_creation(
-            task.dependencies,
-            Some(module_id),
-            original_module_context,
-            self.todo_tx.clone(),
-        );
+        let mut sorted_dependencies: HashMap<String, BoxDependency, _> = HashMap::new();
+        for dep in task.dependencies {
+            if let Some(module_dependency) = dep.as_module_dependency() {
+                sorted_dependencies.insert(module_dependency.resource_identifier(), dep);
+            }
+        }
+        for dep in sorted_dependencies.into_values() {
+            self.handle_module_creation(
+                vec![dep],
+                Some(module_id),
+                original_module_context.clone(),
+                self.todo_tx.clone(),
+            );
+        }
     }
     #[instrument("handle_build", skip_all)]
     async fn handle_build(

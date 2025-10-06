@@ -1,4 +1,4 @@
-use index_vec::{ IndexVec};
+use index_vec::IndexVec;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
@@ -6,7 +6,9 @@ mod connection;
 mod module;
 mod module_graph_module;
 use crate::{
-    dependency::DependencyId, memory_manager::arena::Idx, module::{BoxModule, ModuleId}
+    dependency::DependencyId,
+    memory_manager::arena::Idx,
+    module::{BoxModule, ModuleId},
 };
 
 use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
@@ -33,7 +35,7 @@ impl ModuleGraph {
         &mut self,
         origin_module_id: Option<ModuleId>,
         dep_id: DependencyId,
-        resolved_module_id:Idx<BoxModule>,
+        resolved_module_id: Idx<BoxModule>,
     ) {
         let connection = Connection::new(origin_module_id, resolved_module_id);
         let connection_id = self.add_connection(connection);

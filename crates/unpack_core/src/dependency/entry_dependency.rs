@@ -29,6 +29,12 @@ impl Dependency for EntryDependency {
 }
 
 impl ModuleDependency for EntryDependency {
+    fn context(&self) -> &str {
+        ""
+    }
+    fn resource_identifier(&self) -> String {
+        format!("{}-{}", self.context(), self.request)
+    }
     fn request(&self) -> &str {
         &self.request
     }

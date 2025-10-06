@@ -59,7 +59,10 @@ impl<T> IndexMut<Idx<T>> for Arena<T> {
 
 impl<T: fmt::Debug> fmt::Debug for Arena<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct("Arena").field("len", &self.0.len()).field("data", &self.0).finish()
+        fmt.debug_struct("Arena")
+            .field("len", &self.0.len())
+            .field("data", &self.0)
+            .finish()
     }
 }
 
@@ -82,7 +85,10 @@ unsafe impl<T> slotmap::Key for Idx<T> {
 
 impl<T> From<slotmap::KeyData> for Idx<T> {
     fn from(data: slotmap::KeyData) -> Self {
-        Idx { data, _phantom: PhantomData }
+        Idx {
+            data,
+            _phantom: PhantomData,
+        }
     }
 }
 

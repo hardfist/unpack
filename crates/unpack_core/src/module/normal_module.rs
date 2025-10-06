@@ -3,7 +3,7 @@ use crate::dependency::{
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
-use crate::memory_manager::{MemoryManager};
+use crate::memory_manager::MemoryManager;
 use crate::plugin::LoadArgs;
 use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -94,7 +94,7 @@ impl Module for NormalModule {
     fn code_generation(
         &self,
         code_generation_context: CodeGenerationContext,
-        memory_manager: &MemoryManager
+        memory_manager: &MemoryManager,
     ) -> Result<CodeGenerationResult> {
         let mut code_generation_result = CodeGenerationResult::default();
 
@@ -104,7 +104,7 @@ impl Module for NormalModule {
                     todo!("no implemented yet")
                 }
                 NormalModuleSource::Succeed(source) => {
-                    self.generate(source.clone(), &code_generation_context,memory_manager)
+                    self.generate(source.clone(), &code_generation_context, memory_manager)
                 }
                 NormalModuleSource::UnBuild => {
                     panic!("should have source")
@@ -135,7 +135,7 @@ impl NormalModule {
         &self,
         source: BoxSource,
         code_generation_context: &CodeGenerationContext,
-        memory_manager: &MemoryManager
+        memory_manager: &MemoryManager,
     ) -> Result<BoxSource> {
         let mut source = ReplaceSource::new(source);
         self.module_dependencies.iter().for_each(|dep_id| {

@@ -11,7 +11,10 @@ use tracing::level_filters::LevelFilter;
 use tracing_chrome::ChromeLayerBuilder;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
-use unpack_core::{compiler::{Compiler, CompilerOptions, EntryItem}, memory_manager::MemoryManager};
+use unpack_core::{
+    compiler::{Compiler, CompilerOptions, EntryItem},
+    memory_manager::MemoryManager,
+};
 fn main() {
     let _guard = match std::env::var("UNPACK_PROFILE") {
         Ok(filter) => {
@@ -40,7 +43,7 @@ fn main() {
         .build()
         .unwrap();
     rt.block_on(async {
-        let root =  env!("CARGO_MANIFEST_DIR");
+        let root = env!("CARGO_MANIFEST_DIR");
         let context = PathBuf::from(root)
             .parent()
             .unwrap()

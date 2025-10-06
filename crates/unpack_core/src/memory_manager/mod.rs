@@ -1,20 +1,24 @@
 use indexmap::IndexMap;
 
-use crate::{dependency::{ BoxDependency, DependencyId}, memory_manager::arena::{Arena, Idx}, module::BoxModule};
+use crate::{
+    dependency::{BoxDependency, DependencyId},
+    memory_manager::arena::{Arena, Idx},
+    module::BoxModule,
+};
 
 pub mod arena;
 
-#[derive(Default,Debug)]
+#[derive(Default, Debug)]
 pub struct MemoryManager {
     modules: Arena<BoxModule>,
-    pub dependencies: IndexMap<DependencyId,BoxDependency>
+    pub dependencies: IndexMap<DependencyId, BoxDependency>,
 }
 
 impl MemoryManager {
     pub fn new() -> Self {
         Self {
             modules: Default::default(),
-            dependencies: Default::default()
+            dependencies: Default::default(),
         }
     }
     pub fn alloc_module(&mut self, module: BoxModule) -> Idx<BoxModule> {

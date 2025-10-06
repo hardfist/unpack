@@ -26,5 +26,11 @@ impl ModuleDependency for EsmImportSideEffectDependency {
     fn request(&self) -> &str {
         &self.request
     }
+    fn resource_identifier(&self) -> String {
+        format!("{}-{}", self.context(), self.request)
+    }
+    fn context(&self) -> &str {
+        ""
+    }
 }
 impl AsDependencyTemplate for EsmImportSideEffectDependency {}

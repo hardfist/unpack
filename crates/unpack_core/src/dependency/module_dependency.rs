@@ -5,7 +5,9 @@ use dyn_clone::{clone_trait_object, DynClone};
 use super::Dependency;
 
 pub trait ModuleDependency: Dependency + Debug + DynClone {
+    fn context(&self) -> &str;
     fn request(&self) -> &str;
+    fn resource_identifier(&self) -> String;
 }
 clone_trait_object!(ModuleDependency);
 

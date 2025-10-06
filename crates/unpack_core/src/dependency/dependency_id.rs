@@ -1,10 +1,7 @@
-
 use crate::scheduler::COMPILER_CONTEXT;
-
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub struct DependencyId(u32);
-
 
 impl DependencyId {
     pub fn new() -> Self {

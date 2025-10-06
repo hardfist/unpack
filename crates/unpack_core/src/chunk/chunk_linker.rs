@@ -51,9 +51,10 @@ impl ChunkLinker {
             entries,
         }
     }
-    pub fn build_chunk_graph(&self,module_graph: ModuleGraph) -> LinkerResult {
+    pub fn build_chunk_graph(&self, module_graph: ModuleGraph) -> LinkerResult {
         let mut linker_result = LinkerResult::new(module_graph, vec![]);
-        let entrypoints_and_modules = self.prepare_input_entrypoints_and_modules(&mut linker_result);
+        let entrypoints_and_modules =
+            self.prepare_input_entrypoints_and_modules(&mut linker_result);
         for (chunk_group_id, module_ids) in entrypoints_and_modules {
             let chunk_group = linker_result.chunk_graph.chunk_group_by_id(chunk_group_id);
             let entry_point_chunk_id = chunk_group

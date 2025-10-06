@@ -49,9 +49,7 @@ impl NormalModuleFactory {
                 let context = context.clone();
                 let request = request.to_string();
                 let result = spawn_blocking(move || {
-                    resolver_factory
-                        .base_resolver
-                        .resolve(&context, &request)
+                    resolver_factory.base_resolver.resolve(&context, &request)
                 })
                 .await
                 .unwrap();
