@@ -4,10 +4,7 @@ use indexmap::IndexMap;
 
 use super::{chunk_graph::ChunkGraph, ChunkGroupId, ChunkId};
 use crate::{
-    compiler::CompilerOptions,
-    dependency::BlockId,
-    errors::Diagnostics,
-    module::{EntryData, ModuleGraph, ModuleId},
+    compiler::CompilerOptions, dependency::BlockId, errors::Diagnostics, memory_manager::MemoryManager, module::{EntryData, ModuleGraph, ModuleId}
 };
 #[derive(Debug)]
 enum QueueAction {
@@ -51,10 +48,10 @@ impl ChunkLinker {
             entries,
         }
     }
-    pub fn build_chunk_graph(&self, module_graph: ModuleGraph) -> LinkerResult {
+    pub fn build_chunk_graph(&self, module_graph: ModuleGraph, memory_manager: &MemoryManager) -> LinkerResult {
         let mut linker_result = LinkerResult::new(module_graph, vec![]);
         let entrypoints_and_modules =
-            self.prepare_input_entrypoints_and_modules(&mut linker_result);
+            self.prepare_input_entrypoints_and_modules(&mut linker_result, memory_manager);
         for (chunk_group_id, module_ids) in entrypoints_and_modules {
             let chunk_group = linker_result.chunk_graph.chunk_group_by_id(chunk_group_id);
             let entry_point_chunk_id = chunk_group
@@ -70,26 +67,26 @@ impl ChunkLinker {
             }
         }
         while !linker_result.queue.is_empty() {
-            self.process_queue(&mut linker_result);
+            self.process_queue(&mut linker_result, memory_manager);
         }
         linker_result
     }
-    fn process_queue(&self, state: &mut LinkerResult) {
+    fn process_queue(&self, state: &mut LinkerResult, memory_manager: &MemoryManager) {
         while let Some(action) = state.queue.pop_front() {
-            self.handle_queue_action(state, action);
+            self.handle_queue_action(state, action, memory_manager);
         }
     }
-    fn handle_queue_action(&self, state: &mut LinkerResult, action: QueueAction) {
+    fn handle_queue_action(&self, state: &mut LinkerResult, action: QueueAction, memory_manager: &MemoryManager) {
         match action {
             QueueAction::AddAndEnterEntryModule(action) => {
                 self.add_and_enter_entry_module(state, action);
             }
             QueueAction::AddAndEnterModule(action) => {
-                self.add_and_enter_module(state, action);
+                self.add_and_enter_module(state, action, memory_manager);
             }
             QueueAction::LeaveModule(action) => self.leave_module(state, action),
             QueueAction::ProcessBlock(action) => {
-                self.process_block(state, action);
+                self.process_block(state, action, memory_manager);
             }
         }
     }
@@ -101,7 +98,7 @@ impl ChunkLinker {
     ) {
         todo!("add entry module");
     }
-    fn add_and_enter_module(&self, state: &mut LinkerResult, action: AddAndEnterModule) {
+    fn add_and_enter_module(&self, state: &mut LinkerResult, action: AddAndEnterModule, memory_manager: &MemoryManager) {
         let AddAndEnterModule {
             chunk_id,
             module_id,
@@ -118,9 +115,10 @@ impl ChunkLinker {
                 module_id,
                 chunk_id,
             },
+            memory_manager
         );
     }
-    fn enter_module(&self, state: &mut LinkerResult, action: EnterModule) {
+    fn enter_module(&self, state: &mut LinkerResult, action: EnterModule, memory_manager: &MemoryManager) {
         state.queue.push_back(QueueAction::LeaveModule(LeaveModule {
             module_id: action.module_id,
         }));
@@ -131,16 +129,17 @@ impl ChunkLinker {
                 chunk_id: action.chunk_id,
                 block_id: BlockId::ModuleId(action.module_id),
             },
+            memory_manager
         );
     }
     /**
      * FIXME: add asyncDependenciesBlock handle in the future
      */
-    fn process_block(&self, state: &mut LinkerResult, action: ProcessBlock) {
+    fn process_block(&self, state: &mut LinkerResult, action: ProcessBlock, memory_manager: &MemoryManager) {
         let module_id = action.module_id;
         let connection_ids = state.module_graph.get_outgoing_connections(module_id);
         for connection_id in connection_ids {
-            let connection = state.module_graph.connection_by_id(connection_id);
+            let connection = memory_manager.connection_by_id(connection_id);
             let resolved_module_id = connection.resolved_module_id;
             state
                 .queue
@@ -153,6 +152,7 @@ impl ChunkLinker {
     pub fn prepare_input_entrypoints_and_modules(
         &self,
         state: &mut LinkerResult,
+        memory_manager: &MemoryManager
     ) -> IndexMap<ChunkGroupId, Vec<ModuleId>> {
         let mut entrypoint_module_map = IndexMap::default();
         for (name, entry_data) in &self.entries {
@@ -166,7 +166,7 @@ impl ChunkLinker {
             let module_ids = entry_data
                 .dependencies
                 .iter()
-                .map(|dep_id| state.module_graph.module_id_by_dependency_id(*dep_id))
+                .map(|dep_id| state.module_graph.module_id_by_dependency_id(*dep_id, memory_manager))
                 .collect::<Vec<_>>();
             entrypoint_module_map.insert(chunk_group_id, module_ids);
         }

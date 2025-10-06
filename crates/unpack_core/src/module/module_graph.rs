@@ -5,9 +5,7 @@ use rustc_hash::FxHashMap;
 mod connection;
 mod module_graph_module;
 use crate::{
-    dependency::DependencyId,
-    memory_manager::arena::Idx,
-    module::{BoxModule, ModuleId},
+    dependency::DependencyId, memory_manager::MemoryManager, module::ModuleId
 };
 
 use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
@@ -15,28 +13,28 @@ use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
 #[derive(Debug, Default)]
 pub struct ModuleGraph {
     pub module_graph_modules: IndexVec<ModuleGraphModuleId, ModuleGraphModule>,
-    pub connections: IndexVec<ConnectionId, Connection>,
     pub dependency_to_connection: IndexMap<DependencyId, ConnectionId>,
     pub module_id_to_module_graph_module_id: FxHashMap<ModuleId, ModuleGraphModuleId>,
 }
 
 impl ModuleGraph {
-    pub fn module_id_by_dependency_id(&self, dep_id: DependencyId) -> ModuleId {
+    pub fn module_id_by_dependency_id(&self, dep_id: DependencyId, memory_manager: &MemoryManager) -> ModuleId {
         let connection_id = self
             .dependency_to_connection
             .get(&dep_id)
             .expect("get connection failed");
-        let connection = self.connection_by_id(*connection_id);
+        let connection = memory_manager.connection_by_id(*connection_id);
         connection.resolved_module_id
     }
     pub fn set_resolved_module(
         &mut self,
         origin_module_id: Option<ModuleId>,
         dep_id: DependencyId,
-        resolved_module_id: Idx<BoxModule>,
+        resolved_module_id: ModuleId,
+        memory_manager: &mut MemoryManager
     ) {
         let connection = Connection::new(origin_module_id, resolved_module_id);
-        let connection_id = self.add_connection(connection);
+        let connection_id = memory_manager.add_connection(connection);
         self.dependency_to_connection.insert(dep_id, connection_id);
         let resolved_mgm_id = self.module_graph_module_id_by_module_id(resolved_module_id);
         let resolved_module = self.module_graph_module_by_id_mut(resolved_mgm_id);

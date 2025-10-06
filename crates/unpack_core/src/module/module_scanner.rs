@@ -309,7 +309,7 @@ impl ModuleScanner {
         // update origin -> self
         state
             .module_graph
-            .set_resolved_module(task.origin_module_id, dependency_id, module_id);
+            .set_resolved_module(task.origin_module_id, dependency_id, module_id, memory_manager);
         let mut sorted_dependencies: HashMap<String, BoxDependency, _> = HashMap::new();
         for dep in task.dependencies {
             if let Some(module_dependency) = dep.as_module_dependency() {

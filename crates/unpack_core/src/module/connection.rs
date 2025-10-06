@@ -1,5 +1,6 @@
+use crate::memory_manager::arena::Idx;
+
 use super::ModuleId;
-use index_vec::define_index_type;
 #[derive(Debug, Clone)]
 pub struct Connection {
     pub origin_module_id: Option<ModuleId>,
@@ -13,7 +14,4 @@ impl Connection {
         }
     }
 }
-
-define_index_type! {
-    pub struct ConnectionId = u32;
-}
+pub type ConnectionId = Idx<Connection>;
