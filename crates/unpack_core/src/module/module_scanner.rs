@@ -145,6 +145,7 @@ impl Default for ScannerResult {
 }
 /// main loop task
 impl ModuleScanner {
+    // handle_module_creation -> factorize -> add_module -> build -> process_deps -> handle_module_creation
     pub async fn build_loop(
         &mut self,
         state: &mut ScannerResult,
