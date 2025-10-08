@@ -15,7 +15,6 @@ pub struct MemoryManager {
     connections: Arena<Connection>,
     module_graph_modules: Arena<ModuleGraphModule>,
 }
-
 impl MemoryManager {
     pub fn new() -> Self {
         Self {
@@ -25,6 +24,10 @@ impl MemoryManager {
             module_graph_modules: Default::default(),
         }
     }
+}
+
+impl MemoryManager {
+   
     pub fn alloc_module(&mut self, module: BoxModule) -> Idx<BoxModule> {
         self.modules.insert(module)
     }
@@ -36,22 +39,16 @@ impl MemoryManager {
         self.dependencies.insert(dep_id, dep);
         dep_id
     }
-    // get dependency by id
     pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
         self.dependencies.get(&id).expect("get dependency failed")
     }
-    pub fn dependency_by_id_mut(&mut self, id: DependencyId) -> &mut BoxDependency {
-        self.dependencies
-            .get_mut(&id)
-            .expect("get depependency failed")
-    }
-     pub fn add_connection(&mut self, connection: Connection) -> ConnectionId {
+     pub fn alloc_connection(&mut self, connection: Connection) -> ConnectionId {
         self.connections.insert(connection)
     }
     pub fn connection_by_id(&self, connection_id: ConnectionId) -> &Connection {
         &self.connections[connection_id]
     }
-    pub fn add_module_graph_module(&mut self, mgm: ModuleGraphModule) -> ModuleGraphModuleId {
+    pub fn alloc_module_graph_module(&mut self, mgm: ModuleGraphModule) -> ModuleGraphModuleId {
         self.module_graph_modules.insert(mgm)
     }
     pub fn module_graph_module_by_id_mut(

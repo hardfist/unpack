@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
 use crate::{
-    dependency::DependencyId, memory_manager::MemoryManager, module::ModuleId
+    dependency::DependencyId, memory_manager::{self, MemoryManager}, module::ModuleId
 };
 
 use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
@@ -13,6 +13,17 @@ pub struct ModuleGraph {
     pub dependency_to_connection: IndexMap<DependencyId, ConnectionId>,
     pub module_id_to_module_graph_module_id: FxHashMap<ModuleId, ModuleGraphModuleId>,
 }
+
+impl ModuleGraph {
+    pub fn new_from_entries(entries: Vec<DependencyId>, memory_manager: MemoryManager){
+        let mut queue = entries;
+        //let origin_module_id = None;
+        while let Some(dep) = queue.pop() {
+            
+        }
+    }
+}
+
 
 impl ModuleGraph {
     pub fn module_id_by_dependency_id(&self, dep_id: DependencyId, memory_manager: &MemoryManager) -> ModuleId {
@@ -31,7 +42,7 @@ impl ModuleGraph {
         memory_manager: &mut MemoryManager
     ) {
         let connection = Connection::new(origin_module_id, resolved_module_id);
-        let connection_id = memory_manager.add_connection(connection);
+        let connection_id = memory_manager.alloc_connection(connection);
         self.dependency_to_connection.insert(dep_id, connection_id);
         let resolved_mgm_id = self.module_graph_module_id_by_module_id(resolved_module_id,memory_manager);
         let resolved_module = memory_manager.module_graph_module_by_id_mut(resolved_mgm_id);
@@ -52,7 +63,7 @@ impl ModuleGraph {
             id
         } else {
             let mgm = ModuleGraphModule::new();
-            let new_id = memory_manager.add_module_graph_module(mgm);
+            let new_id = memory_manager.alloc_module_graph_module(mgm);
             self.module_id_to_module_graph_module_id
                 .insert(module_id, new_id);
             new_id
