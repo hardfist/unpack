@@ -44,25 +44,30 @@ impl ModuleGraph {
         let connection = Connection::new(origin_module_id, resolved_module_id);
         let connection_id = memory_manager.alloc_connection(connection);
         self.dependency_to_connection.insert(dep_id, connection_id);
-        let resolved_mgm_id = self.module_graph_module_id_by_module_id(resolved_module_id,memory_manager);
-        let resolved_module = memory_manager.module_graph_module_by_id_mut(resolved_mgm_id);
-        resolved_module.add_incoming_connection(connection_id);
+        self.module_graph_module_id_by_module_id(resolved_module_id,memory_manager,|mut mgm| {
+            mgm.add_incoming_connection(connection_id);
+            mgm
+        });
+       
 
         if let Some(origin_module_id) = origin_module_id {
-            let mgm_id = self.module_graph_module_id_by_module_id(origin_module_id,memory_manager);
-            let mgm = memory_manager.module_graph_module_by_id_mut(mgm_id);
-            mgm.add_outgoing_connection(connection_id);
+            self.module_graph_module_id_by_module_id(origin_module_id,memory_manager, |mut mgm|{
+                mgm.add_outgoing_connection(connection_id);
+                mgm
+            });
+            
         }
     }
     pub fn module_graph_module_id_by_module_id(
         &mut self,
         module_id: ModuleId,
-        memory_manager: &mut MemoryManager
+        memory_manager: &mut MemoryManager,
+        update_module_graph_module: impl Fn(ModuleGraphModule) -> ModuleGraphModule
     ) -> ModuleGraphModuleId {
         let mgm_id = if let Some(&id) = self.module_id_to_module_graph_module_id.get(&module_id) {
             id
         } else {
-            let mgm = ModuleGraphModule::new();
+            let mgm = update_module_graph_module(ModuleGraphModule::new());
             let new_id = memory_manager.alloc_module_graph_module(mgm);
             self.module_id_to_module_graph_module_id
                 .insert(module_id, new_id);
@@ -71,7 +76,9 @@ impl ModuleGraph {
         mgm_id
     }
     pub fn get_outgoing_connections(&mut self, module_id: ModuleId, memory_manager: &mut MemoryManager) -> Vec<ConnectionId> {
-        let mgm_id = self.module_graph_module_id_by_module_id(module_id,memory_manager);
+        let mgm_id = self.module_graph_module_id_by_module_id(module_id,memory_manager, |mgm| {
+            mgm
+        });
         let mgm = memory_manager.module_graph_module_by_id(mgm_id);
         mgm.outgoing_connections.clone()
     }

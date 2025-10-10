@@ -25,7 +25,7 @@ impl MemoryManager {
         }
     }
 }
-
+// don't expose mutable borrow of arena's item
 impl MemoryManager {
    
     pub fn alloc_module(&mut self, module: BoxModule) -> Idx<BoxModule> {
@@ -50,12 +50,6 @@ impl MemoryManager {
     }
     pub fn alloc_module_graph_module(&mut self, mgm: ModuleGraphModule) -> ModuleGraphModuleId {
         self.module_graph_modules.insert(mgm)
-    }
-    pub fn module_graph_module_by_id_mut(
-        &mut self,
-        mgm_id: ModuleGraphModuleId,
-    ) -> &mut ModuleGraphModule {
-        &mut self.module_graph_modules[mgm_id]
     }
     pub fn module_graph_module_by_id(&self, mgm_id: ModuleGraphModuleId) -> &ModuleGraphModule {
         &self.module_graph_modules[mgm_id]
