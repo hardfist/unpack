@@ -7,8 +7,8 @@ use napi::{
 };
 use napi_derive::napi;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
-use unpack::errors::miette::Result;
-use unpack::plugin::{CompilationCell, LoadArgs, Plugin, PluginContext, ResolveArgs};
+use unpack_core::errors::miette::Result;
+use unpack_core::plugin::{CompilationCell, LoadArgs, Plugin, PluginContext, ResolveArgs};
 
 use crate::js_compilation::JsCompilation;
 

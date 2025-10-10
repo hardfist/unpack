@@ -3,9 +3,9 @@ use camino::Utf8PathBuf;
 use napi::Env;
 use napi_derive::napi;
 use std::sync::Arc;
-use unpack::compiler::EntryItem;
-use unpack::resolver::ResolveOptions;
-use unpack::{
+use unpack_core::compiler::EntryItem;
+use unpack_core::resolver::ResolveOptions;
+use unpack_core::{
     compiler::{Compiler, CompilerOptions},
     plugin::BoxPlugin,
 };

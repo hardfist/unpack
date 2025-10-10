@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use napi::bindgen_prelude::ObjectFinalize;
 use napi_derive::napi;
-use unpack::plugin::CompilationCell;
+use unpack_core::plugin::CompilationCell;
 
 #[napi(custom_finalize)]
 pub struct JsCompilation {
