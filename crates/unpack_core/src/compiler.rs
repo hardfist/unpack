@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
+use crate::memory_manager;
 use crate::memory_manager::MemoryManager;
 use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
@@ -47,7 +48,7 @@ impl Compiler {
             compiler_context: Arc::new(CompilerContext::new()),
         }
     }
-    pub async fn build(&mut self, memory_manager: &mut MemoryManager) {
+    pub async fn build(&mut self) {
         COMPILER_CONTEXT
             .scope(self.compiler_context.clone(), async {
                 println!(
@@ -63,21 +64,23 @@ impl Compiler {
                     .run_compilation_hook(compilation.clone())
                     .await;
                 let compilation = unsafe { &mut *compilation.get() };
+                let memory_manager = self.compiler_context.get_memory_manager();
                 let scanner_result = compilation.scan(memory_manager).await;
                 let linker_result = compilation.link(scanner_result.entries,scanner_result.module_graph,memory_manager);
                 let mut code_generation_state =
                     compilation.code_generation(linker_result, memory_manager, &scanner_result.collect_modules);
 
-                compilation
-                    .diagnostics
-                    .extend(mem::take(&mut code_generation_state.diagnostics));
+                // compilation
+                //     .diagnostics
+                //     .write().unwrap()
+                //     .extend(mem::take(&mut code_generation_state.diagnostics));
                 let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
 
                 self.emit_assets(asset_state).await;
                 let compilation: &Compilation =
                     unsafe { &*self.last_compilation.as_ref().unwrap().get() };
-                if !compilation.diagnostics.is_empty() {
-                    for diag in &compilation.diagnostics {
+                if !compilation.diagnostics.read().unwrap().is_empty() {
+                    for diag in compilation.diagnostics.read().unwrap().iter() {
                         println!("{diag:?}");
                     }
                 }

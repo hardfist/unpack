@@ -39,7 +39,7 @@ impl ModuleGraph {
         origin_module_id: Option<ModuleId>,
         dep_id: DependencyId,
         resolved_module_id: ModuleId,
-        memory_manager: &mut MemoryManager
+        memory_manager: &MemoryManager
     ) {
         let connection = Connection::new(origin_module_id, resolved_module_id);
         let connection_id = memory_manager.alloc_connection(connection);
@@ -61,7 +61,7 @@ impl ModuleGraph {
     pub fn module_graph_module_id_by_module_id(
         &mut self,
         module_id: ModuleId,
-        memory_manager: &mut MemoryManager,
+        memory_manager: &MemoryManager,
         update_module_graph_module: impl Fn(ModuleGraphModule) -> ModuleGraphModule
     ) -> ModuleGraphModuleId {
         let mgm_id = if let Some(&id) = self.module_id_to_module_graph_module_id.get(&module_id) {
@@ -75,7 +75,7 @@ impl ModuleGraph {
         };
         mgm_id
     }
-    pub fn get_outgoing_connections(&mut self, module_id: ModuleId, memory_manager: &mut MemoryManager) -> Vec<ConnectionId> {
+    pub fn get_outgoing_connections(&mut self, module_id: ModuleId, memory_manager: &MemoryManager) -> Vec<ConnectionId> {
         let mgm_id = self.module_graph_module_id_by_module_id(module_id,memory_manager, |mgm| {
             mgm
         });

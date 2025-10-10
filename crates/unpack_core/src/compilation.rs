@@ -74,7 +74,7 @@ impl Compilation {
         }
     }
     /// similar with webpack's make phase, which will make module graph
-    pub async fn scan(&self, memory_manager: &mut MemoryManager) -> ScannerResult {
+    pub async fn scan(&self, memory_manager: &MemoryManager) -> ScannerResult {
         let start = Instant::now();
         let mut module_scanner = ModuleScanner::new(
             self.options.clone(),
@@ -93,7 +93,7 @@ impl Compilation {
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&self, entries: IndexMap<String,EntryData>, module_graph: ModuleGraph,memory_manager: &mut MemoryManager) -> LinkerResult {
+    pub fn link(&self, entries: IndexMap<String,EntryData>, module_graph: ModuleGraph,memory_manager: &MemoryManager) -> LinkerResult {
         let linker = ChunkLinker::new(self.options.clone(), entries);
         linker.build_chunk_graph(module_graph, memory_manager)
     }

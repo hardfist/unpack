@@ -6,6 +6,7 @@ use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
 use camino::Utf8Path;
 
+use dyn_clone::DynClone;
 use rspack_sources::BoxSource;
 
 use std::collections::HashMap;
@@ -43,7 +44,7 @@ impl CodeGenerationResult {
     }
 }
 #[async_trait]
-pub trait Module: Debug + DependenciesBlock + Send + Sync {
+pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
     fn identifier(&self) -> &str;
     async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {

@@ -65,8 +65,7 @@ fn main() {
             },
             output_dir: context.join("dist").try_into().expect("expect utf8 path"),
         };
-        let mut memory_manager = MemoryManager::default();
         let mut compiler = Compiler::new(Arc::new(compiler_options), vec![]);
-        compiler.build(&mut memory_manager).await;
+        compiler.build().await;
     });
 }

@@ -67,7 +67,7 @@ impl ModuleScanner {
         }
     }
     // add entries
-    pub async fn from_entries(&mut self, memory_manager: &mut MemoryManager) -> ScannerResult {
+    pub async fn from_entries(&mut self, memory_manager: &MemoryManager) -> ScannerResult {
         let mut scanner_result = ScannerResult::new();
         let entry_ids = self
             .options
@@ -122,8 +122,8 @@ pub struct ScannerResult {
     pub remaining: AtomicU32,
 }
 impl ScannerResult {
-    fn add_diagnostic(&mut self, diag: Report) {
-        self.diagnostics.push(diag);
+    fn add_diagnostic(& self, diag: Report) {
+        self.diagnostics.write().unwrap().push(diag);
     }
 }
 impl ScannerResult {
@@ -151,7 +151,7 @@ impl ModuleScanner {
         &mut self,
         state: &mut ScannerResult,
         dependencies: Vec<BoxDependency>,
-        memory_manager: &mut MemoryManager,
+        memory_manager: &MemoryManager,
     ) {
         dependencies.into_iter().for_each(|dep| {
             // kick off entry dependencies to task_queue
@@ -198,7 +198,7 @@ impl ModuleScanner {
         &mut self,
         task: Task,
         state: &mut ScannerResult,
-        memory_manager: &mut MemoryManager,
+        memory_manager: &MemoryManager,
     ) {
         match task {
             Task::Factorize(factorize_task) => {
@@ -296,7 +296,7 @@ impl ModuleScanner {
         &self,
         state: &mut ScannerResult,
         task: AddModuleTask,
-        memory_manager: &mut MemoryManager,
+        memory_manager: & MemoryManager,
     ) {
         let module = task.module;
         let original_module_context = module.get_context().map(|x| x.to_owned());

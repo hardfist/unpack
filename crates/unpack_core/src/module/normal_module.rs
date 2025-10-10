@@ -9,12 +9,12 @@ use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use super::ast::parse;
 use super::{BuildContext, BuildResult, Module, SourceType};
 use super::{CodeGenerationResult, ModuleGraph};
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct NormalModule {
     context: Option<Utf8PathBuf>,
     resource_path: Utf8PathBuf,
@@ -121,7 +121,7 @@ impl NormalModule {
         Self {
             request,
             resource_path,
-            diagnostics: vec![],
+            diagnostics:Default::default(),
             original_source: None,
             context,
             blocks: vec![],

@@ -1,3 +1,4 @@
+use std::sync::{Arc, RwLock};
 pub use miette;
 use miette::Diagnostic;
 use miette::Report;
@@ -11,4 +12,4 @@ pub struct ResolveError {
     source: rspack_resolver::ResolveError,
 }
 
-pub type Diagnostics = Vec<Report>;
+pub type Diagnostics = Arc<RwLock<Vec<Report>>>;

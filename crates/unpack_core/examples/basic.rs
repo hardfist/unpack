@@ -39,9 +39,8 @@ async fn main() {
         let compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler
     }
-    let mut memory_manager = MemoryManager::new();
     create_compiler("dist".to_string())
-        .build(&mut memory_manager)
+        .build()
         .await;
 
     drop(guard);

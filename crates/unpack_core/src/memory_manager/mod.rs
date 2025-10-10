@@ -1,3 +1,5 @@
+use std::sync::RwLock;
+
 use indexmap::IndexMap;
 
 use crate::{
@@ -10,10 +12,10 @@ pub mod arena;
 
 #[derive(Default, Debug)]
 pub struct MemoryManager {
-    modules: Arena<BoxModule>,
-    dependencies: IndexMap<DependencyId, BoxDependency>,
-    connections: Arena<Connection>,
-    module_graph_modules: Arena<ModuleGraphModule>,
+    modules: RwLock<Arena<BoxModule>>,
+    dependencies: RwLock<IndexMap<DependencyId, BoxDependency>>,
+    connections: RwLock<Arena<Connection>>,
+    module_graph_modules: RwLock<Arena<ModuleGraphModule>>,
 }
 impl MemoryManager {
     pub fn new() -> Self {
@@ -28,30 +30,32 @@ impl MemoryManager {
 // don't expose mutable borrow of arena's item
 impl MemoryManager {
    
-    pub fn alloc_module(&mut self, module: BoxModule) -> Idx<BoxModule> {
-        self.modules.insert(module)
+    pub fn alloc_module(&self, module: BoxModule) -> Idx<BoxModule> {
+        self.modules.write().unwrap().insert(module)
     }
-    pub fn module_by_id(&self, id: Idx<BoxModule>) -> &BoxModule {
-        &self.modules[id]
+    pub fn module_by_id(&self, id: Idx<BoxModule>) -> BoxModule {
+        let modules = self.modules.read().unwrap();
+        let module = modules.get(id).expect("get module failed");
+        dyn_clone::clone_box(module.as_ref())
     }
-    pub fn alloc_dependency(&mut self, dep: BoxDependency) -> DependencyId {
+    pub fn alloc_dependency(&self, dep: BoxDependency) -> DependencyId {
         let dep_id = dep.id();
-        self.dependencies.insert(dep_id, dep);
+        self.dependencies.write().unwrap().insert(dep_id, dep);
         dep_id
     }
-    pub fn dependency_by_id(&self, id: DependencyId) -> &BoxDependency {
-        self.dependencies.get(&id).expect("get dependency failed")
+    pub fn dependency_by_id(&self, id: DependencyId) -> BoxDependency {
+        self.dependencies.read().unwrap().get(&id).expect("get dependency failed").clone()
     }
-     pub fn alloc_connection(&mut self, connection: Connection) -> ConnectionId {
-        self.connections.insert(connection)
+     pub fn alloc_connection(&self, connection: Connection) -> ConnectionId {
+        self.connections.write().unwrap().insert(connection)
     }
-    pub fn connection_by_id(&self, connection_id: ConnectionId) -> &Connection {
-        &self.connections[connection_id]
+    pub fn connection_by_id(&self, connection_id: ConnectionId) -> Connection {
+        self.connections.read().unwrap()[connection_id].clone()
     }
-    pub fn alloc_module_graph_module(&mut self, mgm: ModuleGraphModule) -> ModuleGraphModuleId {
-        self.module_graph_modules.insert(mgm)
+    pub fn alloc_module_graph_module(&self, mgm: ModuleGraphModule) -> ModuleGraphModuleId {
+        self.module_graph_modules.write().unwrap().insert(mgm)
     }
-    pub fn module_graph_module_by_id(&self, mgm_id: ModuleGraphModuleId) -> &ModuleGraphModule {
-        &self.module_graph_modules[mgm_id]
+    pub fn module_graph_module_by_id(&self, mgm_id: ModuleGraphModuleId) -> ModuleGraphModule {
+        self.module_graph_modules.read().unwrap()[mgm_id].clone()
     }
 }
