@@ -17,7 +17,7 @@ define_index_type! {
     pub struct AsyncDependenciesBlockId = u32;
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum BlockId {
     ModuleId(ModuleId),
     AsyncDependenciesBlockId(AsyncDependenciesBlockId),

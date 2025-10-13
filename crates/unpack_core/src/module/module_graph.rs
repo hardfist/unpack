@@ -16,9 +16,11 @@ pub struct ModuleGraph {
 
 impl ModuleGraph {
     pub fn new_from_entries(entries: Vec<DependencyId>, memory_manager: MemoryManager){
-        let mut queue = entries;
+        let module_graph = ModuleGraph::default();
+        let mut queue: Vec<(DependencyId, Option<ModuleId>)> = entries.into_iter().map(|id| (id, None)).collect();
         //let origin_module_id = None;
-        while let Some(dep) = queue.pop() {
+        while let Some((dep,module_id)) = queue.pop() {
+            let origin_module = module_id.map(|id| memory_manager.module_by_id(id));
             
         }
     }

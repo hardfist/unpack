@@ -9,6 +9,8 @@ use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
+use ustr::{ustr, Ustr};
+use std::borrow::Cow;
 use std::sync::{Arc, RwLock};
 
 use super::ast::parse;
@@ -61,8 +63,9 @@ impl Module for NormalModule {
     fn source_types(&self) -> &[SourceType] {
         &[SourceType::JavaScript]
     }
-    fn identifier(&self) -> &str {
-        self.resource_path.as_str()
+    fn identifier(&self) -> Ustr {
+        let t = ustr(self.resource_path.as_str());
+        return t
     }
     async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
         let resource_path = self.resource_path.clone();

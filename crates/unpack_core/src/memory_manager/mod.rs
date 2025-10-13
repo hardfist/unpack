@@ -1,18 +1,20 @@
-use std::sync::RwLock;
+use std::{borrow::Cow, sync::RwLock};
 
+use dashmap::DashMap;
 use indexmap::IndexMap;
+use ustr::Ustr;
 
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::{Arena, Idx},
-    module::{BoxModule, Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId},
+    module::{BoxModule, Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId, ModuleId},
 };
 
 pub mod arena;
 
 #[derive(Default, Debug)]
 pub struct MemoryManager {
-    modules: RwLock<Arena<BoxModule>>,
+    module_caches: DashMap<ustr::Ustr, BoxModule>,
     dependencies: RwLock<IndexMap<DependencyId, BoxDependency>>,
     connections: RwLock<Arena<Connection>>,
     module_graph_modules: RwLock<Arena<ModuleGraphModule>>,
@@ -20,7 +22,7 @@ pub struct MemoryManager {
 impl MemoryManager {
     pub fn new() -> Self {
         Self {
-            modules: Default::default(),
+            module_caches: Default::default(),
             dependencies: Default::default(),
             connections: Default::default(),
             module_graph_modules: Default::default(),
@@ -30,12 +32,13 @@ impl MemoryManager {
 // don't expose mutable borrow of arena's item
 impl MemoryManager {
    
-    pub fn alloc_module(&self, module: BoxModule) -> Idx<BoxModule> {
-        self.modules.write().unwrap().insert(module)
+    pub fn alloc_module(&self, module: BoxModule) -> ModuleId  {
+        let id = module.identifier();
+        self.module_caches.insert(module.identifier(), module);
+        return id;
     }
-    pub fn module_by_id(&self, id: Idx<BoxModule>) -> BoxModule {
-        let modules = self.modules.read().unwrap();
-        let module = modules.get(id).expect("get module failed");
+    pub fn module_by_id(&self, id: ModuleId) -> BoxModule {
+        let module = self.module_caches.get(&id).unwrap();
         dyn_clone::clone_box(module.as_ref())
     }
     pub fn alloc_dependency(&self, dep: BoxDependency) -> DependencyId {

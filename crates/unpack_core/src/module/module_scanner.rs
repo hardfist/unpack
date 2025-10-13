@@ -12,6 +12,7 @@ use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
+use ustr::Ustr;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
@@ -113,7 +114,7 @@ impl ModuleScanner {
 
 #[derive(Debug)]
 pub struct ScannerResult {
-    pub _modules: FxHashMap<String, Idx<BoxModule>>,
+    pub _modules: FxHashMap<Ustr, ModuleId>,
     pub collect_modules: Vec<ModuleId>,
     pub module_graph: ModuleGraph,
     pub diagnostics: Diagnostics,
@@ -227,7 +228,7 @@ impl ModuleScanner {
                 });
             }
             Task::Build(task) => {
-                if state._modules.contains_key(task.module.identifier()) {
+                if state._modules.contains_key(&task.module.identifier()) {
                     return;
                 };
 
@@ -300,12 +301,12 @@ impl ModuleScanner {
     ) {
         let module = task.module;
         let original_module_context = module.get_context().map(|x| x.to_owned());
-        let identifier = module.identifier().to_string();
+        let identifier = module.identifier();
         let module_id = memory_manager.alloc_module(module);
         
         state.collect_modules.push(module_id);
         let dependency_id = memory_manager.alloc_dependency(task.module_dependency);
-        state._modules.insert(identifier.to_string(), module_id);
+        state._modules.insert(identifier, module_id);
         // update origin -> self
         state
             .module_graph

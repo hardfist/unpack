@@ -8,7 +8,10 @@ use camino::Utf8Path;
 
 use dyn_clone::DynClone;
 use rspack_sources::BoxSource;
+use swc_core::ecma::utils::Type::Str;
+use ustr::Ustr;
 
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -45,7 +48,7 @@ impl CodeGenerationResult {
 }
 #[async_trait]
 pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
-    fn identifier(&self) -> &str;
+    fn identifier(&self) -> Ustr;
     async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None
@@ -59,4 +62,4 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
 }
 
 pub type BoxModule = Box<dyn Module>;
-pub type ModuleId = Idx<BoxModule>;
+pub type ModuleId = Ustr;

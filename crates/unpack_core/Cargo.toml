@@ -29,6 +29,7 @@ tracing-subscriber = { version = "0.3.19"}
 tracing-chrome = { version = "0.7.2"}
 tracing = { version = "0.1.41"}
 bitflags = { version = "2.9.0" }
+ustr = { version = "1.1.0"}
 
 [lints]
 workspace = true
