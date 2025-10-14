@@ -4,6 +4,7 @@ use dashmap::DashMap;
 use indexmap::IndexMap;
 use ustr::Ustr;
 
+
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::{Arena, Idx},
@@ -11,6 +12,7 @@ use crate::{
 };
 
 pub mod arena;
+pub mod intern;
 
 #[derive(Default, Debug)]
 pub struct MemoryManager {
