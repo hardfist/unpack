@@ -370,7 +370,7 @@ impl ModuleScanner {
         plugin_driver: Arc<PluginDriver>,
         todo_tx: Sender<Result<Task>>,
     ) {
-        let mut module = task.module.clone();
+        let module = task.module.clone();
         let module_dependency = task.dependencies[0].clone();
         let mut write_module = module.write();
         let result = write_module
