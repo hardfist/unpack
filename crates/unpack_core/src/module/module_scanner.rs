@@ -14,6 +14,7 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 use std::collections::HashMap;
 use std::fmt::Write;
+use std::mem;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -117,7 +118,7 @@ impl ModuleScanner {
     }
     pub fn handle_module_creation(
         &self,
-        dependencies: Vec<BoxDependency>,
+        dependencies: Vec<DependencyId>,
         origin_module_id: Option<ModuleId>,
         context: Option<Utf8PathBuf>,
         todo_tx: Sender<Result<Task>>,
@@ -176,7 +177,6 @@ impl ModuleScanner {
         memory_manager: &MemoryManager,
     ) {
         dependencies.into_iter().for_each(|dep| {
-            let dep = memory_manager.dependency_by_id(dep);
             // kick off entry dependencies to task_queue
             self.handle_module_creation(
                 vec![dep],
@@ -237,6 +237,8 @@ impl ModuleScanner {
                     let plugin_driver = self.plugin_driver.clone();
                     let module_factory = self.module_factory.clone();
                     let dependency_cache = self.dependency_cache.clone();
+                    // unsafe convert memory_manager to 'static
+                    let memory_manager = unsafe { &*(memory_manager as *const MemoryManager) };
                     COMPILER_CONTEXT.scope(compiler_id, async move {
                         ModuleScanner::handle_factorize(
                             tx,
@@ -246,6 +248,7 @@ impl ModuleScanner {
                             plugin_driver,
                             module_factory,
                             dependency_cache,
+                            memory_manager
                         )
                         .await;
                     })
@@ -286,9 +289,10 @@ impl ModuleScanner {
         plugin_driver: Arc<PluginDriver>,
         module_factory: Arc<NormalModuleFactory>,
         dependency_cache: DashMap<DependencyId, WritableModule>,
+        memory_manager: &MemoryManager
     ) {
-        let module_dependency = task.dependencies[0].clone();
-
+        let module_dependency_id = task.dependencies[0].clone();
+        let module_dependency = memory_manager.dependency_by_id(module_dependency_id);
         let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
         } else if let Some(context) = original_module_context {
@@ -358,19 +362,19 @@ impl ModuleScanner {
         let module_id = memory_manager.alloc_module(module);
 
         state.collect_modules.push(module_id);
-        let dependency_id = memory_manager.alloc_dependency(task.module_dependency);
         state._modules.insert(identifier, module_id);
         // update origin -> self
         state.module_graph.set_resolved_module(
             task.origin_module_id,
-            dependency_id,
+            task.module_dependency,
             module_id,
             memory_manager,
         );
-        let mut sorted_dependencies: HashMap<String, BoxDependency, _> = HashMap::new();
-        for dep in task.dependencies {
+        let mut sorted_dependencies: HashMap<String, DependencyId, _> = HashMap::new();
+        for dep_id in task.dependencies {
+            let dep = memory_manager.dependency_by_id(dep_id);
             if let Some(module_dependency) = dep.as_module_dependency() {
-                sorted_dependencies.insert(module_dependency.resource_identifier(), dep);
+                sorted_dependencies.insert(module_dependency.resource_identifier(), dep_id);
             }
         }
         for dep in sorted_dependencies.into_values() {
@@ -403,9 +407,7 @@ impl ModuleScanner {
                 .await;
         };
         let module = task.module.clone();
-        let dependencies: Vec<_> = module.read().get_dependencies().iter().map(|id| {
-            memory_manager.dependency_by_id(*id)
-        }).collect();
+        let dependencies: Vec<DependencyId> = module.read().get_dependencies();
         todo_tx
             .send(Ok(Task::AddModule(AddModuleTask {
                 dependencies,

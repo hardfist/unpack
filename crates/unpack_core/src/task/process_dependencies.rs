@@ -1,12 +1,12 @@
 use crate::{
-    dependency::BoxDependency,
-    module::{WritableModule, ModuleId},
+    dependency::{BoxDependency, DependencyId},
+    module::{ModuleId, WritableModule},
 };
 
 #[derive(Debug)]
 pub struct AddModuleTask {
     pub module: WritableModule,                  // to be added to module_graph
-    pub module_dependency: BoxDependency,   // to be added to module_graph
-    pub dependencies: Vec<BoxDependency>,   // recursively build
+    pub module_dependency: DependencyId,   // to be added to module_graph
+    pub dependencies: Vec<DependencyId>,   // recursively build
     pub origin_module_id: Option<ModuleId>, // to be added to module_graph
 }
