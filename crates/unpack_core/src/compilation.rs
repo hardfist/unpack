@@ -109,7 +109,7 @@ impl Compilation {
             .into_par_iter()
             .map(|module_id| {
                 let module = memory_manager.module_by_id(*module_id);
-                let codegen_result = module.code_generation(
+                let codegen_result = module.read().code_generation(
                     CodeGenerationContext {
                         module_graph: &linker_state.module_graph,
                     },

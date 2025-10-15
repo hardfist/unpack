@@ -8,7 +8,7 @@ use ustr::Ustr;
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::{Arena, Idx},
-    module::{BoxModule, Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId, ModuleId},
+    module::{Connection, ConnectionId, Module, ModuleGraphModule, ModuleGraphModuleId, ModuleId, WritableModule},
 };
 
 pub mod arena;
@@ -16,7 +16,7 @@ pub mod intern;
 
 #[derive(Default, Debug)]
 pub struct MemoryManager {
-    module_caches: DashMap<ustr::Ustr, BoxModule>,
+    module_caches: DashMap<ustr::Ustr, WritableModule>,
     dependencies: RwLock<IndexMap<DependencyId, BoxDependency>>,
     connections: RwLock<Arena<Connection>>,
     module_graph_modules: RwLock<Arena<ModuleGraphModule>>,
@@ -34,14 +34,16 @@ impl MemoryManager {
 // don't expose mutable borrow of arena's item
 impl MemoryManager {
    
-    pub fn alloc_module(&self, module: BoxModule) -> ModuleId  {
-        let id = module.identifier();
-        self.module_caches.insert(module.identifier(), module);
+    pub fn alloc_module(&self, module: WritableModule) -> ModuleId  {
+        
+        let id = module.read().identifier();
+        self.module_caches.insert(id, module);
+
         return id;
     }
-    pub fn module_by_id(&self, id: ModuleId) -> BoxModule {
-        let module = self.module_caches.get(&id).unwrap();
-        dyn_clone::clone_box(module.as_ref())
+    pub fn module_by_id(&self, id: ModuleId) -> WritableModule {
+        let module = self.module_caches.get(&id).unwrap().clone();
+        module
     }
     pub fn alloc_dependency(&self, dep: BoxDependency) -> DependencyId {
         let dep_id = dep.id();

@@ -1,17 +1,19 @@
 use super::CodeGenerationContext;
 use crate::compiler::CompilerOptions;
-use crate::memory_manager::arena::Idx;
 use crate::memory_manager::MemoryManager;
 use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
 use camino::Utf8Path;
 
 use dyn_clone::DynClone;
+use parking_lot::RwLockWriteGuard;
+use parking_lot::RawRwLock;
+use parking_lot::lock_api::RawRwLock as _;
+use parking_lot::RwLock;
 use rspack_sources::BoxSource;
-use swc_core::ecma::utils::Type::Str;
+
 use ustr::Ustr;
 
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -61,5 +63,41 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
     fn source_types(&self) -> &[SourceType];
 }
 
-pub type BoxModule = Box<dyn Module>;
+
+
+
+#[derive(Debug)]
+pub struct ReadonlyModule  {
+    _lock: RwLock<()>,
+    module: Arc<dyn Module>,
+}
 pub type ModuleId = Ustr;
+
+
+
+use parking_lot::RwLockReadGuard;
+#[derive(Debug)]
+pub struct RwCell<T:?Sized>(Arc<RwLock<T>>);
+
+
+// new
+
+#[derive(Debug)]
+pub struct FreezeCell<T>(RwCell<T>);
+impl<T> RwCell<T> {
+    pub fn read(&self) -> RwLockReadGuard<'_, T> {
+        self.0.read()
+    }
+    pub fn write(&self) -> RwLockWriteGuard<'_, T> {
+        self.0.write()
+    }
+    pub fn new(value: T) -> RwCell<T> {
+        RwCell(Arc::new(RwLock::new(value)))
+    }
+}
+impl<T> Clone for RwCell<T> {
+    fn clone(&self) -> RwCell<T> {
+        RwCell(Arc::clone(&self.0))
+    }
+}
+pub type WritableModule = RwCell<Box<dyn Module>>;

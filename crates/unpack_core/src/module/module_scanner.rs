@@ -1,19 +1,21 @@
 use crate::dependency::{BoxDependency, DependencyId};
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
-use crate::memory_manager::arena::Idx;
 use crate::memory_manager::MemoryManager;
-use crate::module::{BoxModule, BuildContext, ModuleId};
+use crate::module::{BuildContext, Module, ModuleId, RwCell, WritableModule};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::plugin::PluginDriver;
 use crate::scheduler::COMPILER_CONTEXT;
 use crate::task::{AddModuleTask, BuildTask, FactorizeTask};
 use crate::{resolver_factory::ResolverFactory, task::Task};
 use camino::Utf8PathBuf;
+use dashmap::DashMap;
 use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
+use swc_core::ecma::utils::RefRewriter;
 use ustr::Ustr;
 use std::collections::HashMap;
+use std::fmt::Write;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
 use tokio::task::JoinSet;
@@ -39,6 +41,7 @@ pub struct ModuleScanner {
     working_tasks: JoinSet<()>,
     todo_tx: Sender<Result<Task>>,
     todo_rx: Receiver<Result<Task>>,
+    dependency_cache: DashMap<DependencyId,WritableModule>
 }
 struct FactorizeParams {}
 impl ModuleScanner {
@@ -65,6 +68,7 @@ impl ModuleScanner {
             working_tasks: Default::default(),
             todo_rx,
             todo_tx,
+            dependency_cache: Default::default()
         }
     }
     // add entries
@@ -207,13 +211,14 @@ impl ModuleScanner {
                     .origin_module_id
                     .map(|x| memory_manager.module_by_id(x));
                 let original_module_context =
-                    original_module.and_then(|x| x.get_context().map(|x| x.to_path_buf()));
+                    original_module.and_then(|x| x.read().get_context().map(|x| x.to_path_buf()));
                 let tx = self.todo_tx.clone();
                 self.working_tasks.spawn({
                     let compiler_id = COMPILER_CONTEXT.get();
                     let options = self.options.clone();
                     let plugin_driver = self.plugin_driver.clone();
                     let module_factory = self.module_factory.clone();
+                    let dependency_cache = self.dependency_cache.clone();
                     COMPILER_CONTEXT.scope(compiler_id, async move {
                         ModuleScanner::handle_factorize(
                             tx,
@@ -222,13 +227,14 @@ impl ModuleScanner {
                             options,
                             plugin_driver,
                             module_factory,
+                            dependency_cache
                         )
                         .await;
                     })
                 });
             }
             Task::Build(task) => {
-                if state._modules.contains_key(&task.module.identifier()) {
+                if state._modules.contains_key(&task.module.read().identifier()) {
                     return;
                 };
 
@@ -256,6 +262,7 @@ impl ModuleScanner {
         options: Arc<CompilerOptions>,
         plugin_driver: Arc<PluginDriver>,
         module_factory: Arc<NormalModuleFactory>,
+        dependency_cache: DashMap<DependencyId,WritableModule>,
     ) {
         let module_dependency = task.dependencies[0].clone();
 
@@ -267,6 +274,17 @@ impl ModuleScanner {
             options.context.clone()
         };
         let module_dependency = module_dependency.clone();
+
+        if let Some(reference) = dependency_cache.get(&module_dependency.id()) {
+            let module =  reference.clone();
+            tx.send(Ok(Task::Build(BuildTask {
+                origin_module_id: task.origin_module_id,
+                module,
+                dependencies: task.dependencies.clone(),
+            })))
+            .unwrap();
+            return;
+        }
         match module_factory
             .create(
                 ModuleFactoryCreateData {
@@ -279,7 +297,7 @@ impl ModuleScanner {
             .await
         {
             Ok(factory_result) => {
-                let module = Box::new(factory_result.module);
+                let module: WritableModule= RwCell::new(Box::new(factory_result.module));
                 tx.send(Ok(Task::Build(BuildTask {
                     origin_module_id: task.origin_module_id,
                     module,
@@ -300,8 +318,9 @@ impl ModuleScanner {
         memory_manager: & MemoryManager,
     ) {
         let module = task.module;
-        let original_module_context = module.get_context().map(|x| x.to_owned());
-        let identifier = module.identifier();
+        
+        let original_module_context = module.read().get_context().map(|x| x.to_owned());
+        let identifier = module.read().identifier();
         let module_id = memory_manager.alloc_module(module);
         
         state.collect_modules.push(module_id);
@@ -333,17 +352,19 @@ impl ModuleScanner {
         plugin_driver: Arc<PluginDriver>,
         todo_tx: Sender<Result<Task>>,
     ) {
-        let mut module = task.module;
+        let mut module = task.module.clone();
         let module_dependency = task.dependencies[0].clone();
-
-        match module
+        let mut write_module = module.write();
+        let result = write_module
             .build(BuildContext {
                 options: options.clone(),
                 plugin_driver: plugin_driver.clone(),
             })
-            .await
+            .await;
+        match result
         {
             Ok(result) => {
+                let module = task.module.clone();
                 todo_tx
                     .send(Ok(Task::AddModule(AddModuleTask {
                         dependencies: result.module_dependencies,

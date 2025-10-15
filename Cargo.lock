@@ -4725,6 +4725,7 @@ dependencies = [
  "indexmap 2.9.0",
  "miette",
  "mimalloc",
+ "parking_lot",
  "rayon",
  "rspack_resolver",
  "rspack_sources",

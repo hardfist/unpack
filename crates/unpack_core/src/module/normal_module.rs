@@ -83,7 +83,7 @@ impl Module for NormalModule {
         };
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;
-
+        
         self.source = NormalModuleSource::Succeed(source.clone());
         self.presentational_dependencies = parse_result.presentational_dependencies;
         Ok(BuildResult {
