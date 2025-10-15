@@ -3,7 +3,7 @@ use crate::dependency::{
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
-use crate::memory_manager::MemoryManager;
+use crate::memory_manager::{self, MemoryManager};
 use crate::plugin::LoadArgs;
 use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -27,6 +27,7 @@ pub struct NormalModule {
     presentational_dependencies: Vec<BoxDependencyTemplate>,
     blocks: Vec<AsyncDependenciesBlockId>,
     source: NormalModuleSource,
+    need_rebuild: bool,
 }
 #[derive(Debug, Clone)]
 enum NormalModuleSource {
@@ -68,9 +69,10 @@ impl Module for NormalModule {
         return t
     }
     fn need_build(&self) -> bool {
-        return true;
+        return self.need_rebuild
     }
-    async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
+    async fn build(&mut self, build_context: BuildContext, memory_manager: &MemoryManager) -> Result<BuildResult> {
+       // println!("building module: {}", self.resource_path);
         let resource_path = self.resource_path.clone();
         let content = build_context
             .plugin_driver
@@ -86,11 +88,15 @@ impl Module for NormalModule {
         };
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;
-        
+        for(dep) in parse_result.module_dependencies.into_iter() {
+            let dep_id = memory_manager.alloc_dependency(dep);
+            self.add_dependency_id(dep_id);
+        }
         self.source = NormalModuleSource::Succeed(source.clone());
+        
         self.presentational_dependencies = parse_result.presentational_dependencies;
         Ok(BuildResult {
-            module_dependencies: parse_result.module_dependencies,
+         
         })
     }
 
@@ -134,6 +140,7 @@ impl NormalModule {
             module_dependencies: vec![],
             presentational_dependencies: vec![],
             source: NormalModuleSource::UnBuild,
+            need_rebuild:true
         }
     }
 

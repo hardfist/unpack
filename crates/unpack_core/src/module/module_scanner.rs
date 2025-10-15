@@ -95,14 +95,18 @@ impl ModuleScanner {
             })
             .collect::<Vec<_>>();
         let start = Instant::now();
+        eprintln!("start first scan");
         self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
             .await;
         let duration = start.elapsed();
-        eprintln!("scan done in {:?}", duration);
+        eprintln!("first scan in {:?} with {} modules", duration,scanner_result._modules.len());
         let start = Instant::now();
-        self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
+        eprintln!("start second scan");
+        let mut new_scanner_result = ScannerResult::new();
+        self.build_loop(&mut new_scanner_result, entry_ids.clone(), memory_manager)
             .await;
-        eprintln!("scan done in {:?}", duration);
+        let duration = start.elapsed();
+        eprintln!("second scan in {:?} with {} modules", duration,scanner_result._modules.len());
         scanner_result
     }
     pub fn handle_module_creation(
@@ -388,7 +392,7 @@ impl ModuleScanner {
                 .build(BuildContext {
                     options: options.clone(),
                     plugin_driver: plugin_driver.clone(),
-                })
+                }, memory_manager)
                 .await;
         };
         let module = task.module.clone();

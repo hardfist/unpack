@@ -1,6 +1,7 @@
 use super::CodeGenerationContext;
 use crate::compiler::CompilerOptions;
 use crate::dependency::DependencyId;
+use crate::memory_manager;
 use crate::memory_manager::MemoryManager;
 use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
@@ -26,7 +27,7 @@ use crate::plugin::PluginDriver;
 
 #[derive(Debug)]
 pub struct BuildResult {
-    pub module_dependencies: Vec<BoxDependency>,
+   
 }
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,
@@ -52,7 +53,7 @@ impl CodeGenerationResult {
 #[async_trait]
 pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
     fn identifier(&self) -> Ustr;
-    async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult>;
+    async fn build(&mut self, build_context: BuildContext, memory_manager: &MemoryManager) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }

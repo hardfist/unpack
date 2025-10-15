@@ -82,13 +82,6 @@ impl Compilation {
             self.plugin_driver.clone(),
         );
         let scanner_result = module_scanner.from_entries(memory_manager).await;
-
-        let elapsed = start.elapsed();
-        println!(
-            "scan finished with {} modules in {:?}",
-            scanner_result._modules.len(),
-            elapsed
-        );
         scanner_result
     }
     /// similar with webpack's seal phase
