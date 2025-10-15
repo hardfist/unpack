@@ -122,14 +122,12 @@ impl ModuleScanner {
         origin_module_id: Option<ModuleId>,
         context: Option<Utf8PathBuf>,
         todo_tx: Sender<Result<Task>>,
-    ) {
-        todo_tx
-            .send(Ok(Task::Factorize(FactorizeTask {
+    ) -> Vec<Task> {
+        return vec![(Task::Factorize(FactorizeTask {
                 dependencies,
                 origin_module_id,
                 origin_module_context: context.clone(),
-            })))
-            .unwrap();
+            }))];
     }
     pub fn resolve_module() {}
 }
@@ -176,53 +174,30 @@ impl ModuleScanner {
         dependencies: Vec<DependencyId>,
         memory_manager: &MemoryManager,
     ) {
+        let mut tasks = vec![];
         dependencies.into_iter().for_each(|dep| {
             // kick off entry dependencies to task_queue
-            self.handle_module_creation(
+            let task = self.handle_module_creation(
                 vec![dep],
                 None,
                 Some(self.context.clone()),
                 self.todo_tx.clone(),
             );
+            tasks.extend(task);
+
         });
-        loop {
-            tokio::select! {
-                task = self.todo_rx.recv() => {
-                    if let Some(task) = task {
-                        match task {
-                            Ok(task) =>{
-                               self.handle_task(task, state,memory_manager);
-                            },
-                            Err(err) => {
-                                state.add_diagnostic(err);
-                            }
-                        }
-
-                    }
-                }
-                task = self.working_tasks.join_next() => {
-                    if let Some(handle) = task {
-                        if handle.is_err() {
-                            panic!("unexpected spawn error");
-                        }
-
-                    } else if self.todo_rx.is_empty() {
-                        // if todo_task and working_task both empty which mean we can safely exit
-
-                        break;
-                    }
-                }
-
-            }
+        while let Some(task) = tasks.pop() {
+            let more_tasks = self.handle_task(task, state,memory_manager).await;
+            tasks.extend(more_tasks)
         }
     }
 
-    fn handle_task(
+    async fn handle_task(
         &mut self,
         task: Task,
         state: &mut ScannerResult,
         memory_manager: &MemoryManager,
-    ) {
+    ) -> Vec<Task> {
         match task {
             Task::Factorize(factorize_task) => {
                 let original_module = factorize_task
@@ -231,7 +206,7 @@ impl ModuleScanner {
                 let original_module_context =
                     original_module.and_then(|x| x.read().get_context().map(|x| x.to_path_buf()));
                 let tx = self.todo_tx.clone();
-                self.working_tasks.spawn({
+                ({
                     let compiler_id = COMPILER_CONTEXT.get();
                     let options = self.options.clone();
                     let plugin_driver = self.plugin_driver.clone();
@@ -239,8 +214,7 @@ impl ModuleScanner {
                     let dependency_cache = self.dependency_cache.clone();
                     // unsafe convert memory_manager to 'static
                     let memory_manager = unsafe { &*(memory_manager as *const MemoryManager) };
-                    COMPILER_CONTEXT.scope(compiler_id, async move {
-                        ModuleScanner::handle_factorize(
+                    return  ModuleScanner::handle_factorize(
                             tx,
                             factorize_task,
                             original_module_context,
@@ -249,9 +223,7 @@ impl ModuleScanner {
                             module_factory,
                             dependency_cache,
                             memory_manager
-                        )
-                        .await;
-                    })
+                        ).await;
                 });
             }
             Task::Build(task) => {
@@ -259,24 +231,21 @@ impl ModuleScanner {
                     ._modules
                     .contains_key(&task.module.read().identifier())
                 {
-                    return;
+                    return vec![]
                 };
 
                 let sender = self.todo_tx.clone();
                 // unsafe convert memory_manager to 'staticg
                 let memory_manager = unsafe { &*(memory_manager as *const MemoryManager) };
-                self.working_tasks.spawn({
+                ({
                     let options = self.options.clone();
                     let plugin_driver = self.plugin_driver.clone();
                     let compiler_id = COMPILER_CONTEXT.get();
-                    
-                    COMPILER_CONTEXT.scope(compiler_id, async move {
-                        ModuleScanner::handle_build(task, options, plugin_driver, sender,memory_manager).await;
-                    })
+                    return ModuleScanner::handle_build(task, options, plugin_driver, sender,memory_manager).await;
                 });
             }
             Task::AddModule(task) => {
-                self.handle_add_module_and_dependencies(state, task, memory_manager);
+                return self.handle_add_module_and_dependencies(state, task, memory_manager);
             }
         }
     }
@@ -290,7 +259,7 @@ impl ModuleScanner {
         module_factory: Arc<NormalModuleFactory>,
         dependency_cache: Arc<DashMap<DependencyId, WritableModule>>,
         memory_manager: &MemoryManager
-    ) {
+    ) -> Vec<Task> {
         let module_dependency_id = task.dependencies[0].clone();
         let module_dependency = memory_manager.dependency_by_id(module_dependency_id);
         let context = if let Some(context) = module_dependency.get_context() {
@@ -303,23 +272,19 @@ impl ModuleScanner {
         let module_dependency = module_dependency.clone();
         if let Some(reference) = dependency_cache.get(&module_dependency.id()) {
             let module = reference.clone();
-            tx.send(Ok(Task::Build(BuildTask {
+            return vec![(Task::Build(BuildTask {
                 origin_module_id: task.origin_module_id,
                 module,
                 dependencies: task.dependencies.clone(),
-            })))
-            .unwrap();
-            return;
+            }))]
         }
         if let Some(reference) = dependency_cache.get(&module_dependency.id()) {
             let module = reference.clone();
-            tx.send(Ok(Task::Build(BuildTask {
+            return vec![(Task::Build(BuildTask {
                 origin_module_id: task.origin_module_id,
                 module,
                 dependencies: task.dependencies.clone(),
-            })))
-            .unwrap();
-            return;
+            }))]
         }
         match module_factory
             .create(
@@ -336,15 +301,14 @@ impl ModuleScanner {
                 let module: WritableModule = RwCell::new(Box::new(factory_result.module));
                 
                 dependency_cache.insert(module_dependency.id(), module.clone());
-                tx.send(Ok(Task::Build(BuildTask {
+                return vec!(Task::Build(BuildTask {
                     origin_module_id: task.origin_module_id,
                     module,
                     dependencies: task.dependencies.clone(),
-                })))
-                .unwrap();
+                }))
             }
             Err(err) => {
-                tx.send(Err(err)).unwrap();
+               return vec![]
             }
         }
     }
@@ -354,7 +318,7 @@ impl ModuleScanner {
         state: &mut ScannerResult,
         task: AddModuleTask,
         memory_manager: &MemoryManager,
-    ) {
+    ) -> Vec<Task> {
         let module = task.module;
 
         let original_module_context = module.read().get_context().map(|x| x.to_owned());
@@ -377,14 +341,16 @@ impl ModuleScanner {
                 sorted_dependencies.insert(module_dependency.resource_identifier(), dep_id);
             }
         }
+        let mut tasks = vec![];
         for dep in sorted_dependencies.into_values() {
-            self.handle_module_creation(
+            tasks.extend(self.handle_module_creation(
                 vec![dep],
                 Some(module_id),
                 original_module_context.clone(),
                 self.todo_tx.clone(),
-            );
+            ));
         }
+        return tasks;
     }
     #[instrument("handle_build", skip_all)]
     async fn handle_build(
@@ -393,7 +359,7 @@ impl ModuleScanner {
         plugin_driver: Arc<PluginDriver>,
         todo_tx: Sender<Result<Task>>,
         memory_manager: &MemoryManager
-    ) {
+    ) -> Vec<Task> {
         let module = task.module.clone();
         let module_dependency = task.dependencies[0].clone();
 
@@ -408,13 +374,11 @@ impl ModuleScanner {
         };
         let module = task.module.clone();
         let dependencies: Vec<DependencyId> = module.read().get_dependencies();
-        todo_tx
-            .send(Ok(Task::AddModule(AddModuleTask {
+        return vec![(Task::AddModule(AddModuleTask {
                 dependencies,
                 origin_module_id: task.origin_module_id,
                 module_dependency,
                 module,
-            })))
-            .unwrap();
+            }))]
     }
 }
