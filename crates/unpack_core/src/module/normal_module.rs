@@ -93,6 +93,7 @@ impl Module for NormalModule {
             self.add_dependency_id(dep_id);
         }
         self.source = NormalModuleSource::Succeed(source.clone());
+        self.need_rebuild = true;
         
         self.presentational_dependencies = parse_result.presentational_dependencies;
         Ok(BuildResult {
