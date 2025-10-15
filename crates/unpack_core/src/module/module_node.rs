@@ -1,5 +1,6 @@
 use super::CodeGenerationContext;
 use crate::compiler::CompilerOptions;
+use crate::dependency::DependencyId;
 use crate::memory_manager::MemoryManager;
 use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
@@ -55,6 +56,7 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }
+    fn need_build(&self) -> bool;
     fn code_generation(
         &self,
         code_generation_context: CodeGenerationContext,

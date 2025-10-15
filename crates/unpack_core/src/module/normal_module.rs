@@ -67,6 +67,9 @@ impl Module for NormalModule {
         let t = ustr(self.resource_path.as_str());
         return t
     }
+    fn need_build(&self) -> bool {
+        return true;
+    }
     async fn build(&mut self, build_context: BuildContext) -> Result<BuildResult> {
         let resource_path = self.resource_path.clone();
         let content = build_context
