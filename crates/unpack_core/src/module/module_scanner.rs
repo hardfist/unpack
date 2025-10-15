@@ -18,6 +18,7 @@ use std::collections::HashMap;
 use std::fmt::Write;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::task::JoinSet;
 use tracing::instrument;
 
@@ -93,9 +94,15 @@ impl ModuleScanner {
                 entry_dep
             })
             .collect::<Vec<_>>();
-
-        self.build_loop(&mut scanner_result, entry_ids, memory_manager)
+        let start = Instant::now();
+        self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
             .await;
+        let duration = start.elapsed();
+        eprintln!("scan done in {:?}", duration);
+        let start = Instant::now();
+        self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
+            .await;
+        eprintln!("scan done in {:?}", duration);
         scanner_result
     }
     pub fn handle_module_creation(
@@ -285,6 +292,16 @@ impl ModuleScanner {
             .unwrap();
             return;
         }
+        if let Some(reference) = dependency_cache.get(&module_dependency.id()) {
+            let module =  reference.clone();
+            tx.send(Ok(Task::Build(BuildTask {
+                origin_module_id: task.origin_module_id,
+                module,
+                dependencies: task.dependencies.clone(),
+            })))
+            .unwrap();
+            return;
+        }
         match module_factory
             .create(
                 ModuleFactoryCreateData {
@@ -298,6 +315,7 @@ impl ModuleScanner {
         {
             Ok(factory_result) => {
                 let module: WritableModule= RwCell::new(Box::new(factory_result.module));
+                dependency_cache.insert(module_dependency.id(), module.clone());
                 tx.send(Ok(Task::Build(BuildTask {
                     origin_module_id: task.origin_module_id,
                     module,
