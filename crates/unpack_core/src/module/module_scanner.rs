@@ -43,7 +43,7 @@ pub struct ModuleScanner {
     working_tasks: JoinSet<()>,
     todo_tx: Sender<Result<Task>>,
     todo_rx: Receiver<Result<Task>>,
-    dependency_cache: DashMap<DependencyId, WritableModule>,
+    dependency_cache: Arc<DashMap<DependencyId, WritableModule>>,
 }
 struct FactorizeParams {}
 impl ModuleScanner {
@@ -288,7 +288,7 @@ impl ModuleScanner {
         options: Arc<CompilerOptions>,
         plugin_driver: Arc<PluginDriver>,
         module_factory: Arc<NormalModuleFactory>,
-        dependency_cache: DashMap<DependencyId, WritableModule>,
+        dependency_cache: Arc<DashMap<DependencyId, WritableModule>>,
         memory_manager: &MemoryManager
     ) {
         let module_dependency_id = task.dependencies[0].clone();
@@ -301,7 +301,6 @@ impl ModuleScanner {
             options.context.clone()
         };
         let module_dependency = module_dependency.clone();
-
         if let Some(reference) = dependency_cache.get(&module_dependency.id()) {
             let module = reference.clone();
             tx.send(Ok(Task::Build(BuildTask {
@@ -335,6 +334,7 @@ impl ModuleScanner {
         {
             Ok(factory_result) => {
                 let module: WritableModule = RwCell::new(Box::new(factory_result.module));
+                
                 dependency_cache.insert(module_dependency.id(), module.clone());
                 tx.send(Ok(Task::Build(BuildTask {
                     origin_module_id: task.origin_module_id,

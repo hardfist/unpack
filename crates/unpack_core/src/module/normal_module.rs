@@ -72,7 +72,6 @@ impl Module for NormalModule {
         return self.need_rebuild
     }
     async fn build(&mut self, build_context: BuildContext, memory_manager: &MemoryManager) -> Result<BuildResult> {
-        println!("building module: {}", self.resource_path);
         let resource_path = self.resource_path.clone();
         let content = build_context
             .plugin_driver
