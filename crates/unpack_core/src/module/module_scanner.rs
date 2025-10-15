@@ -17,6 +17,7 @@ use std::fmt::Write;
 use std::mem;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
+use std::thread::sleep;
 use std::time::{Duration, Instant};
 use swc_core::ecma::utils::RefRewriter;
 use tokio::task::JoinSet;
@@ -103,17 +104,28 @@ impl ModuleScanner {
             })
             .collect();
         eprintln!("start first scan");
+
         self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
             .await;
         let duration = start.elapsed();
+
         eprintln!("first scan in {:?} with {} modules", duration,scanner_result._modules.len());
+
+        sleep(Duration::from_secs(2));
         let start = Instant::now();
+        
         eprintln!("start second scan");
         let mut new_scanner_result = ScannerResult::new();
         self.build_loop(&mut new_scanner_result, entry_ids.clone(), memory_manager)
             .await;
         let duration = start.elapsed();
         eprintln!("second scan in {:?} with {} modules", duration,scanner_result._modules.len());
+        let graph = new_scanner_result.module_graph;
+        let start = Instant::now();
+        let graph2 = graph.clone();
+        let duration = start.elapsed();
+        eprintln!("clone graph in {:?}", duration);
+
         scanner_result
     }
     pub fn handle_module_creation(

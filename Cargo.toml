@@ -59,6 +59,7 @@ panic     = "abort"
 strip     = false
 [profile.release-debug]
 debug    = true
+
 inherits = "release"
 strip    = false
 
