@@ -95,6 +95,12 @@ impl ModuleScanner {
             })
             .collect::<Vec<_>>();
         let start = Instant::now();
+        let entry_ids: Vec<_> = entry_ids
+            .iter()
+            .map(|dep| {
+                memory_manager.alloc_dependency(dep.clone())
+            })
+            .collect();
         eprintln!("start first scan");
         self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
             .await;
@@ -166,10 +172,11 @@ impl ModuleScanner {
     pub async fn build_loop(
         &mut self,
         state: &mut ScannerResult,
-        dependencies: Vec<BoxDependency>,
+        dependencies: Vec<DependencyId>,
         memory_manager: &MemoryManager,
     ) {
         dependencies.into_iter().for_each(|dep| {
+            let dep = memory_manager.dependency_by_id(dep);
             // kick off entry dependencies to task_queue
             self.handle_module_creation(
                 vec![dep],
