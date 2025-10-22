@@ -65,15 +65,6 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
     ) -> Result<CodeGenerationResult>;
     fn source_types(&self) -> &[SourceType];
 }
-
-
-
-
-#[derive(Debug)]
-pub struct ReadonlyModule  {
-    _lock: RwLock<()>,
-    module: Arc<dyn Module>,
-}
 pub type ModuleId = Ustr;
 
 
@@ -103,4 +94,27 @@ impl<T> Clone for RwCell<T> {
         RwCell(Arc::clone(&self.0))
     }
 }
-pub type WritableModule = RwCell<Box<dyn Module>>;
+pub type WritableModule = Box<dyn Module>;
+pub type ReadonlyModule = Arc<Box<dyn Module>>;
+
+
+pub trait WritableModuleExt {
+    fn to_readonly(&self) -> ReadonlyModule;
+}
+pub trait ReadonlyModuleExt {
+    fn to_writable(&self) -> WritableModule;
+}
+impl ReadonlyModuleExt for ReadonlyModule {
+    fn to_writable(&self) -> WritableModule {
+        let t = dyn_clone::clone_box(&***self);
+        t
+    }
+}   
+
+impl WritableModuleExt for WritableModule {
+    fn to_readonly(&self) -> ReadonlyModule {
+        let readonly = dyn_clone::clone_box(&**self);
+        let result = Arc::new(readonly);
+        result
+    }
+}

@@ -8,7 +8,8 @@ use ustr::Ustr;
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::{Arena, Idx},
-    module::{Connection, ConnectionId, Module, ModuleGraphModule, ModuleGraphModuleId, ModuleId, WritableModule},
+    module::{Connection, ConnectionId, Module, ModuleGraphModule, ModuleGraphModuleId, ModuleId, 
+        ReadonlyModule, WritableModule},
 };
 
 pub mod arena;
@@ -16,7 +17,7 @@ pub mod intern;
 
 #[derive(Default, Debug)]
 pub struct MemoryManager {
-    module_caches: DashMap<ustr::Ustr, WritableModule>,
+    module_caches: DashMap<ustr::Ustr, ReadonlyModule>,
     dependencies: RwLock<IndexMap<DependencyId, BoxDependency>>,
     connections: RwLock<Arena<Connection>>,
     module_graph_modules: RwLock<Arena<ModuleGraphModule>>,
@@ -34,14 +35,14 @@ impl MemoryManager {
 // don't expose mutable borrow of arena's item
 impl MemoryManager {
    
-    pub fn alloc_module(&self, module: WritableModule) -> ModuleId  {
+    pub fn alloc_module(&self, module: ReadonlyModule) -> ModuleId  {
         
-        let id = module.read().identifier();
+        let id = module.identifier();
         self.module_caches.insert(id, module);
 
         return id;
     }
-    pub fn module_by_id(&self, id: ModuleId) -> WritableModule {
+    pub fn module_by_id(&self, id: ModuleId) -> ReadonlyModule {
         let module = self.module_caches.get(&id).unwrap().clone();
         module
     }
