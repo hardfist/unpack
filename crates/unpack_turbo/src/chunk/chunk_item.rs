@@ -1,4 +1,4 @@
-use turbo_tasks::{util::Chunk, ResolvedVc, Vc};
+use turbo_tasks::{ResolvedVc, Vc};
 
 use crate::module::{EcmascriptModuleAsset, Module};
 

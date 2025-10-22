@@ -3,15 +3,14 @@ use crate::dependency::{
 };
 use crate::errors::miette::Result;
 use crate::errors::Diagnostics;
-use crate::memory_manager::{self, MemoryManager};
+use crate::memory_manager::MemoryManager;
 use crate::plugin::LoadArgs;
 use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
 use ustr::{ustr, Ustr};
-use std::borrow::Cow;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use super::ast::parse;
 use super::{BuildContext, BuildResult, Module, SourceType};
@@ -87,7 +86,7 @@ impl Module for NormalModule {
         };
         let source = Self::create_source(resource_path.to_string().clone(), content.clone());
         let parse_result = Self::parse(content)?;
-        for(dep) in parse_result.module_dependencies.into_iter() {
+        for dep in parse_result.module_dependencies.into_iter() {
             let dep_id = memory_manager.alloc_dependency(dep);
             self.add_dependency_id(dep_id);
         }

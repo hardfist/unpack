@@ -3,7 +3,7 @@ use std::hash::Hash;
 use roaring::RoaringBitmap;
 use serde::{Deserialize, Serialize};
 
-use turbo_tasks::{debug::ValueDebugFormat, trace::TraceRawVcs, turbo_tasks, FxIndexSet, NonLocalValue, ResolvedVc, TaskInput, Vc};
+use turbo_tasks::{debug::ValueDebugFormat, trace::TraceRawVcs, FxIndexSet, NonLocalValue, ResolvedVc, TaskInput, Vc};
 
 use crate::{asset::Asset, chunk::{chunk_context::ChunkingContext, chunk_item::ChunkItem}, module::Module, module_graph::ModuleGraph};
 

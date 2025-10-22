@@ -1,15 +1,14 @@
-use std::{borrow::Cow, sync::RwLock};
+use std::sync::RwLock;
 
 use dashmap::DashMap;
 use indexmap::IndexMap;
-use ustr::Ustr;
 
 
 use crate::{
     dependency::{BoxDependency, DependencyId},
-    memory_manager::arena::{Arena, Idx},
+    memory_manager::arena::Arena,
     module::{Connection, ConnectionId, Module, ModuleGraphModule, ModuleGraphModuleId, ModuleId, 
-        ReadonlyModule, WritableModule},
+        ReadonlyModule},
 };
 
 pub mod arena;

@@ -1,7 +1,7 @@
 use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, Upcast, Vc};
 use anyhow::Result;
-use crate::{chunk::{availability_info::AvailabilityInfo, chunk_group::ChunkGroup}, ident::AssetIdent, module_graph::ModuleGraph, output::{OutputAssets, OutputAssetsWithReferenced}};
+use crate::{chunk::chunk_group::ChunkGroup, ident::AssetIdent, module_graph::ModuleGraph, output::{OutputAssets, OutputAssetsWithReferenced}};
 
 
 

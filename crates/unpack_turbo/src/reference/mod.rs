@@ -1,5 +1,5 @@
 use turbo_rcstr::RcStr;
-use turbo_tasks::{value_impl, vdbg, FxIndexSet, ReadRef, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc};
+use turbo_tasks::{value_impl, FxIndexSet, ReadRef, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 
 use crate::{chunk::chunk_reference::{ChunkableModuleReference, ChunkingType, ChunkingTypeOption}, file_source::FileSource, module::{EcmascriptModuleAsset, Module, Modules}, module_graph::ExportUsage};

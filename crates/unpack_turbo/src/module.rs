@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use turbo_tasks::{vdbg, ResolvedVc, TaskInput, Vc};
+use turbo_tasks::{ResolvedVc, TaskInput, Vc};
 use turbo_tasks_fs::{rope::Rope, FileSystemPath};
 use anyhow::{Context, Result};
 use crate::{asset::Asset, asset_content::AssetContent, ident::AssetIdent, reference::{EsmAssetReference, ModuleReference, ModuleReferences}, source::Source};

@@ -1,7 +1,5 @@
 use super::CodeGenerationContext;
 use crate::compiler::CompilerOptions;
-use crate::dependency::DependencyId;
-use crate::memory_manager;
 use crate::memory_manager::MemoryManager;
 use crate::runtime::RuntimeGlobals;
 use async_trait::async_trait;
@@ -9,8 +7,6 @@ use camino::Utf8Path;
 
 use dyn_clone::DynClone;
 use parking_lot::RwLockWriteGuard;
-use parking_lot::RawRwLock;
-use parking_lot::lock_api::RawRwLock as _;
 use parking_lot::RwLock;
 use rspack_sources::BoxSource;
 
@@ -20,7 +16,6 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::dependency::BoxDependency;
 use crate::dependency::DependenciesBlock;
 use crate::errors::miette::Result;
 use crate::plugin::PluginDriver;

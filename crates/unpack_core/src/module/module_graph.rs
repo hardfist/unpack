@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use rustc_hash::FxHashMap;
 
 use crate::{
-    dependency::DependencyId, memory_manager::{self, MemoryManager}, module::ModuleId
+    dependency::DependencyId, memory_manager::MemoryManager, module::ModuleId
 };
 
 use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};

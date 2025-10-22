@@ -32,7 +32,7 @@ impl Plugin for JsPluginAdapter {
         let compilation = JsCompilation::from_compilation(compilation);
         let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.this_compilation else {
-            return ();
+            return;
         };
         callback.call_with_return_value(
             compilation,

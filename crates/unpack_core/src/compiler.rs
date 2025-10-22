@@ -1,11 +1,8 @@
 mod options;
-use std::mem;
 use std::sync::Arc;
 
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
-use crate::memory_manager;
-use crate::memory_manager::MemoryManager;
 use crate::plugin::BoxPlugin;
 use crate::plugin::CompilationCell;
 use crate::plugin::PluginContext;
