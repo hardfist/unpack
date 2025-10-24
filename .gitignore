@@ -29,3 +29,7 @@ trace-*.json
 # dist
 
 dist/
+
+# heaptrack
+
+heaptrack*.zst
