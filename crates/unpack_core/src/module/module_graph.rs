@@ -5,7 +5,7 @@ use crate::{dependency::DependencyId, memory_manager::MemoryManager, module::Mod
 
 use super::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default,Clone)]
 pub struct ModuleGraph {
     pub dependency_to_connection: IndexMap<DependencyId, ConnectionId>,
     pub module_id_to_module_graph_module_id: FxHashMap<ModuleId, ModuleGraphModuleId>,
