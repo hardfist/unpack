@@ -14,10 +14,9 @@ use crate::{
     },
     plugin::PluginDriver,
 };
-use std::sync::{
-    atomic::{AtomicU32, Ordering},
-    Arc,
-};
+use std::{sync::{
+    Arc, atomic::{AtomicU32, Ordering}
+}, time::Instant};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -78,6 +77,10 @@ impl Compilation {
             self.plugin_driver.clone(),
         );
         let scanner_result = module_scanner.from_entries(memory_manager).await;
+        let start = Instant::now();
+        let _ = scanner_result.module_graph.clone();
+        let end = start.elapsed();
+        eprintln!("clone graph with {} modules cost: {:?}", scanner_result._modules.len(),end.as_micros());
         scanner_result
     }
     /// similar with webpack's seal phase

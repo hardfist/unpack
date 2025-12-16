@@ -2,7 +2,6 @@ use rspack_resolver::ResolveOptions;
 use std::{path::PathBuf, sync::Arc};
 use unpack_core::{
     compiler::{Compiler, CompilerOptions, EntryItem},
-    memory_manager::MemoryManager,
     tracing::init_tracing,
 };
 

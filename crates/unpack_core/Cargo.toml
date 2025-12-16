@@ -32,6 +32,7 @@ bitflags = { version = "2.9.0" }
 ustr = { version = "1.1.0"}
 triomphe = { version = "0.1"}
 parking_lot = { version = "*", features = ["send_guard"]}
+im = "15.1.0"
 
 [dev-dependencies]
 codspeed-criterion-compat = "2.7.4"

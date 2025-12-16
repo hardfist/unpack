@@ -8,17 +8,17 @@ use rspack_resolver::ResolveOptions;
 use unpack_core::compiler::{Compiler, CompilerOptions, EntryItem};
 async fn build() {
     let root = env!("CARGO_MANIFEST_DIR");
+    dbg!(root);
     let context = PathBuf::from(root)
-        .parent()
-        .unwrap()
-        .join("../../build-tools-performance/cases/react-10k")
+        .join("../../benchmark/build-tools-performance")
         .canonicalize()
         .unwrap();
+    dbg!(&context);
     let compiler_options: CompilerOptions = CompilerOptions {
         context: context.clone().try_into().expect("expect utf8 path"),
         entry: vec![EntryItem {
             name: "main".to_string(),
-            import: "./src/index.jsx".to_string(),
+            import: "./src/medium/index.jsx".to_string(),
         }],
         resolve: ResolveOptions {
             extensions: vec![".js", ".ts", ".mjs", ".jsx"]
