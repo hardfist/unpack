@@ -4,7 +4,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "napi": {
-    "name": "unpack_node_binding",
+    "binaryName": "unpack_node_binding",
     "triples": {}
   },
   "publishConfig": {

@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use atomic_refcell::AtomicRefCell;
 use napi::tokio::sync::mpsc::unbounded_channel;
 use napi::{
     bindgen_prelude::{Buffer, Promise},
@@ -7,8 +8,9 @@ use napi::{
 };
 use napi_derive::napi;
 use std::{fmt::Debug, future::IntoFuture, sync::Arc};
+use unpack_core::compilation::Compilation;
 use unpack_core::errors::miette::Result;
-use unpack_core::plugin::{CompilationCell, LoadArgs, Plugin, PluginContext, ResolveArgs};
+use unpack_core::plugin::{LoadArgs, Plugin, PluginContext, ResolveArgs};
 
 use crate::js_compilation::JsCompilation;
 
@@ -28,7 +30,7 @@ impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {
         "js_plugin_adapter"
     }
-    async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: Arc<CompilationCell>) {
+    async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: Arc<AtomicRefCell<Compilation>>) {
         let compilation = JsCompilation::from_compilation(compilation);
         let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.this_compilation else {

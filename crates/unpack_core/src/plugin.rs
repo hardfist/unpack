@@ -1,8 +1,9 @@
 use crate::{compilation::Compilation, compiler::CompilerOptions};
 use async_trait::async_trait;
+use atomic_refcell::AtomicRefCell;
 use camino::Utf8PathBuf;
 use miette::Result;
-use std::{cell::UnsafeCell, fmt::Debug, sync::Arc};
+use std::{fmt::Debug, sync::Arc};
 #[derive(Clone, Debug)]
 pub struct PluginContext {
     pub options: Arc<CompilerOptions>,
@@ -18,35 +19,10 @@ pub struct LoadArgs {
     pub path: Utf8PathBuf,
 }
 
-pub struct CompilationCell(UnsafeCell<Compilation>);
-
-impl CompilationCell {
-    pub fn new(compilation: Compilation) -> Self {
-        Self(UnsafeCell::new(compilation))
-    }
-
-    // Safe methods to access the compilation
-    /// # Safety
-    /// The caller must ensure no aliases exist that could be mutated
-    /// concurrently while the returned pointer is in use.
-    pub unsafe fn get(&self) -> *mut Compilation {
-        self.0.get()
-    }
-
-    /// # Safety
-    /// The caller must guarantee exclusive access to the underlying
-    /// `Compilation` for the duration of the mutable borrow.
-    pub unsafe fn get_mut(&mut self) -> &mut Compilation {
-        self.0.get_mut()
-    }
-}
-unsafe impl Send for CompilationCell {}
-unsafe impl Sync for CompilationCell {}
-
 #[async_trait]
 pub trait Plugin: Send + Sync + Debug {
     fn name(&self) -> &'static str;
-    async fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: Arc<CompilationCell>) {
+    async fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: Arc<AtomicRefCell<Compilation>>) {
     }
     async fn resolve(
         &self,
@@ -94,7 +70,7 @@ impl PluginDriver {
         }
         Ok(None)
     }
-    pub async fn run_compilation_hook(&self, compilation: Arc<CompilationCell>) {
+    pub async fn run_compilation_hook(&self, compilation: Arc<AtomicRefCell<Compilation>>) {
         for plugin in &self.plugins {
             plugin
                 .this_compilation(self.plugin_context.clone(), compilation.clone())

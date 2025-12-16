@@ -33,6 +33,7 @@ ustr = { version = "1.1.0"}
 triomphe = { version = "0.1"}
 parking_lot = { version = "*", features = ["send_guard"]}
 im = "15.1.0"
+atomic_refcell = "0.1"
 
 [dev-dependencies]
 codspeed-criterion-compat = "2.7.4"
