@@ -18,7 +18,6 @@ async fn bundle(entry: Vc<FileSource>) -> anyhow::Result<Vc<()>> {
 //    let chunk_group = ChunkGroup::Entry(vec![module]);
 //    let result = browser_context.evaluated_chunk_group_assets( ident, chunk_group, module_graph);
    let cg = module_graph.chunk_group_info().await?;
-   vdbg!(cg);
    Ok(Vc::cell(()))
 }
 pub async fn main_inner() -> anyhow::Result<()> {
