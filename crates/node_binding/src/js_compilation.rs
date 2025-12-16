@@ -6,6 +6,7 @@ use unpack_core::plugin::CompilationCell;
 
 #[napi(custom_finalize)]
 pub struct JsCompilation {
+    #[allow(dead_code)]
     compilation: Arc<CompilationCell>,
     id: u32,
 }
@@ -14,13 +15,13 @@ impl JsCompilation {
     pub fn from_compilation(compilation: Arc<CompilationCell>) -> Self {
         let id = unsafe { &*compilation.get() }.id;
         Self {
-            compilation: compilation,
+            compilation,
             id: id.0,
         }
     }
 }
 impl ObjectFinalize for JsCompilation {
-    fn finalize(self, env: napi::Env) -> napi::Result<()> {
+    fn finalize(self, _env: napi::Env) -> napi::Result<()> {
         println!("JsCompilation:{} finalize", self.id);
 
         Ok(())

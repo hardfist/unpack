@@ -65,10 +65,10 @@ impl Module for NormalModule {
     }
     fn identifier(&self) -> Ustr {
         let t = ustr(self.resource_path.as_str());
-        return t
+        t
     }
     fn need_build(&self) -> bool {
-        return self.need_rebuild
+        self.need_rebuild
     }
     async fn build(&mut self, build_context: BuildContext, memory_manager: &MemoryManager) -> Result<BuildResult> {
         let resource_path = self.resource_path.clone();

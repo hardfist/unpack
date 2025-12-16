@@ -101,15 +101,15 @@ pub trait ReadonlyModuleExt {
 }
 impl ReadonlyModuleExt for ReadonlyModule {
     fn to_writable(&self) -> WritableModule {
-        let t = dyn_clone::clone_box(&***self);
-        t
+        
+        (dyn_clone::clone_box(&***self)) as _
     }
 }   
 
 impl WritableModuleExt for WritableModule {
     fn to_readonly(&self) -> ReadonlyModule {
         let readonly = dyn_clone::clone_box(&**self);
-        let result = Arc::new(readonly);
-        result
+        
+        Arc::new(readonly)
     }
 }

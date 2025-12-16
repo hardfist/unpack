@@ -8,13 +8,10 @@ use crate::{
         CodeGenerationContext, CodeGenerationResult, EntryData, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
     }, plugin::PluginDriver
 };
-use std::{
-    sync::{
+use std::sync::{
         atomic::{AtomicU32, Ordering},
         Arc,
-    },
-    time::Instant,
-};
+    };
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -75,7 +72,6 @@ impl Compilation {
     }
     /// similar with webpack's make phase, which will make module graph
     pub async fn scan(&self, memory_manager: &MemoryManager) -> ScannerResult {
-        let start = Instant::now();
         let mut module_scanner = ModuleScanner::new(
             self.options.clone(),
             self.options.context.clone(),

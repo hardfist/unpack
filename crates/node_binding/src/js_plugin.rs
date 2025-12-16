@@ -37,7 +37,7 @@ impl Plugin for JsPluginAdapter {
         callback.call_with_return_value(
             compilation,
             napi::threadsafe_function::ThreadsafeFunctionCallMode::Blocking,
-            move |ret: ()| {
+            move |_ret: ()| {
                 let _ = send.send(());
                 Ok(())
             },

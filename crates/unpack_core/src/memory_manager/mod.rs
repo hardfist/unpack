@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::Arena,
-    module::{Connection, ConnectionId, Module, ModuleGraphModule, ModuleGraphModuleId, ModuleId, 
+    module::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId, ModuleId, 
         ReadonlyModule},
 };
 
@@ -39,7 +39,7 @@ impl MemoryManager {
         let id = module.identifier();
         self.module_caches.insert(id, module);
 
-        return id;
+        id
     }
     pub fn module_by_id(&self, id: ModuleId) -> ReadonlyModule {
         let module = self.module_caches.get(&id).unwrap().clone();

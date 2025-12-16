@@ -2,7 +2,7 @@ use crate::dependency::{BoxDependency, DependencyId};
 use crate::errors::miette::{Report, Result};
 use crate::errors::Diagnostics;
 use crate::memory_manager::MemoryManager;
-use crate::module::{BuildContext, Module, ModuleId, ReadonlyModule, ReadonlyModuleExt, WritableModule, WritableModuleExt};
+use crate::module::{BuildContext, ModuleId, ReadonlyModule, ReadonlyModuleExt, WritableModule, WritableModuleExt};
 use crate::normal_module_factory::{ModuleFactoryCreateData, NormalModuleFactory};
 use crate::plugin::PluginDriver;
 use crate::scheduler::COMPILER_CONTEXT;
@@ -278,6 +278,7 @@ impl ModuleScanner {
         }
     }
     #[instrument("handle_factorize", skip_all)]
+    #[allow(clippy::too_many_arguments)]
     async fn handle_factorize(
         tx: Sender<Result<Task>>,
         task: FactorizeTask,
@@ -288,7 +289,7 @@ impl ModuleScanner {
         dependency_cache: Arc<DashMap<DependencyId, ReadonlyModule>>,
         memory_manager: &MemoryManager
     ) {
-        let module_dependency_id = task.dependencies[0].clone();
+        let module_dependency_id = task.dependencies[0];
         let module_dependency = memory_manager.dependency_by_id(module_dependency_id);
         let context = if let Some(context) = module_dependency.get_context() {
             context.to_owned()
@@ -392,7 +393,7 @@ impl ModuleScanner {
         memory_manager: &MemoryManager
     ) {
         let mut module = task.module;
-        let module_dependency = task.dependencies[0].clone();
+        let module_dependency = task.dependencies[0];
 
         if module.need_build() {
             module
@@ -400,7 +401,7 @@ impl ModuleScanner {
                     options: options.clone(),
                     plugin_driver: plugin_driver.clone(),
                 }, memory_manager)
-                .await;
+                .await.unwrap();
         };
         let dependencies: Vec<DependencyId> = module.get_dependencies();
         todo_tx

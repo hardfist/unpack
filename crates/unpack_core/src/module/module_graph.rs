@@ -15,6 +15,7 @@ pub struct ModuleGraph {
 }
 
 impl ModuleGraph {
+    #[allow(unused_variables)]
     pub fn new_from_entries(entries: Vec<DependencyId>, memory_manager: MemoryManager){
         let module_graph = ModuleGraph::default();
         let mut queue: Vec<(DependencyId, Option<ModuleId>)> = entries.into_iter().map(|id| (id, None)).collect();
