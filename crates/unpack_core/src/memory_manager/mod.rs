@@ -3,12 +3,12 @@ use std::sync::RwLock;
 use dashmap::DashMap;
 use indexmap::IndexMap;
 
-
 use crate::{
     dependency::{BoxDependency, DependencyId},
     memory_manager::arena::Arena,
-    module::{Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId, ModuleId, 
-        ReadonlyModule},
+    module::{
+        Connection, ConnectionId, ModuleGraphModule, ModuleGraphModuleId, ModuleId, ReadonlyModule,
+    },
 };
 
 pub mod arena;
@@ -33,9 +33,7 @@ impl MemoryManager {
 }
 // don't expose mutable borrow of arena's item
 impl MemoryManager {
-   
-    pub fn alloc_module(&self, module: ReadonlyModule) -> ModuleId  {
-        
+    pub fn alloc_module(&self, module: ReadonlyModule) -> ModuleId {
         let id = module.identifier();
         self.module_caches.insert(id, module);
 
@@ -51,9 +49,14 @@ impl MemoryManager {
         dep_id
     }
     pub fn dependency_by_id(&self, id: DependencyId) -> BoxDependency {
-        self.dependencies.read().unwrap().get(&id).expect("get dependency failed").clone()
+        self.dependencies
+            .read()
+            .unwrap()
+            .get(&id)
+            .expect("get dependency failed")
+            .clone()
     }
-     pub fn alloc_connection(&self, connection: Connection) -> ConnectionId {
+    pub fn alloc_connection(&self, connection: Connection) -> ConnectionId {
         self.connections.write().unwrap().insert(connection)
     }
     pub fn connection_by_id(&self, connection_id: ConnectionId) -> Connection {

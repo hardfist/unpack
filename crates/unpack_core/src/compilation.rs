@@ -4,14 +4,20 @@ use rspack_sources::{BoxSource, ConcatSource, SourceExt};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult}, compiler::CompilerOptions, errors::Diagnostics, memory_manager::MemoryManager, module::{
-        CodeGenerationContext, CodeGenerationResult, EntryData, ModuleGraph, ModuleId, ModuleScanner, ScannerResult
-    }, plugin::PluginDriver
+    chunk::{ChunkGraph, ChunkId, ChunkLinker, LinkerResult},
+    compiler::CompilerOptions,
+    errors::Diagnostics,
+    memory_manager::MemoryManager,
+    module::{
+        CodeGenerationContext, CodeGenerationResult, EntryData, ModuleGraph, ModuleId,
+        ModuleScanner, ScannerResult,
+    },
+    plugin::PluginDriver,
 };
 use std::sync::{
-        atomic::{AtomicU32, Ordering},
-        Arc,
-    };
+    atomic::{AtomicU32, Ordering},
+    Arc,
+};
 #[derive(Debug, Default)]
 struct CodeGenerationResults {
     module_id_to_generation_result: FxHashMap<ModuleId, CodeGenerationResult>,
@@ -82,7 +88,12 @@ impl Compilation {
     }
     /// similar with webpack's seal phase
     /// this will make chunk(consists of connected modules)
-    pub fn link(&self, entries: IndexMap<String,EntryData>, module_graph: ModuleGraph,memory_manager: &MemoryManager) -> LinkerResult {
+    pub fn link(
+        &self,
+        entries: IndexMap<String, EntryData>,
+        module_graph: ModuleGraph,
+        memory_manager: &MemoryManager,
+    ) -> LinkerResult {
         let linker = ChunkLinker::new(self.options.clone(), entries);
         linker.build_chunk_graph(module_graph, memory_manager)
     }
@@ -90,7 +101,7 @@ impl Compilation {
     pub fn code_generation(
         &self,
         linker_state: LinkerResult,
-        memory_manager: & MemoryManager,
+        memory_manager: &MemoryManager,
         collect_modules: &Vec<ModuleId>,
     ) -> CodeGenerationState {
         let mut code_generation_results = CodeGenerationResults::default();

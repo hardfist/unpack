@@ -1,6 +1,6 @@
 use crate::{
     dependency::DependencyId,
-    module::{WritableModule, ModuleId},
+    module::{ModuleId, WritableModule},
 };
 
 #[derive(Debug)]

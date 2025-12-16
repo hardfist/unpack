@@ -6,8 +6,8 @@ use async_trait::async_trait;
 use camino::Utf8Path;
 
 use dyn_clone::DynClone;
-use parking_lot::RwLockWriteGuard;
 use parking_lot::RwLock;
+use parking_lot::RwLockWriteGuard;
 use rspack_sources::BoxSource;
 
 use ustr::Ustr;
@@ -21,9 +21,7 @@ use crate::errors::miette::Result;
 use crate::plugin::PluginDriver;
 
 #[derive(Debug)]
-pub struct BuildResult {
-   
-}
+pub struct BuildResult {}
 pub struct BuildContext {
     pub options: Arc<CompilerOptions>,
     pub plugin_driver: Arc<PluginDriver>,
@@ -46,9 +44,13 @@ impl CodeGenerationResult {
     }
 }
 #[async_trait]
-pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
+pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone {
     fn identifier(&self) -> Ustr;
-    async fn build(&mut self, build_context: BuildContext, memory_manager: &MemoryManager) -> Result<BuildResult>;
+    async fn build(
+        &mut self,
+        build_context: BuildContext,
+        memory_manager: &MemoryManager,
+    ) -> Result<BuildResult>;
     fn get_context(&self) -> Option<&Utf8Path> {
         None
     }
@@ -62,12 +64,9 @@ pub trait Module: Debug + DependenciesBlock + Send + Sync + DynClone  {
 }
 pub type ModuleId = Ustr;
 
-
-
 use parking_lot::RwLockReadGuard;
 #[derive(Debug)]
-pub struct RwCell<T:?Sized>(Arc<RwLock<T>>);
-
+pub struct RwCell<T: ?Sized>(Arc<RwLock<T>>);
 
 // new
 
@@ -92,7 +91,6 @@ impl<T> Clone for RwCell<T> {
 pub type WritableModule = Box<dyn Module>;
 pub type ReadonlyModule = Arc<Box<dyn Module>>;
 
-
 pub trait WritableModuleExt {
     fn to_readonly(&self) -> ReadonlyModule;
 }
@@ -101,15 +99,14 @@ pub trait ReadonlyModuleExt {
 }
 impl ReadonlyModuleExt for ReadonlyModule {
     fn to_writable(&self) -> WritableModule {
-        
         (dyn_clone::clone_box(&***self)) as _
     }
-}   
+}
 
 impl WritableModuleExt for WritableModule {
     fn to_readonly(&self) -> ReadonlyModule {
         let readonly = dyn_clone::clone_box(&**self);
-        
+
         Arc::new(readonly)
     }
 }

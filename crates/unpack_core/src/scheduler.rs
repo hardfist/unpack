@@ -10,14 +10,14 @@ static COMPILER_ID_GENERATOR: AtomicU32 = AtomicU32::new(0);
 pub struct CompilerContext {
     compiler_id: u32,
     dependency_id: AtomicU32,
-    memory_manager: MemoryManager
+    memory_manager: MemoryManager,
 }
 impl CompilerContext {
     pub fn new() -> Self {
         Self {
             compiler_id: COMPILER_ID_GENERATOR.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
             dependency_id: AtomicU32::new(0),
-            memory_manager: MemoryManager::new()
+            memory_manager: MemoryManager::new(),
         }
     }
     pub fn get_memory_manager(&self) -> &MemoryManager {

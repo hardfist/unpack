@@ -40,7 +40,10 @@ impl<T: Hash + Eq + 'static> InternMap<T> {
             }
         };
 
-        Interned { storage: self.storage.clone(), value: obj }
+        Interned {
+            storage: self.storage.clone(),
+            value: obj,
+        }
     }
 }
 
@@ -116,7 +119,9 @@ impl<T: Hash + Eq + 'static> PartialOrd for Interned<T> {
 impl<T: Hash + Eq + 'static> cmp::Ord for Interned<T> {
     #[inline]
     fn cmp(&self, other: &Self) -> cmp::Ordering {
-        Arc::as_ptr(&self.value).cast::<()>().cmp(&Arc::as_ptr(&other.value).cast::<()>())
+        Arc::as_ptr(&self.value)
+            .cast::<()>()
+            .cmp(&Arc::as_ptr(&other.value).cast::<()>())
     }
 }
 
@@ -129,7 +134,10 @@ impl<T: fmt::Debug + Hash + Eq + 'static> fmt::Debug for Interned<T> {
 
 impl<T: Hash + Eq + 'static> Clone for Interned<T> {
     fn clone(&self) -> Self {
-        Interned { storage: self.storage.clone(), value: self.value.clone() }
+        Interned {
+            storage: self.storage.clone(),
+            value: self.value.clone(),
+        }
     }
 }
 
@@ -143,6 +151,8 @@ impl<T: Hash + Eq + 'static> Drop for Interned<T> {
 
 impl<T: Hash + Eq + 'static> Default for InternMap<T> {
     fn default() -> Self {
-        InternMap { storage: Default::default() }
+        InternMap {
+            storage: Default::default(),
+        }
     }
 }

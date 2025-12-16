@@ -9,13 +9,13 @@ use async_trait::async_trait;
 use camino::{Utf8Path, Utf8PathBuf};
 use miette::{IntoDiagnostic, Report};
 use rspack_sources::{BoxSource, OriginalSource, ReplaceSource, SourceExt};
-use ustr::{ustr, Ustr};
 use std::sync::Arc;
+use ustr::{ustr, Ustr};
 
 use super::ast::parse;
 use super::{BuildContext, BuildResult, Module, SourceType};
 use super::{CodeGenerationResult, ModuleGraph};
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct NormalModule {
     context: Option<Utf8PathBuf>,
     resource_path: Utf8PathBuf,
@@ -70,7 +70,11 @@ impl Module for NormalModule {
     fn need_build(&self) -> bool {
         self.need_rebuild
     }
-    async fn build(&mut self, build_context: BuildContext, memory_manager: &MemoryManager) -> Result<BuildResult> {
+    async fn build(
+        &mut self,
+        build_context: BuildContext,
+        memory_manager: &MemoryManager,
+    ) -> Result<BuildResult> {
         let resource_path = self.resource_path.clone();
         let content = build_context
             .plugin_driver
@@ -92,11 +96,9 @@ impl Module for NormalModule {
         }
         self.source = NormalModuleSource::Succeed(source.clone());
         self.need_rebuild = false;
-        
+
         self.presentational_dependencies = parse_result.presentational_dependencies;
-        Ok(BuildResult {
-         
-        })
+        Ok(BuildResult {})
     }
 
     fn get_context(&self) -> Option<&Utf8Path> {
@@ -132,14 +134,14 @@ impl NormalModule {
         Self {
             request,
             resource_path,
-            diagnostics:Default::default(),
+            diagnostics: Default::default(),
             original_source: None,
             context,
             blocks: vec![],
             module_dependencies: vec![],
             presentational_dependencies: vec![],
             source: NormalModuleSource::UnBuild,
-            need_rebuild:true
+            need_rebuild: true,
         }
     }
 

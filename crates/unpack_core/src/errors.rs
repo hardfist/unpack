@@ -1,7 +1,7 @@
-use std::sync::{Arc, RwLock};
 pub use miette;
 use miette::Diagnostic;
 use miette::Report;
+use std::sync::{Arc, RwLock};
 use thiserror::Error;
 
 #[derive(Debug, Error, Diagnostic)]

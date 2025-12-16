@@ -39,9 +39,7 @@ async fn main() {
         let compiler = Compiler::new(Arc::new(compiler_options), vec![]);
         compiler
     }
-    create_compiler("dist".to_string())
-        .build()
-        .await;
+    create_compiler("dist".to_string()).build().await;
 
     drop(guard);
 }

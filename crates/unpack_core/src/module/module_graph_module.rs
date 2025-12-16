@@ -1,9 +1,8 @@
-
 use crate::memory_manager::arena::Idx;
 
 use super::ConnectionId;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct ModuleGraphModule {
     pub incoming_connections: Vec<ConnectionId>,
     pub outgoing_connections: Vec<ConnectionId>,
