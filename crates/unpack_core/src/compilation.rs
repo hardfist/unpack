@@ -58,16 +58,10 @@ pub struct Compilation {
     pub diagnostics: Diagnostics,
     pub plugin_driver: Arc<PluginDriver>,
 }
-impl Drop for Compilation {
-    fn drop(&mut self) {
-        println!("compilation:{} drop", self.id.0);
-    }
-}
 
 impl Compilation {
     pub fn new(options: Arc<CompilerOptions>, plugin_driver: Arc<PluginDriver>) -> Self {
         let id = CompilationId::new();
-        println!("create compilation: {:?}", &id);
         Self {
             options,
             module_graph: Default::default(),

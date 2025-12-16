@@ -17,7 +17,6 @@ use rustc_hash::FxHashMap;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicU32;
 use std::sync::Arc;
-use std::time::Instant;
 use tokio::task::JoinSet;
 use tracing::instrument;
 use ustr::Ustr;
@@ -94,31 +93,12 @@ impl ModuleScanner {
                 entry_dep
             })
             .collect::<Vec<_>>();
-        let start = Instant::now();
         let entry_ids: Vec<_> = entry_ids
             .iter()
             .map(|dep| memory_manager.alloc_dependency(dep.clone()))
             .collect();
-        eprintln!("start first scan");
         self.build_loop(&mut scanner_result, entry_ids.clone(), memory_manager)
             .await;
-        let duration = start.elapsed();
-        eprintln!(
-            "first scan in {:?} with {} modules",
-            duration,
-            scanner_result._modules.len()
-        );
-        let start = Instant::now();
-        eprintln!("start second scan");
-        let mut new_scanner_result = ScannerResult::new();
-        self.build_loop(&mut new_scanner_result, entry_ids.clone(), memory_manager)
-            .await;
-        let duration = start.elapsed();
-        eprintln!(
-            "second scan in {:?} with {} modules",
-            duration,
-            scanner_result._modules.len()
-        );
         scanner_result
     }
     pub fn handle_module_creation(

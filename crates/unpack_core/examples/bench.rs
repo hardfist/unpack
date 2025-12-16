@@ -12,8 +12,7 @@ use tracing_chrome::ChromeLayerBuilder;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
 use unpack_core::{
-    compiler::{Compiler, CompilerOptions, EntryItem},
-    memory_manager::MemoryManager,
+    compiler::{Compiler, CompilerOptions, EntryItem}
 };
 fn main() {
     let _guard = match std::env::var("UNPACK_PROFILE") {

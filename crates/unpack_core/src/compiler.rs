@@ -14,11 +14,6 @@ pub use options::CompilerOptions;
 pub use options::EntryItem;
 use rspack_sources::BoxSource;
 
-impl Drop for Compiler {
-    fn drop(&mut self) {
-        println!("native Compiler dropped");
-    }
-}
 pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
