@@ -1,7 +1,6 @@
 mod options;
 use std::sync::Arc;
 
-use atomic_refcell::AtomicRefCell;
 use crate::compilation::ChunkAssetState;
 use crate::compilation::Compilation;
 use crate::plugin::BoxPlugin;
@@ -18,7 +17,7 @@ pub struct Compiler {
     #[allow(dead_code)]
     options: Arc<CompilerOptions>,
     plugins: Vec<BoxPlugin>,
-    last_compilation: Option<Arc<AtomicRefCell<Compilation>>>,
+    last_compilation: Option<Box<Compilation>>,
     plugin_driver: Arc<PluginDriver>,
     compiler_context: Arc<CompilerContext>,
 }
@@ -47,22 +46,23 @@ impl Compiler {
                     "Compiler build started with ID: {}",
                     self.compiler_context.get_compiler_id()
                 );
-                let compilation = Arc::new(AtomicRefCell::new(Compilation::new(
+                let mut compilation = Box::new(Compilation::new(
                     self.options.clone(),
                     self.plugin_driver.clone(),
-                )));
-                self.last_compilation = Some(compilation.clone());
+                ));
+
                 self.plugin_driver
-                    .run_compilation_hook(compilation.clone())
+                    .run_compilation_hook(&mut *compilation)
                     .await;
+
                 let memory_manager = self.compiler_context.get_memory_manager();
-                let scanner_result = compilation.borrow_mut().scan(memory_manager).await;
-                let linker_result = compilation.borrow_mut().link(
+                let scanner_result = compilation.scan(memory_manager).await;
+                let linker_result = compilation.link(
                     scanner_result.entries,
                     scanner_result.module_graph,
                     memory_manager,
                 );
-                let mut code_generation_state = compilation.borrow_mut().code_generation(
+                let mut code_generation_state = compilation.code_generation(
                     linker_result,
                     memory_manager,
                     &scanner_result.collect_modules,
@@ -72,15 +72,15 @@ impl Compiler {
                 //     .diagnostics
                 //     .write().unwrap()
                 //     .extend(mem::take(&mut code_generation_state.diagnostics));
-                let asset_state = compilation.borrow_mut().create_chunk_asset(&mut code_generation_state);
+                let asset_state = compilation.create_chunk_asset(&mut code_generation_state);
 
                 self.emit_assets(asset_state).await;
-                let compilation_ref = self.last_compilation.as_ref().unwrap().borrow();
-                if !compilation_ref.diagnostics.read().unwrap().is_empty() {
-                    for diag in compilation_ref.diagnostics.read().unwrap().iter() {
+                if !compilation.diagnostics.read().unwrap().is_empty() {
+                    for diag in compilation.diagnostics.read().unwrap().iter() {
                         println!("{diag:?}");
                     }
                 }
+                self.last_compilation = Some(compilation);
                 println!("Compilation finished");
             })
             .await;

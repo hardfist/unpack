@@ -1,6 +1,5 @@
-use std::sync::Arc;
+use std::ptr::NonNull;
 
-use atomic_refcell::AtomicRefCell;
 use napi::bindgen_prelude::ObjectFinalize;
 use napi_derive::napi;
 use unpack_core::compilation::Compilation;
@@ -8,13 +7,13 @@ use unpack_core::compilation::Compilation;
 #[napi(custom_finalize)]
 pub struct JsCompilation {
     #[allow(dead_code)]
-    compilation: Arc<AtomicRefCell<Compilation>>,
+    compilation: NonNull<Compilation>,
     id: u32,
 }
 
 impl JsCompilation {
-    pub fn from_compilation(compilation: Arc<AtomicRefCell<Compilation>>) -> Self {
-        let id = compilation.borrow().id;
+    pub fn from_compilation(compilation: NonNull<Compilation>) -> Self {
+        let id = unsafe { compilation.as_ref().id };
         Self {
             compilation,
             id: id.0,

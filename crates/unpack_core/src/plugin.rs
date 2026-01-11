@@ -1,6 +1,5 @@
 use crate::{compilation::Compilation, compiler::CompilerOptions};
 use async_trait::async_trait;
-use atomic_refcell::AtomicRefCell;
 use camino::Utf8PathBuf;
 use miette::Result;
 use std::{fmt::Debug, sync::Arc};
@@ -22,7 +21,7 @@ pub struct LoadArgs {
 #[async_trait]
 pub trait Plugin: Send + Sync + Debug {
     fn name(&self) -> &'static str;
-    async fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: Arc<AtomicRefCell<Compilation>>) {
+    async fn this_compilation(&self, _ctx: Arc<PluginContext>, _compilation: &mut Compilation) {
     }
     async fn resolve(
         &self,
@@ -70,10 +69,10 @@ impl PluginDriver {
         }
         Ok(None)
     }
-    pub async fn run_compilation_hook(&self, compilation: Arc<AtomicRefCell<Compilation>>) {
+    pub async fn run_compilation_hook(&self, compilation: &mut Compilation) {
         for plugin in &self.plugins {
             plugin
-                .this_compilation(self.plugin_context.clone(), compilation.clone())
+                .this_compilation(self.plugin_context.clone(), compilation)
                 .await;
         }
     }

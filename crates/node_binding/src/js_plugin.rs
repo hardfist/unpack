@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use atomic_refcell::AtomicRefCell;
 use napi::tokio::sync::mpsc::unbounded_channel;
 use napi::{
     bindgen_prelude::{Buffer, Promise},
@@ -30,8 +29,10 @@ impl Plugin for JsPluginAdapter {
     fn name(&self) -> &'static str {
         "js_plugin_adapter"
     }
-    async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: Arc<AtomicRefCell<Compilation>>) {
-        let compilation = JsCompilation::from_compilation(compilation);
+    async fn this_compilation(&self, _ctx: Arc<PluginContext>, compilation: &mut Compilation) {
+        // Convert to NonNull for node binding usage
+        let compilation_ptr = unsafe { std::ptr::NonNull::new_unchecked(compilation as *mut Compilation) };
+        let compilation = JsCompilation::from_compilation(compilation_ptr);
         let (send, mut recv) = unbounded_channel();
         let Some(callback) = &self.this_compilation else {
             return;
