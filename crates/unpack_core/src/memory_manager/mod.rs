@@ -1,7 +1,6 @@
 use std::sync::RwLock;
 
 use dashmap::DashMap;
-use indexmap::IndexMap;
 
 use crate::{
     dependency::{BoxDependency, DependencyId},
@@ -17,7 +16,7 @@ pub mod intern;
 #[derive(Default, Debug)]
 pub struct MemoryManager {
     module_caches: DashMap<ustr::Ustr, ReadonlyModule>,
-    dependencies: RwLock<IndexMap<DependencyId, BoxDependency>>,
+    dependencies: DashMap<DependencyId, BoxDependency>,
     connections: RwLock<Arena<Connection>>,
     module_graph_modules: RwLock<Arena<ModuleGraphModule>>,
 }
@@ -45,13 +44,11 @@ impl MemoryManager {
     }
     pub fn alloc_dependency(&self, dep: BoxDependency) -> DependencyId {
         let dep_id = dep.id();
-        self.dependencies.write().unwrap().insert(dep_id, dep);
+        self.dependencies.insert(dep_id, dep);
         dep_id
     }
     pub fn dependency_by_id(&self, id: DependencyId) -> BoxDependency {
         self.dependencies
-            .read()
-            .unwrap()
             .get(&id)
             .expect("get dependency failed")
             .clone()
